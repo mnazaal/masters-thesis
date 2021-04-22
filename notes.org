@@ -1,0 +1,69 @@
+#+TITLE: Notes
+#+DATE:
+#+OPTIONS: toc:nil
+
+
+bibliography:~/Dropbox/org/bibliography/references.bib
+
+* Quick ideas
+  - Topological ordering of nodes in digraphs and connection to topological sort
+
+  
+* Short notes 
+A fairly good introduction to the baasic terminology is provided in the background paragraph of cite:sondhi-2019-reduc-pc-algor. Good blog post available on [[https://ermongroup.github.io/cs228-notes/][here]]
+* Key concepts and Definitions
+** Directed Acyclic Graphs (DAGs)
+- Confounding, explaining away, explanation of why RCTs work well
+- Definitions such as adjacency, parents, children, paths, directed paths, ancestors, descenddants, DAG skeletons, unshielded triples, colliders, unshielded colliders
+- Conditional independence relations and context-specific independence relations
+- Local Markov Property, Markov Equivalence
+- d-separation, m-separation
+- Faithfulness assumption (independence implies no causal relation), strong faithfulness assumption
+- Complete Partially DAG/Essential graph, Interventional Essential graph
+- Maximal Ancestral Graphs and Partial Ancestral Graphs
+- Distribution being causal with respect to a DAG
+** Causal discovery on DAGs
+- Search and score based approaches, assuming different causal structures and optimizing a certain score
+- Constraint based appraoches, starting with finding  the conditional independence relations from data then rule out incompatible graphs
+- PC algorithm (constraint based approach)
+- Greedy-Equivalent-Search (GES) (score based approach)
+- Max-Min Hill Climbing  (Mix of both)
+- do-calculus as a means of identification for interventions
+** Context-Specific Trees (CSTrees)
+- Converting a DAG to a CSTree
+- Markov Equivalence for CSTrees
+** Causal discovery on CSTrees
+
+* Thesis Sections
+** Introduction
+*** Causal models
+*** Why they are important
+*** Pearl's Hierarchy
+*** Causal discovery
+*** Randomized Controlled Trials
+** Learning DAGs
+*** Conditional Independence Relations
+*** DAGs
+*** The PC algorithm
+*** ? Split learning from observational and interventional data
+** Learning CSTrees
+*** Context-Specific Conditional Independence Relations
+*** CSTrees
+*** Extended PC algorithm
+*** ? Split learning from observational and interventional data
+** Experiments
+
+* Implementation
+** Generate CSTree from DAG, and generate collection of DAGs from CSTrees
+** Running conditional independence tests
+
+* Org mode details
+- LaTeX export blocks for things like multi figures, (Caption can still be in org-mode using org-ref), then export them via standalone package and load if the org-export mode is not latex pdf. OR, make a different .tex file for each such items (multifigures, tikz figures etc), compile them using org-babel/shell script, and load as a single image. For external code running experiments, call the APIs within org-babel blocks to separate the code implementation to where they are used.
+
+* Conventions
+- Blackboard bold for probability-theoretic notation, like probabilities and expectations etc
+- Normal bold for graph-theoretic notation, like parents, children etc
+
+* Doubts
+- When we factorize say p(X,Z) into p(X|Z)p(Z) or p(Z|X)p(X) are we saying Z causes X and X causes Z respectively?
+- FCMs and SCMs, definitions look the same, confirm if there is any slight difference

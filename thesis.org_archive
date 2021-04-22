@@ -1,0 +1,85 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /home/nazaal/projects/masters-thesis/thesis.org
+
+
+* TODO Learning CSTrees from observed data
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2021-04-16 Fri 09:14
+  :ARCHIVE_FILE: ~/projects/masters-thesis/thesis.org
+  :ARCHIVE_OLPATH: Causal Discovery with Context-Specific Trees
+  :ARCHIVE_CATEGORY: thesis
+  :ARCHIVE_TODO: TODO
+  :END:
+   - Rough overview of algorithm:
+     - Learn CPDAG from observed data
+     - Generate all possible causal orderings for each DAG in the CPDAG
+     - For each DAG, ordering pair get a CSTree
+     - Choose the best CSTree according to some criterion
+   - Algorithm details and analysis on constructing CSTree from DAG
+   - Algorithm details and analysis on colouring CSTree
+   - List all assumptions
+   - Theorem on consistency under faithfulness
+   - On sidenote example on why we consider all possible orderings
+   - !!! Small optimizations e.g. resevouir sampling for randomized node testing
+
+     
+#+BEGIN_EXPORT latex
+\begin{algorithm}[H]
+      \SetAlgoLined
+      \KwData{A DAG $G$, causal ordering $o$}
+      \KwResult{CSTree $T$ with ordering $o$ and stages $S$ defined by $G$}
+      $T \leftarrow$ Empty staged tree with ordering $o$\;
+      $S \leftarrow$ Empty dictionary\;
+       \For{$l$ in $|o|-1$}{
+        $v \leftarrow o[l+1]$ \;
+	$a \leftarrow \; Parents_{G}(v) \; \cap \; o[1:l]$\;
+	$b \leftarrow$ Cartesian product of values of all variables in $a$\;
+	\tcp{Each element of $b$ is a context which fixes a stage in level $l$}
+	\For{$c$ in $b$}{
+	$S[c] \leftarrow$ $\{$ nodes in level $l$ such that $c$ is a subcontext $\}$\;
+	}
+       }
+       \caption{Constructing a CSTree from a DAG}
+       \KwRet{$T, stages$}
+      \end{algorithm}
+#+END_EXPORT
+
+
+We now describe the algorithm for learning a CSTree. {{{footnote(CommonContext is a function that takes the common context between 2 nodes; Subcontext is a function that checks if a context is a subcontext of a node; UpdateStages is a function that deletes previous stages with any of the new nodes and returns a new stage with them)}}}
+
+#+BEGIN_EXPORT latex
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwData{A CSTree $T$, its ordering $o$, data matrix $D$}
+\KwData{The CSTree $T$ after running all possible CSI tests and its stages $s$}
+l=1\;
+$p=|o|$\;
+$s \leftarrow$ Empty Dictionary\;
+\While{l < $p$}{
+nodes $\leftarrow \{$ nodes in level $l \}$\;
+all\_pairs $\leftarrow$ $\{$ all pairs of nodes in level $l$ $\}$\;
+\For{ $(n1,n2)$ in all\_pairs}{
+\eIf{colour(n1)=colour(n2)}
+{skip}
+{
+$c \leftarrow$ CommonContext($n1,n2$)\;
+$same\_distr =$ Test $(c, \: D, \: o[l+1])$\;
+\If{same\_distr}
+{
+n\_nodes $\leftarrow$ $\{ n \in$ nodes :  Subcontext($n,c$)= True$ \}$\;
+$s \leftarrow$ UpdateStages($s$, $c$, n\_nodes)\;
+ }
+}
+}
+l=l+1\;
+}
+\caption{Colouring a CSTree}
+\end{algorithm}
+#+END_EXPORT
+
+
+
+{{{NEWPAGE}}}
+    

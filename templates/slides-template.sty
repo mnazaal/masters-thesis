@@ -1,0 +1,67 @@
+\ProvidesPackage{slides-template}[2016/06/21]
+\mode<presentation>
+
+\definecolor{UniBlue}{RGB}{83,121,170}
+\definecolor{DarkGray}{RGB}{90,90,90}
+\definecolor{LightGray}{RGB}{150,150,150}
+\definecolor{oldTextGreen}{RGB}{115,155,15}
+\definecolor{TextGreen}{RGB}{102,153,0}
+\definecolor{oldOcean}{RGB}{23,142,189}
+\definecolor{Ocean}{RGB}{30,106,181}
+\definecolor{BG}{RGB}{215,215,215}
+\definecolor{darkred}{RGB}{204,41,0}
+
+\setbeamercolor{normal}{fg=DarkGray}
+\setbeamercolor{title}{fg=UniBlue}
+\setbeamercolor{frametitle}{fg=UniBlue}
+\setbeamercolor{structure}{fg=UniBlue}
+\setbeamercolor{normal text}{fg=DarkGray,bg=white}
+\setbeamercolor{section number projected}{bg=UniBlue,fg=white}
+\setbeamercolor{itemize item}{fg=darkred}
+\setbeamercolor{itemize subitem}{fg=TextGreen}
+\setbeamercolor{itemize subbody}{fg=LightGray}
+
+\setbeamertemplate{itemize item}{\scriptsize\raise1.25pt\hbox{\donotcoloroutermaths$\blacktriangleright$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1.5pt\hbox{\donotcoloroutermaths$\bullet$}}
+\setbeamertemplate{itemize subsubitem}{\tiny\raise1.5pt\hbox{\donotcoloroutermaths$\blacksqaure$}}
+
+\setbeamerfont{page number in head/foot}{size=\scriptsize}
+\setbeamercolor{page number in head/foot}{fg=LightGray}
+\setbeamertemplate{footline}[frame number]
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=20mm}
+
+\pgfdeclareimage[height=37mm]{kthprofil}{img/KTH-profil-linjer}
+\pgfdeclareimage[height=15mm]{kthplatta}{img/KTH-platta}
+\pgfdeclareimage[height=15mm]{kthlogo}{img/KTH-logo}
+\pgfdeclareimage[height=12mm]{kthlogosmall}{img/KTH-logo}
+
+\usebackgroundtemplate{\vbox{\null\vspace{5mm}
+  \hspace{5mm}\pgfuseimage{kthlogo}\par
+  \vspace{47mm}\hbox{\hspace{-65mm}\pgfuseimage{kthprofil}}}}
+
+% move title to center
+\makeatletter
+\setbeamertemplate{frametitle}{
+    \ifbeamercolorempty[bg]{frametitle}{}{\nointerlineskip}%
+    \@tempdima=\textwidth%
+    \advance\@tempdima by\beamer@leftmargin%
+    \advance\@tempdima by\beamer@rightmargin%
+    \advance\@tempdima by -23mm%
+    \vskip -1mm%
+    \begin{beamercolorbox}[sep=0.3cm,left,wd=\the\@tempdima]{frametitle}
+        \usebeamerfont{frametitle}%
+        \vbox{}\vskip+1ex%
+        \if@tempswa\else\csname beamer@ftecenter\endcsname\fi%
+        \strut\insertframetitle\strut\par%
+        {%
+            \ifx\insertframesubtitle\@empty%
+            \else%
+            {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\strut\par}%
+            \fi
+        }%
+        \vskip-1ex%
+        \if@tempswa\else\vskip-.3cm\fi% set inside beamercolorbox... evil here...
+    \end{beamercolorbox}%
+}
+\makeatother
