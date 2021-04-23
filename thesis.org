@@ -996,11 +996,12 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 #  - Marloes Maathuis, High dimensional consistency in score-based and hybrid structure learning: A DAG G is a perfect map of a distribution P if the d-separations in G = conditional independencies in P
 #  - Number of DAGs with p nodes and number of CSTrees with p binary valued variables
 #  - ETH Seminar notes: Constructing minimal I-MAP by taking an ordering, writing the full factorization, drawing corresponding DAG. I-MAPs are important because every distribution is Markov wtih respect to a full DAG, and equivalently, a full DAG is an I-MAP of any distribution. Causal sufficiency i.e. no hidden confounders.
-
+# - add special case for fully connected dag when converting to cstree
  #   - Things added after first draft to Liam: Perfect maps, mention of having to pick cstree based on some criteria
 
   #  - Using algorithmic2e to write functions instead of procedural code https://tex.stackexchange.com/questions/280008/algorithm2e-writing-simple-pseudocode-with-multiple-functions/280038
-    
+
+  # - some cases we might know part of the dag structure for sure in this case maybe its good to add an experiment for this
 
 * Appendix A
 ** Remarks on implementation

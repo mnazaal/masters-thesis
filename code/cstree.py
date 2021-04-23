@@ -23,14 +23,13 @@ from mincontexts import minimal_context_dags1,binary_minimal_contexts1
 from graphoid import decomposition, weak_union
 
 
-logger= logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler("cstree.log")
-logger.addHandler(file_handler)
+#logger= logging.getLogger(__name__)
+#logger.setLevel(logging.DEBUG)
+#file_handler = logging.FileHandler("cstree.log")
+#logger.addHandler(file_handler)
 
 
-
-def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
+def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     """
     =============================================================================
     description:
@@ -84,9 +83,11 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
     TODO make plot even for last level
     TODO Check if ordering is consistent with DAG if both given
     """
+
+    """
     logger.debug(" ================ \n Start dag_to_cstree \n =====================")
     logger.debug("Converting DAG to CSTree, DAG: {}, ordering: {}".format("given" if dag else "None", 
-                                                                             "given" if ordering else "None"))
+                                                                             "given" if ordering else "None"))"""
     
     if dag is None and ordering is None:
         raise ValueError("If no ordering is given a DAG must be provided")
@@ -106,7 +107,7 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
         ordering = dag_topo_sort(dag)
 
         
-    logger.debug("DAG with edges {} and ordering {} compatible to create CSTree".format(list(dag.edges), ordering))
+    #logger.debug("DAG with edges {} and ordering {} compatible to create CSTree".format(list(dag.edges), ordering))
     
     
     # Initialize empty graph for CStree
@@ -127,7 +128,7 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
         # Level of the current variable
         level+=1
         
-        logger.debug("Generating level {} of CSTree for variable {} \n".format(level, var))
+        #logger.debug("Generating level {} of CSTree for variable {} \n".format(level, var))
         
         # Values current variable can take
         vals = val_dict[var]
@@ -187,15 +188,11 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
                 # special case when 2nd variable has no parents, it implies it is independent of the first variable
                 # but independence holds both ways and we must encode this fact for the nodes in the first level
                 if level == 1 and pars == []:
-                    logger.debug("Encoding {} _||_ {} | {} \n".format(next_var,
-                                                                  independent_vars,
-                                                                   sc))
                     # Nodes in level 1
                     stage_nodes = [n for n in list(cstree.nodes)[1:] if n[0][0] == ordering[level-1]]# -1 because python indexing
 
                     
-                    logger.debug("Nodes {} belong to stage with common context {}".format(stage_nodes,
-                                                                                          sc))
+                   # logger.debug("Nodes {} belong to stage with common context {}".format(stage_nodes,sc))
 
                     colour = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     if stage_nodes != []: # In root level its empty
@@ -205,17 +202,14 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
                             colour_scheme[node]=colour
 
                 if independent_vars!=[]:
-                    logger.debug("Encoding {} _||_ {} | {} \n".format(next_var,
-                                                                      independent_vars,
-                                                                       sc))
+                    stage_nodes = [n for n in roots if set(sc).issubset(n)]
+                   #logger.debug("Encoding {} _||_ {} | {} \n".format(next_var,independent_vars,sc))
 
                     # TODO Faster method to partition nodes in current level into stages
                     # TODO IMPORTANT, previously sc!=[] was also included in below predicate, WHY?
                     #if len(sc)!=level: # this was to prevent singleton stages to be added i believe
-                    stage_nodes = [n for n in roots if set(sc).issubset(n)]
 
-                    logger.debug("Nodes {} belong to stage with common context {}".format(stage_nodes,
-                                                                                          sc))
+                   # logger.debug("Nodes {} belong to stage with common context{}".format(stage_nodes,sc))
 
                     colour = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     if stage_nodes != []: # In root level its empty
@@ -236,12 +230,9 @@ def dag_to_cstree1(val_dict, ordering=None, dag=None, construct_last=False):
 
 
 
-
     
+def stages_to_csi_rels(stages, ordering):
     
-def stages_to_csi_rels1(stages, ordering):
-    
-    print("stages to extract csi rels from",stages)
     
     csi_rels     = []
     
@@ -251,7 +242,6 @@ def stages_to_csi_rels1(stages, ordering):
         
         stages_l = {color:nodes for color,nodes in stages.items() if len(nodes[0])==l}
         
-        print("generating csi rels from stages level", l, stages_l)
         
         for color, nodes in stages_l.items():
             
@@ -266,12 +256,6 @@ def stages_to_csi_rels1(stages, ordering):
             csi_rels.append((X_k, X_k_minus_one_diff_C, set(), common_context))
     return csi_rels
   
-union        = lambda sets: set.union(*sets)
-intersection = lambda sets: set.intersection(*sets)
-empty_intersection = lambda sets: True if intersection(sets) == set() else False
-set_difference = lambda A,B: A.difference(B)
-
-
         
         
 def colour_cstree(c, 
@@ -282,7 +266,7 @@ def colour_cstree(c,
                   tol_p_val       = 0.05,
                   return_csi_rels = True,
                   test            = "epps",
-                  no_dag = True):
+                  no_dag          = True):
     # c is the Fal
     # levels is the number of levels in the cstree
     # ordering is the causal ordering being considered
@@ -473,7 +457,8 @@ def colour_cstree(c,
                             #print("Stage added for colour ", colour, not_added)
                             stages_known_l[colour] = new_nodes
                             stage_added    = True
-                    
+
+                            
                     #stages_remaining.update(stages) = dict(stages.items()+stages_remaining.items())
                     # Add colours to node map
                     # If previously node was another colour, this changes it to the new colour

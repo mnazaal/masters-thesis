@@ -102,7 +102,7 @@ import time
 
 import networkx as nx
 
-from utils import generate_vals, context_is_contained
+#from utils import context_is_contained
 
 
 def minimal_contexts(csi_rels, val_dict):

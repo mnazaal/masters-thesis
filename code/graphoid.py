@@ -1,3 +1,9 @@
+union        = lambda sets: set.union(*sets)
+intersection = lambda sets: set.intersection(*sets)
+empty_intersection = lambda sets: True if intersection(sets) == set() else False
+set_difference = lambda A,B: A.difference(B)
+
+
 def decomposition(csi_rels, pairwise=True):
     new_rels = []
     for csi_rel in csi_rels:
@@ -17,6 +23,20 @@ def decomposition(csi_rels, pairwise=True):
             raise NotImplementedError("Implement decomposition for non pairwise case")
             
     return new_rels
+
+def weak_union1(csi_rel, pairwise=True):
+    new_rels = []
+    A = csi_rel[0]
+    B = csi_rel[1]
+    S = csi_rel[2]
+    C = csi_rel[-1]
+
+    B_size = len(B)
+    if pairwise:
+        while B_size>1:
+            b = list(B)[B_size-1]
+            new_rels.append((A, {b}, ))
+
 
 def weak_union(csi_rels, pairwise=True):
     new_rels = []
