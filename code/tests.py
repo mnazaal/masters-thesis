@@ -32,7 +32,7 @@ options = {
 fig3, axes3 = plt.subplots(nrows=1, ncols=2, figsize=(12, 6))
 fig4, axes4 = plt.subplots(nrows=1, ncols=1, figsize=(12, 12))
 
-
+# change for magit
 nx.draw_networkx(dag3, ax=axes3[0],**options)
 
 ordering=[5, 4, 6, 3, 8, 1, 2, 7]
