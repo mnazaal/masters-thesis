@@ -318,7 +318,6 @@ $\Theta_{\mathbb{T}} = \{  x\in \mathbb{R}^{|\mathbb{L}|} \, : \, \forall e \in 
 
 Given the probability simplex $\Delta_{\mathcal{X}-1}$ and letting $\mathbf{i}_{\mathbb{T}}$ be the set of all leaves of the staged tree $\mathbb{T}$  the staged tree model is defined as below.
 
-# !!! TODO LIam suggest on probability simplex as the space over which each joint distribution resides over.
 
 #+begin_export latex
 \begin{definition}[Staged tree models]\label{def:stagedtreemodel}
@@ -966,9 +965,23 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 #  - DAG to CSTree conversion for empty graph, fully connected DAG
 
  # - Explain the special case for the DAG to cstree algorithm, second variable if independent of the first this means 2_||_1 and we colour all nodes in level 1 the same as well
+ # - put paths and blocked paths visualization, intuition of information flowing
 
+# faithfulness as a particular form of occams razor
+
+# experimentation - randomized controlledtrials , A/b testings, visualize like mooijs slide separating sample into subsets, applying intervention and plcebo, measureing outcomes etc
 # - pipeline visualization
+# - rcts as dags, assumptions  - outcome does not cause treatment, outcome and treatment are unconfounded cite mooij paper joint causal inference a unifyin g perspective
+
+# - table with number of dags and cstrees tabel
+# - increasing sequence of sets from distributions to markov distributions od dags, to markov distributions of cstrees
+# - separate the use of DAGs for probabilistic modelling, and causal modelling - fundamental assumption of different semantics where the observational and interventiona ldistributions are the same for no parents. then no reason to assume parent-child distributions should stay the same under intervention - modularity property.
+# - probabilistic dag and causal dag are different! 
+# - extended conditional independence when ci relations contain non random variables
+# - example of d separation in dags, student studying dag example and use this for maybe the cstree sampling example
+# - bayes ball
 #  - causal ordering is for trees, linear extension topological ordering is for dags
+# - cycles and confounders with mooijs paper in dag limitations
 #  - Think about storing stage information in the node itself
 #  - http://swoh.web.engr.illinois.edu/courses/IE598/handout/markov.pdf Read intersection lemma and relate to compositional models, relate to pairwise minimal contexts, also read on graphoid case equivalence http://www.stats.ox.ac.uk/~steffen/teaching/cimpa/markov.pdf
 #  - For early test stopping make sure CSTree property is maintained
