@@ -7,6 +7,7 @@ papers
 datasets
 figs
 figures
+__pycache__
 *.bbl
 *.aux
 *.fdb_latexmk
