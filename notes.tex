@@ -1,0 +1,139 @@
+% Created 2021-03-05 Fri 21:35
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{nazaal}
+\date{}
+\title{Notes}
+\hypersetup{
+ pdfauthor={nazaal},
+ pdftitle={Notes},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.3 (Org mode 9.4.4)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\bibliography{../../Dropbox/org/bibliography/references}
+
+\section{Quick ideas}
+\label{sec:org378d690}
+\begin{itemize}
+\item Topological ordering of nodes in digraphs and connection to topological sort
+\end{itemize}
+
+
+\section{Short notes}
+\label{sec:orgd8a5a30}
+A fairly good introduction to the baasic terminology is provided in the background paragraph of \cite{sondhi-2019-reduc-pc-algor}. Good blog post available on \href{https://ermongroup.github.io/cs228-notes/}{here}
+\section{Key concepts and Definitions}
+\label{sec:orge438781}
+\subsection{Directed Acyclic Graphs (DAGs)}
+\label{sec:orgad4359d}
+\begin{itemize}
+\item Confounding, explaining away, explanation of why RCTs work well
+\item Definitions such as adjacency, parents, children, paths, directed paths, ancestors, descenddants, DAG skeletons, unshielded triples, colliders, unshielded colliders
+\item Conditional independence relations and context-specific independence relations
+\item Local Markov Property, Markov Equivalence
+\item d-separation, m-separation
+\item Faithfulness assumption (independence implies no causal relation), strong faithfulness assumption
+\item Complete Partially DAG/Essential graph, Interventional Essential graph
+\item Maximal Ancestral Graphs and Partial Ancestral Graphs
+\item Distribution being causal with respect to a DAG
+\end{itemize}
+\subsection{Causal discovery on DAGs}
+\label{sec:org81de1ee}
+\begin{itemize}
+\item Search and score based approaches, assuming different causal structures and optimizing a certain score
+\item Constraint based appraoches, starting with finding  the conditional independence relations from data then rule out incompatible graphs
+\item PC algorithm (constraint based approach)
+\item Greedy-Equivalent-Search (GES) (score based approach)
+\item Max-Min Hill Climbing  (Mix of both)
+\item do-calculus as a means of identification for interventions
+\end{itemize}
+\subsection{Context-Specific Trees (CSTrees)}
+\label{sec:org894d649}
+\begin{itemize}
+\item Converting a DAG to a CSTree
+\item Markov Equivalence for CSTrees
+\end{itemize}
+\subsection{Causal discovery on CSTrees}
+\label{sec:orgeb9458e}
+
+\section{Thesis Sections}
+\label{sec:orgbd6c8e6}
+\subsection{Introduction}
+\label{sec:org3e7a33a}
+\subsubsection{Causal models}
+\label{sec:org5e62f0c}
+\subsubsection{Why they are important}
+\label{sec:orgc4673c7}
+\subsubsection{Pearl's Hierarchy}
+\label{sec:org046d640}
+\subsubsection{Causal discovery}
+\label{sec:orgc81d120}
+\subsubsection{Randomized Controlled Trials}
+\label{sec:org3aad5dd}
+\subsection{Learning DAGs}
+\label{sec:org9712cb4}
+\subsubsection{Conditional Independence Relations}
+\label{sec:org14398fe}
+\subsubsection{DAGs}
+\label{sec:orgf9dcd54}
+\subsubsection{The PC algorithm}
+\label{sec:org5e287c0}
+\subsubsection{? Split learning from observational and interventional data}
+\label{sec:org9872495}
+\subsection{Learning CSTrees}
+\label{sec:org68cc0e2}
+\subsubsection{Context-Specific Conditional Independence Relations}
+\label{sec:org4c9f42a}
+\subsubsection{CSTrees}
+\label{sec:org6625070}
+\subsubsection{Extended PC algorithm}
+\label{sec:org76013fd}
+\subsubsection{? Split learning from observational and interventional data}
+\label{sec:orgfb80962}
+\subsection{Experiments}
+\label{sec:orgc6c6b35}
+
+\section{Implementation}
+\label{sec:org8c279c5}
+\subsection{Generate CSTree from DAG, and generate collection of DAGs from CSTrees}
+\label{sec:orgad7c748}
+\subsection{Running conditional independence tests}
+\label{sec:org4694f47}
+
+\section{Org mode details}
+\label{sec:orge4cc01e}
+\begin{itemize}
+\item \LaTeX{} export blocks for things like multi figures, (Caption can still be in org-mode using org-ref), then export them via standalone package and load if the org-export mode is not latex pdf. OR, make a different .tex file for each such items (multifigures, tikz figures etc), compile them using org-babel/shell script, and load as a single image. For external code running experiments, call the APIs within org-babel blocks to separate the code implementation to where they are used.
+\end{itemize}
+
+\section{Conventions}
+\label{sec:org3bb0e3f}
+\begin{itemize}
+\item Blackboard bold for probability-theoretic notation, like probabilities and expectations etc
+\item Normal bold for graph-theoretic notation, like parents, children etc
+\end{itemize}
+
+\section{Doubts}
+\label{sec:org903bdce}
+\begin{itemize}
+\item When we factorize say p(X,Z) into p(X|Z)p(Z) or p(Z|X)p(X) are we saying Z causes X and X causes Z respectively?
+\item FCMs and SCMs, definitions look the same, confirm if there is any slight difference
+\end{itemize}
+\end{document}

@@ -1,0 +1,55 @@
+\makeatletter
+\begin{titlepage}
+
+\vspace*{-4.6\baselineskip}
+\hspace*{-0.15\textwidth}\includegraphics[width=0.2\paperwidth]{templates/img/kth-logo.jpg}
+\par\vspace*{2.5\baselineskip}
+
+\PlaceText{65mm}{12mm}{\fontsize{12}{0}\sffamily DEGREE PROJECT IN TECHNOLOGY,}
+\PlaceText{65mm}{17mm}{\fontsize{12}{0}\sffamily SECOND CYCLE, 30 CREDITS}
+\PlaceText{65mm}{22mm}{\fontsize{12}{0}\sffamily\itshape STOCKHOLM, SWEDEN \the\year}
+
+~\\
+
+\makebox[0pt][l]{%
+\begin{minipage}[b]{0.25\textwidth}
+~\\
+\end{minipage}
+\begin{minipage}{0.65\textwidth}
+\begin{flushleft}
+{\fontsize{28}{24}\bf\sffamily\@title\\}
+\vspace{1cm}
+{\fontsize{19}{17}\bf\sffamily \subtitle\\}
+\vspace{1cm} 
+{\fontsize{16}{18}\sffamily \@author}\\
+\end{flushleft}
+\end{minipage}
+}
+
+
+% \hspace*{-3cm}\begin{minipage}[b]{63.5mm}
+% ~\\
+% \end{minipage}
+% \begin{minipage}{0.65\textwidth}
+% \begin{flushleft}
+% {\fontsize{28}{24}\bf\sffamily\@title\\}
+% \vspace{0.5cm}
+% {\fontsize{19}{17}\bf\sffamily \subtitle\\}
+% \vspace{0.5cm} 
+% {\fontsize{16}{0}\sffamily \@author}\\
+% \end{flushleft}
+% \end{minipage}
+
+
+\AddToShipoutPictureBG*{%]
+    \AtPageLowerLeft{%
+        \includegraphics[width=1.0\paperwidth]{templates/img/kth-footer.png}
+    }%
+}
+
+\PlaceText{70mm}{280mm}{\color{white}\fontsize{12}{0}\sffamily KTH ROYAL INSTITUTE OF TECHNOLOGY }
+\PlaceText{70mm}{285mm}{\color{white}\fontsize{8}{0}\sffamily ELECTRICAL ENGINEERING AND COMPUTER SCIENCE }
+\end{titlepage}
+\makeatother
+
+\newpage

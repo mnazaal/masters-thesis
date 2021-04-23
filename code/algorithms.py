@@ -19,6 +19,7 @@ def dag_to_ci_model(d: nx.DiGraph) -> list[CiRelation]:
     ci_relations = []
     p = len(d.nodes)
     nodes = list(range(1,p+1))
+
     
     # List of all pairs of nodes
     all_pairs = [(i) for i in itertools.combinations(nodes, 2)]

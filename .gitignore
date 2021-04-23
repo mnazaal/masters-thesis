@@ -16,7 +16,6 @@ __pycache__
 *.out
 *.gz
 *_.tex
-*.tex
 *.bib
 *.bbl
 *.dvi
