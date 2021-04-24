@@ -647,17 +647,21 @@ def cstree_pc1(dataset,
             #print("Stages after learning tree are",stages)
             
             csi_rels = stages_to_csi_rels1(stages, ordering)
-            
+
+            print(len(csi_rels))
+
+            csi_rels = graphoid(csi_rels)
+
             print(csi_rels)
+            
             
             #print("min cs straight from tree", binary_minimal_contexts1(csi_rels, val_dict).keys())
             
-            csi_rels += decomposition(csi_rels)
+            #csi_rels += decomposition(csi_rels)
             
             #print("mins cs after decomp", binary_minimal_contexts1(csi_rels, val_dict))
-            csi_rels += weak_union(csi_rels)
+            #csi_rels += weak_union(csi_rels)
             
-            print(csi_rels)
 
             #print(" mincs after weaknuion, weak union", binary_minimal_contexts1(csi_rels, val_dict))
 

@@ -998,6 +998,8 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 #  - ETH Seminar notes: Constructing minimal I-MAP by taking an ordering, writing the full factorization, drawing corresponding DAG. I-MAPs are important because every distribution is Markov wtih respect to a full DAG, and equivalently, a full DAG is an I-MAP of any distribution. Causal sufficiency i.e. no hidden confounders.
 # - add special case for fully connected dag when converting to cstree
  #   - Things added after first draft to Liam: Perfect maps, mention of having to pick cstree based on some criteria
+ # - average of number of stages from random dags w varying p
+ # average size of pairwise graphoid
 
   #  - Using algorithmic2e to write functions instead of procedural code https://tex.stackexchange.com/questions/280008/algorithm2e-writing-simple-pseudocode-with-multiple-functions/280038
 

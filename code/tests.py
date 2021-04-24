@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 
-from cstree import dag_to_cstree, stages_to_csi_rels, decomposition, weak_union, cstree_pc1
+from cstree import dag_to_cstree, stages_to_csi_rels
+from graphoid import decomposition, weak_union, weak_union1, decomposition1, graphoid_axioms
 from algorithms import dag_to_ci_model
 from mincontexts import binary_minimal_contexts1,binary_minimal_contexts1,minimal_context_dags1
 
@@ -175,7 +176,7 @@ def test_colour_cstree():
 
     
 
-def test_decomposition_wdag():
+def test_weak_union_randdag():
     nodes = 10
     ordering = [i+1 for i in range(nodes)]
     val_dict = binary_dict(nodes)
@@ -185,26 +186,100 @@ def test_decomposition_wdag():
     cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
 
-    generated_rels = decomposition(csi_rels)
+    pairwise = True
 
-    assert len(csi_rels)<=len(generated_rels)
+   
+    for csi_rel_fromtree in csi_rels:
+        (A1,B1,S1,C1) = csi_rel_fromtree
+        
+        generated_rels = weak_union1(csi_rel_fromtree, pairwise)
+        #assert len(csi_rels)<len(generated_rels)
 
-    
-    for csi_rel1 in csi_rels:
-        B1 = csi_rel1[1]
-        S1 = csi_rel1[2]
-        assert csi_rel1 not in generated_rels
-        for csi_rel2 in generated_rels:
-            B2 = csi_rel2[1]
-            S2 = csi_rel2[2]
+        if len(B1)==1:
+            assert generated_rels==[]
+        
+        assert csi_rel_fromtree not in generated_rels
+        
+        for csi_rel_gen in generated_rels:
+            (A2,B2,S2,C2) = csi_rel_gen
+            # The second variable gets moved to conditioning
+            # set so th below inequalities must hold
             assert len(B2)<len(B1)
-            assert len(S2)>len(S1)
-    
-    
-    
 
-    # make sure we get atleast that
-    
+
+def test_decomposition_randdag():
+    nodes = 10
+    ordering = [i+1 for i in range(nodes)]
+    val_dict = binary_dict(nodes)
+    dag = generate_dag(nodes,0.3)
+    # get csi rels  from dag to cstree model
+    # generate own examples
+    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
+    csi_rels = stages_to_csi_rels(stages, ordering)
+
+    pairwise = True
+
+    for csi_rel_fromtree in csi_rels:
+        (A1,B1,S1,C1) = csi_rel_fromtree
+        
+        generated_rels = decomposition1(csi_rel_fromtree, pairwise)
+        #assert len(csi_rels)<len(generated_rels)
+
+        if len(B1)==1:
+            assert generated_rels==[]
+        
+        assert csi_rel_fromtree not in generated_rels
+        
+        for csi_rel_gen in generated_rels:
+            (A2,B2,S2,C2) = csi_rel_gen
+            # The second variable gets moved to conditioning
+            # set so th below inequalities must hold
+            assert len(B2)<len(B1)
+
+def  test_graphoid_pairwise():
+    # TODO More tests for this
+    # For each context we must have csi relations
+    # satisfying certain properties
+    nodes = 10
+    ordering = [i+1 for i in range(nodes)]
+    val_dict = binary_dict(nodes)
+    dag = generate_dag(nodes,0.3)
+    # get csi rels  from dag to cstree model
+    # generate own examples
+    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
+    csi_rels = stages_to_csi_rels(stages, ordering)
+
+    closure = graphoid_axioms(csi_rels.copy())
+
+    print(len(csi_rels), len(closure))
+
+    assert len(closure)>len(csi_rels)
+
+def test_minimal_contexts_randdag():
+    nodes = 10
+    ordering = [i+1 for i in range(nodes)]
+    val_dict = binary_dict(nodes)
+    dag = generate_dag(nodes,0.3)
+    # get csi rels  from dag to cstree model
+    # generate own examples
+    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
+    csi_rels = stages_to_csi_rels(stages, ordering)
+
+    closure = graphoid_axioms(csi_rels.copy())
+
+    minimal_contexts = binary_minimal_contexts1(closure, val_dict)
+    assert list(minimal_contexts.keys())[0] == ()
+
+
+def test_cstree_pc():
+    # Get some dataset
+    # do the PC algorithm, get the DAG
+    # Convert this DAG to CSTree
+
+    # Get the CSTree from the CSTree PC algorithm
+    # Determine whether
+    # 1. Stages did not increase
+    # 2. Minimal contexts >0
     pass
 
 

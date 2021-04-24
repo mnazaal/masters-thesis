@@ -24,18 +24,41 @@ def decomposition(csi_rels, pairwise=True):
             
     return new_rels
 
+def decomposition1(csi_rel, pairwise=True):
+    new_rels = []
+    (A, B, S, C) = csi_rel
+
+    if len(B)==1:
+        # If |B|=1 we cannot drop any element
+        return new_rels
+    
+    if pairwise:
+        for b in B:
+            new_rels.append((A, {b}, S, C))
+
+    else:
+        raise NotImplementedError("Implement decomposition for non pairwise case")
+            
+    return new_rels
+
 def weak_union1(csi_rel, pairwise=True):
     new_rels = []
-    A = csi_rel[0]
-    B = csi_rel[1]
-    S = csi_rel[2]
-    C = csi_rel[-1]
+    (A, B, S, C) = csi_rel
 
-    B_size = len(B)
+    if len(B)==1:
+        # Cannot push any element in B into
+        # the conditioning set
+        return new_rels
+
     if pairwise:
-        while B_size>1:
-            b = list(B)[B_size-1]
-            new_rels.append((A, {b}, ))
+        if len(A)>1:
+            raise ValueError("Using pairwise case but |A|>1")
+        for b in B:
+            new_rels.append((A, {b}, S.union(B.difference({b})), C))
+    else:
+        raise NotImplementedError("Implement weak union for non pairwise case")
+
+    return new_rels
 
 
 def weak_union(csi_rels, pairwise=True):
@@ -58,3 +81,29 @@ def weak_union(csi_rels, pairwise=True):
         else:
             raise NotImplementedError("Implement decomposition for non pairwise case")
     return new_rels
+
+def graphoid_axioms(csi_rels):
+    #J = csi_rels
+    # TODO Removing the while condition
+    J = []
+    all_axioms_return_empty =  False
+    while not all_axioms_return_empty:
+        for csi_rel in csi_rels:
+            # Add this relation to the closure
+            if csi_rel not in J:
+                J.append(csi_rel)
+
+            weak_unioned  = weak_union1(csi_rel)
+            decomposed    = decomposition1(csi_rel)
+
+            csi_rels += weak_unioned
+            csi_rels += decomposed
+
+            # Remove it from list of relations
+            # we use to generate others
+            # If no such relation left, we are done
+            csi_rels.remove(csi_rel)
+            if csi_rels == []:
+                all_axioms_return_empty = True
+
+    return J
