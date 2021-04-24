@@ -604,6 +604,8 @@ def cstree_pc(dataset,
             
             csi_rels_tree = stages_to_csi_rels(stages.copy(), ordering)
 
+            print("from tree we get", csi_rels_tree)
+
             csi_rels = graphoid_axioms(csi_rels_tree.copy())
 
             mctemp  = binary_minimal_contexts(csi_rels.copy(), val_dict)
@@ -620,18 +622,18 @@ def cstree_pc(dataset,
                 return True
 
             all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag.copy())
+
+            
             for mc,g in all_mc_graphs:
                 assert mc == ()
                 if mc==():
                     g = nx.relabel_nodes(g,lambda x:int(x))
                     mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
                     
-
-                    if not equal_dags(g,mec_dag):
-                        print("mec",mec_dag.edges)
-                        print("emp",g.edges)
-                        print("minimalcontexts are", mctemp)
-                    #assert equal_dags(g, mec_dag)
+                    print("mec",mec_dag.edges)
+                    print("emp",g.edges,"\n")
+                    #print("minimalcontexts are", mctemp)
+                    assert equal_dags(g, mec_dag)
                 
 
 

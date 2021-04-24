@@ -287,6 +287,8 @@ def test_cstree_pc():
     # [(7, 6), (7, 2), (2, 5), (4, 3), (4, 1)]  (Order [4, 1, 3, 7, 2, 6, 5])
     # [(2, 3), (7, 4), (1, 2), (1, 6), (5, 1)]
     # [(6, 2), (6, 3), (7, 1), (1, 5), (1, 4)]  (Order [7, 6, 1, 4, 2, 3, 5])
+    # Problem: when we have disconnected components the
+    # independencies are not encoded
     
     # Get some dataset
     # do the PC algorithm, get the DAG
@@ -300,12 +302,14 @@ def test_cstree_pc():
     # TODO nodes 5 sometimes gave  some problems
     nodes = 7
     val_dict = binary_dict(nodes)
-    dag = generate_dag(nodes,0.2)
+    #dag = generate_dag(nodes,0.2)
+    #nodes in DAG ust equal to th edges less
     dag = nx.DiGraph()
     dag.add_edges_from( [(2, 3), (7, 4), (1, 2), (1, 6), (5, 1)])
     #dag.add_nodes_from([i+1 for i in range(nodes)])
 
-    data = synthetic_dag_binarydata(dag, 5000)
+    data = synthetic_dag_binarydata(dag, 500)
+    print("starting pc")
     cstree_pc(data, val_dict)
 
     
