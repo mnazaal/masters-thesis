@@ -63,7 +63,6 @@ def synthetic_dag():
     cpds = []
     for var in no_parents:
         pr = np.random.rand()
-        p=0.5
         cpds.append(TabularCPD(variable=var, variable_card=2, values = [[pr],[1-pr]]))
 
     has_parents = [n for n in list(syntheticdata_dag.nodes) if n not in no_parents]

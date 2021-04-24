@@ -5,10 +5,11 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 
-from cstree import dag_to_cstree, stages_to_csi_rels
-from graphoid import decomposition, weak_union, weak_union1, decomposition1, graphoid_axioms
+from cstree import dag_to_cstree, stages_to_csi_rels, cstree_pc
+from datasets import synthetic_dag_binarydata
+from graphoid import decomposition, weak_union, weak_union, decomposition, graphoid_axioms
 from algorithms import dag_to_ci_model
-from mincontexts import binary_minimal_contexts1,binary_minimal_contexts1,minimal_context_dags1
+from mincontexts import binary_minimal_contexts,minimal_context_dags
 
 # Arrange,  Act,  Assert
 # pytst prefixtures
@@ -80,6 +81,7 @@ def stages_to_csi_rels_util(nodes, val_dict, ordering, dag):
     cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
     assert len(csi_rels)==len(stages)
+    all_vars = []
 
     # Testing each CSI relation is of the form
     # X_k _||_ X_[k-1]\C | X_C=x_c
@@ -99,10 +101,13 @@ def stages_to_csi_rels_util(nodes, val_dict, ordering, dag):
         # Each element in B must come before A
         # and not be in C
         a = A.pop()
+        all_vars.append(a)
+        assert a not in C
+        assert a not in B
         for b in B:
             assert a>b
             assert b not in C
-            assert a not in C
+            
 
         # S must be empty
         assert len(S)  == 0
@@ -110,6 +115,7 @@ def stages_to_csi_rels_util(nodes, val_dict, ordering, dag):
         # Each variable in context must come before a
         for c in C:
             assert a>c
+
 
 def test_stages_to_csi_rels_emptydag():
     nodes=5
@@ -192,7 +198,7 @@ def test_weak_union_randdag():
     for csi_rel_fromtree in csi_rels:
         (A1,B1,S1,C1) = csi_rel_fromtree
         
-        generated_rels = weak_union1(csi_rel_fromtree, pairwise)
+        generated_rels = weak_union(csi_rel_fromtree, pairwise)
         #assert len(csi_rels)<len(generated_rels)
 
         if len(B1)==1:
@@ -222,7 +228,7 @@ def test_decomposition_randdag():
     for csi_rel_fromtree in csi_rels:
         (A1,B1,S1,C1) = csi_rel_fromtree
         
-        generated_rels = decomposition1(csi_rel_fromtree, pairwise)
+        generated_rels = decomposition(csi_rel_fromtree, pairwise)
         #assert len(csi_rels)<len(generated_rels)
 
         if len(B1)==1:
@@ -240,7 +246,7 @@ def  test_graphoid_pairwise():
     # TODO More tests for this
     # For each context we must have csi relations
     # satisfying certain properties
-    nodes = 10
+    nodes = 5
     ordering = [i+1 for i in range(nodes)]
     val_dict = binary_dict(nodes)
     dag = generate_dag(nodes,0.3)
@@ -250,16 +256,14 @@ def  test_graphoid_pairwise():
     csi_rels = stages_to_csi_rels(stages, ordering)
 
     closure = graphoid_axioms(csi_rels.copy())
-
-    print(len(csi_rels), len(closure))
 
     assert len(closure)>len(csi_rels)
 
 def test_minimal_contexts_randdag():
-    nodes = 10
+    nodes    = 5
     ordering = [i+1 for i in range(nodes)]
     val_dict = binary_dict(nodes)
-    dag = generate_dag(nodes,0.3)
+    dag = generate_dag(nodes,0.1)
     # get csi rels  from dag to cstree model
     # generate own examples
     cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
@@ -267,11 +271,23 @@ def test_minimal_contexts_randdag():
 
     closure = graphoid_axioms(csi_rels.copy())
 
-    minimal_contexts = binary_minimal_contexts1(closure, val_dict)
+   # print(len(csi_rels),len(closure))
+
+    minimal_contexts = binary_minimal_contexts(closure, val_dict)
     assert list(minimal_contexts.keys())[0] == ()
 
-
+# @pytest.mark.skip
 def test_cstree_pc():
+    # TODO Look more into the following DAGs
+    # They had a case where there was no CI relation for
+    # the second and third variable in an ordering
+    # But now, generating data from these DAGs is not
+    # giving this problem
+    # [(2, 4), (2, 6), (1, 2), (1, 4), (3, 7), (3, 5), (7, 5)]
+    # [(7, 6), (7, 2), (2, 5), (4, 3), (4, 1)]  (Order [4, 1, 3, 7, 2, 6, 5])
+    # [(2, 3), (7, 4), (1, 2), (1, 6), (5, 1)]
+    # [(6, 2), (6, 3), (7, 1), (1, 5), (1, 4)]  (Order [7, 6, 1, 4, 2, 3, 5])
+    
     # Get some dataset
     # do the PC algorithm, get the DAG
     # Convert this DAG to CSTree
@@ -280,7 +296,19 @@ def test_cstree_pc():
     # Determine whether
     # 1. Stages did not increase
     # 2. Minimal contexts >0
-    pass
+
+    # TODO nodes 5 sometimes gave  some problems
+    nodes = 7
+    val_dict = binary_dict(nodes)
+    dag = generate_dag(nodes,0.2)
+    dag = nx.DiGraph()
+    dag.add_edges_from( [(2, 3), (7, 4), (1, 2), (1, 6), (5, 1)])
+    #dag.add_nodes_from([i+1 for i in range(nodes)])
+
+    data = synthetic_dag_binarydata(dag, 5000)
+    cstree_pc(data, val_dict)
+
+    
 
 
 def test_weak_union():
