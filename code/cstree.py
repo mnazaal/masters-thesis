@@ -201,7 +201,17 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
                         for node in stage_nodes:
                             colour_scheme[node]=colour
 
-                if independent_vars!=[]:
+                elif pars == []:
+                    stage_nodes = roots.copy()
+                    colour = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+                    if stage_nodes != []: # In root level its empty
+                        stages[colour] = stage_nodes
+
+                        for node in stage_nodes:
+                            colour_scheme[node]=colour
+                        
+
+                elif independent_vars!=[]:
                     stage_nodes = [n for n in roots if set(sc).issubset(n)]
                    #logger.debug("Encoding {} _||_ {} | {} \n".format(next_var,independent_vars,sc))
 
