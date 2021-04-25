@@ -1,9 +1,33 @@
 import numpy as np
 import networkx as nx
+import pandas as pd
 from pgmpy.factors.discrete import TabularCPD
 import bnlearn
 
 from utils import dag_topo_sort, parents
+
+def coronary_data():
+    coronary_pd      = pd.read_csv("../datasets/coronary.csv")
+    coronary.columns = ["id:0", "S:1", "MW:2", "PW:3", "P:4", "L:5", "F:6"]
+    values_dict      = {"yes":1,"no" :0,"<140":0, ">140":1, "<3":0, ">3":1, "neg":0,"pos":1}
+    # Convert outcomes into numerical values
+    coronary_pd      = coronary_pd.replace(coronary_dict)
+    # Convert into numpy array, 1st row is column names
+    # and first column had id so we ignore these
+    coronary_np      = coronary_pd.values[1:,1:].astype(np.int)
+    return coronary_np
+
+def bnlearn_data(dataset_name,n):
+    available_sets = ["sprinkler","alarm","andes","asia","pathfinder","sachs","miserables"]
+
+    if dataset_name not in available_sets:
+        raise ValueError("Dataset {} not in Python bnlearn".format(dataset_name))
+
+    dag = bnlearn.import_DAG(dataset_name)
+    dataset_pd = bnlearn.sampling(dag,n=n)
+    dataset_np = dataset_pd.values[1:,:].astype(np.int)
+    return dataset_np
+
 
 def synthetic_dag_binarydata(dag_received, n):
     p = len(dag_received.nodes)
@@ -14,6 +38,8 @@ def synthetic_dag_binarydata(dag_received, n):
             separate_nodes.append(node)
 
     # Making the dag only with nodes having edges
+    # We sample nodes without edges later on
+    # bnlearn requires it this way
     dag = nx.DiGraph()
     dag_edges = [e for e in dag_received.edges]
     dag.add_edges_from(dag_edges)
