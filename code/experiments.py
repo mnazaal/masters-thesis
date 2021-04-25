@@ -102,23 +102,21 @@ def coronary_experiment():
     # Non empty minimal context DAGs
     
     for case in nonempty:
-       (tree, stages, cs, ordering, mec_dag) = case
-        
-
+        (tree, stages, cs, ordering, mec_dag) = case
         print("stages are\n")
         for c,ns in stages.items():
-            print(c, len(ns) ,ns) 
+            print(c, len(ns) ,len(ns[0])) 
         csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
 
-        print("from tree\n", csi_rels_from_tree)
+        #print("from tree\n", csi_rels_from_tree)
 
         csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
 
-        print("after axioms\n", csi_rels)
+        #print("after axioms\n", csi_rels)
         
         minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
 
-        print("minimal contexts\n", minimal_contexts)
+        #print("minimal contexts\n", minimal_contexts)
 
         #fig, ax = plt.subplots(2,num_mc_graphs)
 
@@ -184,7 +182,6 @@ def coronary_experiment():
         ax2.collections[0].set_edgecolor("#000000")
         plt.show()
     
-
 
 
 coronary_experiment()
