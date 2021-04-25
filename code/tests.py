@@ -10,31 +10,12 @@ from datasets import synthetic_dag_binarydata
 from graphoid import decomposition, weak_union, weak_union, decomposition, graphoid_axioms
 from algorithms import dag_to_ci_model
 from mincontexts import binary_minimal_contexts,minimal_context_dags
+from utils import binary_dict, ternary_dict, mixed_dict, generate_dag, nodes_per_tree
 
 # Arrange,  Act,  Assert
 # pytst prefixtures
 
-# State space dictionaries
-# binary, ternary, random ints, one dict with 1 value
-binary_dict  = lambda p: {i+1:[0,1] for i in range(p)}
-ternary_dict = lambda p: {i+1:[0,1,2] for i in range(p)}
-mixed_dict   = lambda p: {i+1:[0,1] if i < p//2 else [0,1,2] for i in range(p)}
-# CSI relations
 
-def generate_dag(nodes, p_edge):
-    rand_graph = nx.gnp_random_graph(nodes,p_edge,directed=True)
-    dag        = nx.DiGraph()
-    dag.add_edges_from([(u,v) for (u,v) in rand_graph.edges if u<v])
-    dag.add_nodes_from([i for i in range(nodes)])
-    dag = nx.relabel_nodes(dag, lambda x: x+1)
-    return dag
-
-def nodes_per_tree(val_dict):
-    dict_as_items = list(val_dict.items())
-    if len(val_dict)==2:
-        return len(dict_as_items[0][-1])
-    else:
-        return len(dict_as_items[0][-1]) +  len(dict_as_items[0][-1])* nodes_per_tree({k:v for k,v in dict_as_items[1:]})
 
 
 def dag_to_cstree_util(nodes, val_dict, ordering, dag, expected_stages):

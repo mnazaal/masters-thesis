@@ -115,7 +115,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     return minimal_cs_dict
 
 
-def minimal_context_dags(order, csi_rels, val_dict, mec_dag, closure):
+def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
     mc_time = time.time()
     minimal_contexts=binary_minimal_contexts(csi_rels, val_dict)
     minimal_context_dags = []
@@ -156,16 +156,16 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag, closure):
                             #print("did not remove, conditiioning set is ,",conditioning_set, "ci rel is", Ci, Ci.issubset(conditioning_set))
                             
         #print("order is, ",order)
-        
-        for edge in minimal_context_dag.edges:
-            order_printed=False
-            if edge not in mec_dag.edges:
-                ci_rels_w_vars = [rel for rel in ci_rels if rel[0].union(rel[1]) == {edge[0]}.union({edge[1]})]
-                if not order_printed:
-                    print(order)
-                    order_printed=True
-                print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
-                print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
+        if mec_dag:
+            for edge in minimal_context_dag.edges:
+                order_printed=False
+                if edge not in mec_dag.edges:
+                    ci_rels_w_vars = [rel for rel in ci_rels if rel[0].union(rel[1]) == {edge[0]}.union({edge[1]})]
+                    if not order_printed:
+                        print(order)
+                        order_printed=True
+                        print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
+                        print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
         
 
         minimal_context_dags.append((minimal_context, minimal_context_dag))

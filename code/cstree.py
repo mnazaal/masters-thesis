@@ -21,6 +21,7 @@ import numpy as np
 from utils import contained, flatten, cpdag_to_dags, generate_vals, parents, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage
 from mincontexts import minimal_context_dags,binary_minimal_contexts
 from graphoid import decomposition, weak_union, graphoid_axioms
+from utils import nodes_per_tree
 
 
 #logger= logging.getLogger(__name__)
@@ -554,7 +555,9 @@ def cstree_pc(dataset,
 
     cpdag_edges = len(dags_bn[0].edges)
 
-    
+
+    cstree_best = []
+    stages_best = nodes_per_tree(val_dict)-1
     for mec_dag_num, mec_dag in enumerate(dags_bn):
         if len(mec_dag.edges)!= cpdag_edges:
             continue
@@ -592,11 +595,21 @@ def cstree_pc(dataset,
 
             stages_after_csitests = len(stages)
 
+            stages_current = (len(tree.nodes)-1) - (len(cs)) + len(stages)
+
+            if stages_current<stages_best:
+                stages_best = stages_current
+                cstree_best = [(tree,stages,cs,ordering, mec_dag)]
+            if stages_current==stages_best:
+                cstree_best.append((tree,stages,cs,ordering, mec_dag))
+                
+            
+
             assert stages_after_dag >= stages_after_csitests
             
             csi_rels_tree = stages_to_csi_rels(stages.copy(), ordering)
 
-            print("from tree we get", csi_rels_tree)
+            #print("from tree we get", csi_rels_tree)
 
             csi_rels = graphoid_axioms(csi_rels_tree.copy())
 
@@ -621,10 +634,10 @@ def cstree_pc(dataset,
                 if mc==():
                     g = nx.relabel_nodes(g,lambda x:int(x))
                     mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
-                    print(ordering)
-                    print("\ncsi rels tree", csi_rels_tree)
-                    print("mec",mec_dag.edges)
-                    print("emp",g.edges,"\n")
+                    #print(ordering)
+                    #print("\ncsi rels tree", csi_rels_tree)
+                    #print("mec",mec_dag.edges)
+                    #print("emp",g.edges,"\n")
                     #print("minimalcontexts are", mctemp)
                     assert equal_dags(g, mec_dag)
                 
@@ -653,6 +666,7 @@ def cstree_pc(dataset,
 
                 print("this whole iteration took", time.time()- time_for_wholetree, "s")
 
+    return cstree_best
 
 def plot_cstree(tree, colour_scheme):
     pass
