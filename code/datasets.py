@@ -8,10 +8,10 @@ from utils import dag_topo_sort, parents
 
 def coronary_data():
     coronary_pd      = pd.read_csv("../datasets/coronary.csv")
-    coronary.columns = ["id:0", "S:1", "MW:2", "PW:3", "P:4", "L:5", "F:6"]
+    coronary_pd.columns = ["id:0", "S:1", "MW:2", "PW:3", "P:4", "L:5", "F:6"]
     values_dict      = {"yes":1,"no" :0,"<140":0, ">140":1, "<3":0, ">3":1, "neg":0,"pos":1}
     # Convert outcomes into numerical values
-    coronary_pd      = coronary_pd.replace(coronary_dict)
+    coronary_pd      = coronary_pd.replace(values_dict)
     # Convert into numpy array, 1st row is column names
     # and first column had id so we ignore these
     coronary_np      = coronary_pd.values[1:,1:].astype(np.int)

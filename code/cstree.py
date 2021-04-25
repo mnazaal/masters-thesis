@@ -277,11 +277,18 @@ def colour_cstree(c,
     
     if stages is None:
         stages = {}
+
+    if stages == {}:
+        use_dag = False
+    else:
+        use_dag = True
+
     
     if colour_scheme is None:
         colour_scheme = {}
         
     less_data_counter = 0
+    num_empty_contexts = 0
     
     levels = len(ordering)
     
@@ -454,7 +461,8 @@ def colour_cstree(c,
     #print("Not Skipped {} tests".format(not_skipped)) 
     #print(" Skipped/Not skipped ratio {}".format(skipped/(not_skipped+skipped)))
     #print("COLOURING CSTREE ENDEd WITH STAGES ", stages)
-    assert len(csi_stages)<=len(stages)
+    if use_dag:
+        assert len(csi_stages)<=len(stages)
     
     return c, csi_stages, colour_scheme
 
@@ -477,6 +485,8 @@ def cstree_pc(dataset,
     
     # Get number of samples n and dimension of features p
     n,p = dataset.shape
+
+    print(n,p)
     
     # At this point the variables are ordered according to the other in the pandas dataframe
     if val_dict is None:
@@ -558,6 +568,7 @@ def cstree_pc(dataset,
 
     cstree_best = []
     stages_best = nodes_per_tree(val_dict)-1
+    non_empty_mcdags = []
     for mec_dag_num, mec_dag in enumerate(dags_bn):
         if len(mec_dag.edges)!= cpdag_edges:
             continue
@@ -577,21 +588,21 @@ def cstree_pc(dataset,
         for order_num, ordering in enumerate(orderings):
             cstree_count+=1
 
-            time_for_wholetree=time.time()
-
             # Generate CSTree from DAG
-            t1=time.time()
             if not use_dag:
                 mec_dag = None
             tree,stages,cs = dag_to_cstree(val_dict, ordering, mec_dag)
-            #print("Time taken to generate CSTree from MEC DAG {}, ordering number {} is {}".format(mec_dag_num, order_num, time.time()-t1))
+            #print("stages after generating tree")
+            #print(stages, "\n")
 
             stages_after_dag = len(stages)
-
 
             # Perform further context-specific tests
             t1=time.time()
             tree, stages, cs = colour_cstree(tree, ordering, dataset, stages.copy(), cs.copy(), test=test)
+
+            #print("stages after csi tests")
+            #print(stages , "\n")
 
             stages_after_csitests = len(stages)
 
@@ -603,9 +614,9 @@ def cstree_pc(dataset,
             if stages_current==stages_best:
                 cstree_best.append((tree,stages,cs,ordering, mec_dag))
                 
-            
-
-            assert stages_after_dag >= stages_after_csitests
+            # TODO this is temp
+            if use_dag:
+                assert stages_after_dag >= stages_after_csitests
             
             csi_rels_tree = stages_to_csi_rels(stages.copy(), ordering)
 
@@ -614,6 +625,11 @@ def cstree_pc(dataset,
             csi_rels = graphoid_axioms(csi_rels_tree.copy())
 
             mctemp  = binary_minimal_contexts(csi_rels.copy(), val_dict)
+
+            #print("order ", ordering)
+            #for k,v in mctemp.items():
+            #    print("min context", k, "ci rels", v,"\n")
+
 
             def equal_dags(g1,g2):
                 for n1 in g1.nodes:
@@ -625,13 +641,20 @@ def cstree_pc(dataset,
                         if (e1 not in list(g2.edges)) or (e2 not in list(g1.edges)):
                             return False
                 return True
+            
+            if mec_dag is None and use_dag:
+                mec_dag = cpdag.copy()
 
-            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag.copy(), csi_rels_tree.copy())
+            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag, csi_rels_tree.copy())
+
+            if len(all_mc_graphs)>1:
+                non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
+                
 
             
             for mc,g in all_mc_graphs:
-                assert mc == ()
-                if mc==():
+                #assert mc == ()
+                if mc==() and use_dag:
                     g = nx.relabel_nodes(g,lambda x:int(x))
                     mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
                     #print(ordering)
@@ -666,7 +689,7 @@ def cstree_pc(dataset,
 
                 print("this whole iteration took", time.time()- time_for_wholetree, "s")
 
-    return cstree_best
+    return cstree_best, non_empty_mcdags
 
 def plot_cstree(tree, colour_scheme):
     pass
