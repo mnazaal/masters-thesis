@@ -4,7 +4,7 @@
 logs
 administration
 papers
-datasets/
+code/datasets/
 figs
 figures
 __pycache__
