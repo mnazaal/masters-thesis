@@ -115,7 +115,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     return minimal_cs_dict
 
 
-def minimal_context_dags(order, csi_rels, val_dict, mec_dag, closure=None):
+def minimal_context_dags(order, csi_rels, val_dict, mec_dag, closure):
     mc_time = time.time()
     minimal_contexts=binary_minimal_contexts(csi_rels, val_dict)
     minimal_context_dags = []
@@ -165,7 +165,7 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag, closure=None):
                     print(order)
                     order_printed=True
                 print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
-                print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels)
+                print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
         
 
         minimal_context_dags.append((minimal_context, minimal_context_dag))

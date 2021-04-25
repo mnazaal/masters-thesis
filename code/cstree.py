@@ -154,23 +154,22 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
         
         
         if dag:
-            
-            if level==1:
-                x_2 = ordering[ordering.index(var)]
-            
             # TODO Delete below
             # π_k+1
-            next_var       = ordering[ordering.index(var)+1]
-            
-
-            
-            
+            next_var       = ordering[level]
+ 
             # Parents_G(π_k+1)
             pars           = parents(dag, next_var)
+
+            if len(pars)==level:
+                # All variables
+                # prior to var in
+                # ordering are parents
+                # thus this level is all white
+                continue
             
-                
-            
-            preceding_vars   = ordering[:ordering.index(var)]
+
+            preceding_vars   = ordering[:level]
             independent_vars = [i for i in preceding_vars if i not in pars]
             
             # TODO Put a condition to stop the case where we have no full cartesian prodict
@@ -200,26 +199,10 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
 
                         for node in stage_nodes:
                             colour_scheme[node]=colour
+    
 
-                elif pars == []:
-                    stage_nodes = roots.copy()
-                    colour = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-                    if stage_nodes != []: # In root level its empty
-                        stages[colour] = stage_nodes
-
-                        for node in stage_nodes:
-                            colour_scheme[node]=colour
-                        
-
-                elif independent_vars!=[]:
+                else:
                     stage_nodes = [n for n in roots if set(sc).issubset(n)]
-                   #logger.debug("Encoding {} _||_ {} | {} \n".format(next_var,independent_vars,sc))
-
-                    # TODO Faster method to partition nodes in current level into stages
-                    # TODO IMPORTANT, previously sc!=[] was also included in below predicate, WHY?
-                    #if len(sc)!=level: # this was to prevent singleton stages to be added i believe
-
-                   # logger.debug("Nodes {} belong to stage with common context{}".format(stage_nodes,sc))
 
                     colour = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     if stage_nodes != []: # In root level its empty
@@ -242,7 +225,6 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
 
     
 def stages_to_csi_rels(stages, ordering):
-    
     
     csi_rels     = []
     
@@ -631,7 +613,7 @@ def cstree_pc(dataset,
                             return False
                 return True
 
-            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag.copy())
+            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag.copy(), csi_rels_tree.copy())
 
             
             for mc,g in all_mc_graphs:
@@ -639,7 +621,8 @@ def cstree_pc(dataset,
                 if mc==():
                     g = nx.relabel_nodes(g,lambda x:int(x))
                     mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
-                    
+                    print(ordering)
+                    print("\ncsi rels tree", csi_rels_tree)
                     print("mec",mec_dag.edges)
                     print("emp",g.edges,"\n")
                     #print("minimalcontexts are", mctemp)

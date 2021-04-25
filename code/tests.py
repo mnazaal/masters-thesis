@@ -277,7 +277,7 @@ def test_minimal_contexts_randdag():
     assert list(minimal_contexts.keys())[0] == ()
 
 # @pytest.mark.skip
-def test_cstree_pc():
+def test_cstree_pc1():
     # TODO Look more into the following DAGs
     # They had a case where there was no CI relation for
     # the second and third variable in an ordering
@@ -312,6 +312,39 @@ def test_cstree_pc():
     print("starting pc")
     cstree_pc(data, val_dict)
 
+def test_cstree_pc2():
+    val_dict = binary_dict(7)
+    dag = nx.DiGraph()
+    dag.add_edges_from( [(2, 4), (2, 6), (1, 2), (1, 4), (3, 7), (3, 5), (7, 5)])
+    data = synthetic_dag_binarydata(dag, 200)
+    cstree_pc(data, val_dict)
+
+def test_cstree_pc3():
+    val_dict = binary_dict(7)
+    dag = nx.DiGraph()
+    dag.add_edges_from([(6, 2), (6, 3), (7, 1), (1, 5), (1, 4)])
+    data = synthetic_dag_binarydata(dag, 1000)
+    cstree_pc(data, val_dict)
+
+def test_cstree_pc4():
+    val_dict = binary_dict(7)
+    dag = nx.DiGraph()
+    dag.add_edges_from( [(7, 6), (7, 2), (2, 5), (4, 3), (4, 1)])
+    data = synthetic_dag_binarydata(dag, 500)
+    cstree_pc(data, val_dict)
+    
+def test_cstree_pc5():
+    val_dict = binary_dict(7)
+    dag = nx.DiGraph()
+    dag.add_nodes_from( [i+1 for i in range(7)])
+    data = synthetic_dag_binarydata(dag, 500)
+    cstree_pc(data, val_dict)
+
+def test_cstree_pc6():
+    val_dict = binary_dict(7)
+    dag  = generate_dag(7,1)
+    data = synthetic_dag_binarydata(dag, 500)
+    cstree_pc(data, val_dict)
     
 
 
