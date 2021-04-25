@@ -99,6 +99,7 @@ def coronary_experiment():
     nodes = dataset.shape[1]
  
     list_stages, nonempty = cstree_pc(dataset, test="anderson",use_dag=False)
+    
     # Non empty minimal context DAGs
     
     for case in nonempty:
@@ -147,10 +148,9 @@ def coronary_experiment():
             nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
             ax[i].collections[0].set_edgecolor("#000000")
 
-        plt.show()
-        return
+    plt.show()
 
-
+        
     tree_stages = list_stages[0]
     (tree,stages,cs,ordering, mec_dag) = tree_stages
     node_colors = [cs.get(n, "#FFFFFF") for n in tree.nodes()]

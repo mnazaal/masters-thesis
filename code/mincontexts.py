@@ -12,48 +12,67 @@ def recursive_search(T_sizes, C, contexts_with_p, val_dict):
         return T_sizes[0]
     
     else:
-        mid = int(len(T_sizes)/2)
+        mid = len(T_sizes)//2
         candidate_size = T_sizes[mid]
         possible_Ts    = [set(i) for i in combinations(C, candidate_size)]
+
+        not_contained = 0 # to contain possible Ts
+        # such that an element in their cartesian product is not in contexts
         for T in possible_Ts:
             vals_T_takes = generate_vals(list(T), val_dict)
             
             x_T_count=0
             for i, x_T in enumerate(vals_T_takes):
                 contained  = context_is_contained(x_T, contexts_with_p)
+                #print(x_T, vals_T_takes, contexts_with_p, contained)
                 if contained:
                     x_T_count += 1
                 
                 if not contained:
-                    return recursive_search(T_sizes[:mid], C, contexts_with_p, val_dict)
+                    not_contained+=1
+                    break # To next possible T
+                    #return recursive_search(T_sizes[:mid], C, contexts_with_p, val_dict)
                 if x_T_count==len(vals_T_takes):
                     return recursive_search(T_sizes[mid:], C, contexts_with_p, val_dict)
-        
+            # If none of the Ts of size candidate_size satisfy the criteria, move to next
+            # possible T size
+            if not_contained==len(possible_Ts):
+                return recursive_search(T_sizes[:mid], C, contexts_with_p, val_dict)
 
     
 def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     minimal_cs      = set()
     minimal_cs_dict = {}
+    print("beagn with", csi_rels,"\n")
     # TODO edge cases when C is empty
-    
-    
-    
+
     # We get all the unique pairs involved in all the csi relations with non-empty contexts
     # TODO Think about making pairs a set instead of tuple
     
     if pairwise:
         mcs   = set()
-        pairs = [union([A,B]) for (A,B,S,C) in csi_rels if len(A)==1 and len(B)==1]
-        
+        pairs = [A.union(B) for (A,B,S,C) in csi_rels.copy() if len(A)==1 and len(B)==1]
+        pairs_nocopies = []
         for p in pairs:
-            csi_rels_with_p = [c for c in csi_rels if union([c[0],c[1]])==p]
+            if p not in pairs_nocopies:
+                pairs_nocopies.append(p)
+        
+        for p in pairs_nocopies:
+            print("pair is , ",p)
+            print(csi_rels)
+            csi_rels_with_p = [c for c in csi_rels.copy() if union([c[0],c[1]])==set(p)]
+            print("rels with pair",csi_rels_with_p)
             
-            contexts_with_p = [c[-1] for c in csi_rels_with_p]
+            contexts_with_p = [set(c[-1]) for c in csi_rels_with_p]
             done_for_rel = False
             for csi_rel in csi_rels_with_p:
                 # Context variables of current CSI relation
                 (A,B,S,C) = csi_rel
+                #A = {p[0]}
+                #B = {p[1]}
                 C = [var for (var,val) in C]
+
+                
                 
                 
                 # Possible sizes for T
@@ -61,13 +80,15 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                                 
                 # True size of T
                 T_size = recursive_search(possible_T_sizes, C, contexts_with_p.copy(), val_dict)
-                
+               
                 # Find the T
+                T_found=False
                 if T_size == 0:
                     T = []
                 elif T_size == len(C):
                     T = C.copy()
                 else:
+                    #current_Cs  = [set(c) for (c,_) in minimal_context_dict.keys()]
                     possible_Ts = [set(i) for i in combinations(C, T_size)]
                     for possible_T in possible_Ts:
                         vals_T_takes = generate_vals(list(possible_T), val_dict)
@@ -75,18 +96,25 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                         x_T_count = 0
                         for i, x_T in enumerate(vals_T_takes):
                             contained  = context_is_contained(x_T, contexts_with_p.copy())
+                            
                             if contained:
+                                print("{} contained for rel {} since contexts are {}".format(x_T, csi_rel, contexts_with_p.copy()))
                                 x_T_count +=1
                             if not contained:
                                 break
                             if x_T_count==len(vals_T_takes):
                                 T = possible_T
+                                T_found=True
                                 break
-                
+                        if T_found:
+                            break                            
+                print("For rel {}, C is {}, chosen T {} from {}".format(csi_rel, C, T, possible_Ts))
                 context_of_rel  = csi_rel[-1]
                 minimal_context = tuple(tuple(c) for c in context_of_rel if c[0] not in T)
+                print("minimal context is ", minimal_context, "\n")
                 A = list(p)[0]
                 B = list(p)[1]
+                #(A,B) = p
 
                 if minimal_context == ():
                     cond_set = S.union(set(T))
@@ -96,6 +124,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                 #print("new cond set", cond_set)
 
                 ci_rel_remaining = ({A},{B},cond_set)
+                print("remaing, ", ci_rel_remaining)
 
                                 
                 if minimal_context in minimal_cs_dict.keys():
@@ -108,7 +137,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     for rel in csi_rels:
         (A,B,S,Ci) = rel
         for mincontext in list(minimal_cs_dict.keys()):
-            if Ci == mincontext:
+            if set(Ci) == set(mincontext):
                 
                 minimal_cs_dict[mincontext].append(rel)
                 
@@ -148,7 +177,7 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
                     A = ci_rel[0]
                     B = ci_rel[1]
                     Ci = ci_rel[-1]
-                    if A.union(B) == {pi_i,pi_j} and Ci.issubset(conditioning_set):
+                    if A.union(B) == {pi_i,pi_j} and set(Ci).issubset(conditioning_set):
                         if minimal_context_dag.has_edge(pi_i,pi_j):
                             minimal_context_dag.remove_edge(pi_i,pi_j)
                         else:

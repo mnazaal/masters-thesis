@@ -298,22 +298,21 @@ def colour_cstree(c,
     csi_stages = {}
 
     csi_stages = []
+    colour_scheme_list = []
 
     #print("COLOURING CSTREE STARTED WITH STAGES ", stages)
     
     while level<levels+1:
         stages_removed_l=0
         stages_added_l=0
-        # at each level we have a list of lists representing nodes in the same stage        
         
         # Nodes in this level
         nodes_l  = [n for n in c.nodes if nx.shortest_path_length(c, "Root", n)==level]
-        print("len of each node in level ",level,list(map(lambda x: len(x), nodes_l)))
+        #print("len of each node in level ",level,list(map(lambda x: len(x), nodes_l)))
         stages_l = {c:ns for c,ns in stages.items() if len(ns[0])==level}
+        colour_scheme_l = {n:c for n,c in colour_scheme.items() if len(n)==level}
         #stages_l = stages_l.copy()
 
-        #print("starting level {}, nodes len and stages are {},{}".format(level, len(nodes_l), stages_l))
-        
         if len(stages_l) == 1:
             level+=1
             csi_stages.update(stages_l)
@@ -338,41 +337,47 @@ def colour_cstree(c,
             # code since it must be done before first test happens anyways
 
             
-            coloured = list(colour_scheme.keys())
+            coloured = list(colour_scheme_l.keys())
                 
             # Case (a) : both coloured and same colour
             #print(set(colour_scheme[n1]))
-            if (n1 in coloured and n2 in coloured) and set(colour_scheme.get(n1)) == set(colour_scheme.get(n2)):
+            if (n1 in coloured and n2 in coloured) and colour_scheme_l.get(n1) == colour_scheme_l.get(n2):
                 skipped += 1
-                #continue
+                continue
                     
             # Case (b,c,d,e) : Other than above
             else:
                 # We do not skip the test if 2 nodes do not have the same colour
                 not_skipped+=1
-                colour_n1 = colour_scheme.get(n1, None)
-                colour_n2 = colour_scheme.get(n2, None)
+                colour_n1 = colour_scheme_l.get(n1, None)
+                colour_n2 = colour_scheme_l.get(n2, None)
                # print(level,n1,n2)
                 # Case (b)
                 if colour_n1 is not None and colour_n2 is not None:
-                    common_c_n1 = shared_contexts(stages_l[colour_n1][0][:],
-                                                  stages_l[colour_n1][1][:])
-                    common_c_n2 = shared_contexts(stages_l[colour_n2][0][:],
-                                                  stages_l[colour_n2][1][:])
-                    print(stages_l[colour_n2][1])
-                    common_c    = shared_contexts(common_c_n1,common_c_n2)
+                    colour_n1 = tuple(colour_n1)
+                    colour_n2 = tuple(colour_n2)
+
+                    
+                    
+                    
+                    #common_c_n1 = shared_contexts(stages_l[colour_n1][0][:],
+                    #                              stages_l[colour_n1][1][:])
+                    #common_c_n2 = shared_contexts(stages_l[colour_n2][0][:],
+                    #                              stages_l[colour_n2][1][:])
+                    common_c    = shared_contexts(colour_n1,colour_n2)
                 # Case (c)
-                if colour_n1 is not None and colour_n2 is None:
-                    common_c_n1 =  shared_contexts(stages_l[colour_n1][0][:],
-                                                   stages_l[colour_n1][1][:])
-                    common_c    = shared_contexts(common_c_n1, n2[:])
-                # Case (d)
-                if colour_n1 is None and colour_n2 is not None:
-                     common_c_n2 = shared_contexts(stages_l[colour_n2][0][:],
-                                                   stages_l[colour_n2][1][:])
-                     common_c   = shared_contexts(n1[:], common_c_n2)
+                elif colour_n1 is not None and colour_n2 is None:
+                    colour_n1 = tuple(colour_n1)
+                    #common_c_n1 =  shared_contexts(stages_l[colour_n1][0][:],
+                    #                               stages_l[colour_n1][1][:])
+                    common_c    = shared_contexts(colour_n1, n2[:])
+                elif colour_n1 is None and colour_n2 is not None:
+                    colour_n2 = tuple(colour_n2)
+                    #common_c_n2 = shared_contexts(stages_l[colour_n2][0][:],
+                    #                               stages_l[colour_n2][1][:])
+                    common_c   = shared_contexts(n1[:], colour_n2)
                 # Case (e)
-                if colour_n1 is None and colour_n2 is None:
+                else:
                     common_c = shared_contexts(n1[:],n2[:])
                 
                     
@@ -421,7 +426,9 @@ def colour_cstree(c,
 
                 if same_distr:
                     stages_added_l+=1
+                    #print("level ",level, "added 1")
                     #print("adding at level ", level, "commonc", common_c)
+
                     
                     if common_c == []:
                         num_empty_contexts+=1
@@ -429,19 +436,28 @@ def colour_cstree(c,
 
                     new_nodes = [n for n in nodes_l
                                  if set(common_c).issubset(set(n[:]))]
-                   
+
+                    stages_l[tuple(common_c)] = new_nodes
+                    for node in new_nodes:
+                        colour_scheme_l[tuple(node)] = tuple(common_c)
+
+                    """
                     # Remove stages where nodes have common context with new stage
                     if colour_n1 is not None:
                         stages_removed_l+=1
-                        print("level ",level,"removing nodes with common c", common_c_n1) 
+                        #print("level ",level,"removing nodes with common c", common_c_n1)
+                        temp= len(stages_l.keys())
                         keys_to_keep = set(stages_l.keys())-{tuple(common_c_n1)}
+                        print("removed ", temp -len(keys_to_keep))
                         stages_l = {k:stages_l[k] for k in keys_to_keep}
                         #stages_l = {c:ns for c,ns in stages_l.items()
                         #            if not set(common_c_n1).issubset(set(ns[0][:-1]))}
                     if colour_n2 is not None:
+                        temp=len(stages_l.keys())
                         stages_removed_l+=1
-                        print("level ",level,"removing nodes with common c", common_c_n2) 
+                        #print("level ",level,"removing nodes with common c", common_c_n2) 
                         keys_to_keep = set(stages_l.keys())-{tuple(common_c_n2)}
+                        print("removed ",temp - len(keys_to_keep))
                         stages_l = {k:stages_l[k] for k in keys_to_keep}
                     
 
@@ -454,28 +470,70 @@ def colour_cstree(c,
                             # Add new stage
                             stages_l[tuple(common_c)] = new_nodes
                             stage_added    = True
+                   """
+                   
                     
                     #stages_l.update(stages)
                     # Add colours to node map
                     # If previously node was another colour, change it to the new colour
-                    for node in new_nodes:
-                        colour_scheme[node] = tuple(common_c)
-                    
-        csi_stages.append(stages_l)
+                    #for node in new_nodes:
+                    #    colour_scheme[node] = tuple(common_c)
+
+        #contexts = set(colour_scheme.values())
+        #stages_temp = {}
+        #for ntemp,context in colour_scheme_l.items():
+        #    print(type(ntemp),ntemp)
+        #    print(type(context), context)
+        #    stages_temp[context]=list(ntemp)
+            
+                        
+        #csi_stages.append(stages_l)
+        colour_scheme_list.append(colour_scheme_l)
         #Once we are done with all nodes of current level, move to next level
         level +=1
-        print("level ",level,"must have {} stages".format(stages_added_l-stages_removed_l))
+        
+        #print("level ",level,"must have {} stages".format(stages_added_l-stages_removed_l))
         
     if use_dag:
         assert len(csi_stages)<=len(stages)
     print("skip ratio",skipped/(skipped+not_skipped))
+
+
+    csi_stages1,colour_scheme1 = {},{}
+    for colour_scheme in colour_scheme_list:
+        
+        #print(colour_scheme)
+        #print(len(colour_scheme))
+        #print(len(set(colour_scheme.values())))
+
+        for common_context in set(colour_scheme.values()):
+            color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+            nodes_w_this_context =  [tuple(node) for node in colour_scheme.keys() if colour_scheme[node]==common_context]
+            # THINK ABOUT THIS>
+            if len(nodes_w_this_context)>1:
+                csi_stages1[color] = nodes_w_this_context
+                for node in nodes_w_this_context:
+                    colour_scheme1[node] = color
+        
+
+    #for node, context in colour_scheme.items():
+        
+    
+    #csi_stages1={}
+    #for n,c11 in colour_scheme.items():
+    #    csi_stages1[c]=n
+    """
     csi_stages1, colour_scheme1 = {},{}
     for stages_per_level in csi_stages:
         for context,nodes in stages_per_level.items():
             color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-            csi_stages1[color] = nodes
+            csi_stages1[color] = list(nodes)
             for node in nodes:
-                colour_scheme1[node]=color
+                colour_scheme1[node]=color"""
+    
+    print("FINAL STAGE COUNT", len(csi_stages1), csi_stages1)
+
+        #print(shared_contexts(v[0],v[1]))
     
     return c, csi_stages1, colour_scheme1
 
@@ -659,103 +717,106 @@ def cstree_pc(dataset,
                 mec_dag = cpdag.copy()
 
             all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag, csi_rels_tree.copy())
-
-            if len(all_mc_graphs)>1:
-                non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
+            tempi=0
+            #if len(all_mc_graphs)>1:
+                #non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
 
 
                 #f
-                nodes = dataset.shape[1]
-                case = non_empty_mcdags[0]
+            nodes = dataset.shape[1]
+                #case = non_empty_mcdags[tempi]
+                #tempi+=1
 
-                (tree, stages, cs, ordering, mec_dag) = case
+            #(tree, stages, cs, ordering, mec_dag) = case
+            print("ORDER BEGIN", ordering)
+            print("stages are\n")
+            for c,ns in stages.items():
+                print(c, len(ns) ,len(ns[0])) 
+            csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
 
-                print("stages are\n")
-                for c,ns in stages.items():
-                    print(c, len(ns) ,len(ns[0])) 
-                csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
+            print("from tree\n", csi_rels_from_tree)
 
-                #print("from tree\n", csi_rels_from_tree)
+            csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
 
-                csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
+            print("after axioms\n", csi_rels)
 
-                #print("after axioms\n", csi_rels)
+            minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
 
-                minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
+            print("minimal contexts\n", minimal_contexts)
 
-                #print("minimal contexts\n", minimal_contexts)
+            print("ORDER END", ordering)
+            #fig, ax = plt.subplots(2,num_mc_graphs)
 
-                #fig, ax = plt.subplots(2,num_mc_graphs)
-
-                all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict)
-                num_mc_graphs = len(all_mc_graphs)
-
-
-                fig=plt.figure(figsize=(24, 12))
-                main_ax = fig.add_subplot(111)
-                tree_ax = plt.subplot(2,1,2)
-                ax = [plt.subplot(2, num_mc_graphs, i+1) for i in range(num_mc_graphs)]
-                node_colors = [cs.get(n, "#FFFFFF") for n in tree.nodes()]
-                if nodes<7:
-                    pos = graphviz_layout(tree, prog="dot", args="")
-                else:
-                    pos = graphviz_layout(tree, prog="twopi", args="")
-                nx.draw(tree, node_color=node_colors, ax=tree_ax,pos=pos, with_labels=False, font_color="white", linewidths=1)
-                tree_ax.set_title("ordering is "+"".join(str(ordering)))
-                tree_ax.set_ylabel("".join(str(ordering)))
-                tree_ax.collections[0].set_edgecolor("#000000")
-                #plt.show()
+            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict)
+            num_mc_graphs = len(all_mc_graphs)
 
 
+            fig=plt.figure(figsize=(24, 12))
+            main_ax = fig.add_subplot(111)
+            tree_ax = plt.subplot(2,1,2)
+            ax = [plt.subplot(2, num_mc_graphs, i+1) for i in range(num_mc_graphs)]
+            node_colors = [cs.get(n, "#FFFFFF") for n in tree.nodes()]
+            if nodes<7:
+                pos = graphviz_layout(tree, prog="dot", args="")
+            else:
+                pos = graphviz_layout(tree, prog="twopi", args="")
+            nx.draw(tree, node_color=node_colors, ax=tree_ax,pos=pos, with_labels=False, font_color="white", linewidths=1)
+            tree_ax.set_title("ordering is "+"".join(str(ordering)))
+            tree_ax.set_ylabel("".join(str(ordering)))
+            tree_ax.collections[0].set_edgecolor("#000000")
+            #plt.show()
 
-                for i, (mc,g) in enumerate(all_mc_graphs):
-                    options = {"node_color":"white","node_size":1000}
-                    ax[i].set_title("MC DAG Context {}".format(mc))
-                    nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
-                    ax[i].collections[0].set_edgecolor("#000000")
+            for i, (mc,g) in enumerate(all_mc_graphs):
+                options = {"node_color":"white","node_size":1000}
+                ax[i].set_title("MC DAG Context {}".format(mc))
+                nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
+                ax[i].collections[0].set_edgecolor("#000000")
 
-                plt.show()
-                return
+        plt.show()
+
+
+                
+                
 
             #f
 
             
+        for mc,g in all_mc_graphs:
+            #assert mc == ()
+            if mc==() and use_dag:
+                g = nx.relabel_nodes(g,lambda x:int(x))
+                mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
+                #print(ordering)
+                #print("\ncsi rels tree", csi_rels_tree)
+                #print("mec",mec_dag.edges)
+                #print("emp",g.edges,"\n")
+                #print("minimalcontexts are", mctemp)
+                assert equal_dags(g, mec_dag)
+
+
+
+        mecdag_count=0
+        if draw_mc_dags:
             for mc,g in all_mc_graphs:
-                #assert mc == ()
-                if mc==() and use_dag:
-                    g = nx.relabel_nodes(g,lambda x:int(x))
-                    mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
-                    #print(ordering)
-                    #print("\ncsi rels tree", csi_rels_tree)
-                    #print("mec",mec_dag.edges)
-                    #print("emp",g.edges,"\n")
-                    #print("minimalcontexts are", mctemp)
-                    assert equal_dags(g, mec_dag)
-                
+                mecdag_count+=1
+                fig=plt.figure(figsize=(5,5))
+                context_string = "Context "+"".join(["X"+str(i)+"="+str(j)+" " for (i,j) in mc]) if mc != () else "Empty context after learning CSI relations"
+                fig.suptitle(context_string, fontsize=13)
+                #nx.draw(g,  pos=nx.drawing.layout.shell_layout(g), with_labels=True)
 
+                options = {
+                    'node_color': 'white',
+                    'node_size': 1000,
+                }
 
-            mecdag_count=0
-            if draw_mc_dags:
-                for mc,g in all_mc_graphs:
-                    mecdag_count+=1
-                    fig=plt.figure(figsize=(5,5))
-                    context_string = "Context "+"".join(["X"+str(i)+"="+str(j)+" " for (i,j) in mc]) if mc != () else "Empty context after learning CSI relations"
-                    fig.suptitle(context_string, fontsize=13)
-                    #nx.draw(g,  pos=nx.drawing.layout.shell_layout(g), with_labels=True)
+                nx.draw_networkx(g,pos=nx.drawing.layout.shell_layout(g), **options)
+                ax = plt.gca()
+                ax.collections[0].set_edgecolor("#000000")
+                #plt.savefig('savedplots/mecdagnum'+str(mecdag_count)+'for'+str(cstree_count)+'.pdf')
+            if p<10:
+                plt.show()
 
-                    options = {
-                        'node_color': 'white',
-                        'node_size': 1000,
-                    }
-
-                    nx.draw_networkx(g,pos=nx.drawing.layout.shell_layout(g), **options)
-                    ax = plt.gca()
-                    ax.collections[0].set_edgecolor("#000000")
-                    #plt.savefig('savedplots/mecdagnum'+str(mecdag_count)+'for'+str(cstree_count)+'.pdf')
-                if p<10:
-                    plt.show()
-
-                print("this whole iteration took", time.time()- time_for_wholetree, "s")
+            print("this whole iteration took", time.time()- time_for_wholetree, "s")
 
 
 

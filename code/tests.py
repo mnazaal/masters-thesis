@@ -256,8 +256,8 @@ def test_minimal_contexts_randdag():
 
     minimal_contexts = binary_minimal_contexts(closure, val_dict)
     assert list(minimal_contexts.keys())[0] == ()
-
-# @pytest.mark.skip
+"""
+@pytest.mark.skip
 def test_cstree_pc1():
     # TODO Look more into the following DAGs
     # They had a case where there was no CI relation for
@@ -326,9 +326,20 @@ def test_cstree_pc6():
     dag  = generate_dag(7,1)
     data = synthetic_dag_binarydata(dag, 500)
     cstree_pc(data, val_dict)
+    """
+
+def test_binary_minimal_contexts1():
+    val_dict = binary_dict(6)
+    csi_rels = [({2},{1},set(),[(6,1),(3,1)]), ({2},{1},set(), [(6,1),(3,0)])]
+    assert list(binary_minimal_contexts(csi_rels, val_dict).keys())[0] == ((6,1),)
+
+def test_binary_minimal_contexts2():
+    val_dict = binary_dict(4)
+    csi_rels = [({4},{2},set(),[(1,0),(3,0)]), ({4},{2},set(),[(1,0),(3,1)]),({4},{2},set(),[(1,1),(3,0)]),({3},{1},set(),[(2,0)])]
+    min_contexts = set(list(binary_minimal_contexts(csi_rels,val_dict).keys()))
+    print("mincontexts", min_contexts)
+    assert min_contexts == {((1,0),),((2,0),),((3,0),)}
     
-
-
 def test_weak_union():
     pass
 #if __name__ == "__main__":
