@@ -70,7 +70,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                 else:
                     possible_Ts = [set(i) for i in combinations(C, T_size)]
                     for possible_T in possible_Ts:
-                        vals_T_takes = generate_vals(list(T), val_dict)
+                        vals_T_takes = generate_vals(list(possible_T), val_dict)
                         
                         x_T_count = 0
                         for i, x_T in enumerate(vals_T_takes):

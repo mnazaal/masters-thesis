@@ -100,9 +100,9 @@ def coronary_experiment():
  
     list_stages, nonempty = cstree_pc(dataset, test="anderson",use_dag=False)
     # Non empty minimal context DAGs
-
+    
     for case in nonempty:
-        (tree, stages, cs, ordering, mec_dag) = case
+       (tree, stages, cs, ordering, mec_dag) = case
         
 
         print("stages are\n")
@@ -126,8 +126,6 @@ def coronary_experiment():
         num_mc_graphs = len(all_mc_graphs)
         
 
-
-
         fig=plt.figure(figsize=(24, 12))
         main_ax = fig.add_subplot(111)
         tree_ax = plt.subplot(2,1,2)
@@ -141,8 +139,7 @@ def coronary_experiment():
         tree_ax.set_title("ordering is "+"".join(str(ordering)))
         tree_ax.set_ylabel("".join(str(ordering)))
         tree_ax.collections[0].set_edgecolor("#000000")
-        plt.show()
-        return
+        #plt.show()
 
 
        
@@ -153,6 +150,7 @@ def coronary_experiment():
             ax[i].collections[0].set_edgecolor("#000000")
 
         plt.show()
+        return
 
 
     tree_stages = list_stages[0]

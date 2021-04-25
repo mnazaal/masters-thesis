@@ -286,6 +286,9 @@ def colour_cstree(c,
     
     if colour_scheme is None:
         colour_scheme = {}
+        coloured = []
+    else:
+        coloured = list(colour_scheme.keys())
         
     less_data_counter = 0
     num_empty_contexts = 0
@@ -293,7 +296,7 @@ def colour_cstree(c,
     levels = len(ordering)
     
     csi_stages = {}
-    
+
     #print("COLOURING CSTREE STARTED WITH STAGES ", stages)
     
     while level<levels+1:
@@ -338,14 +341,13 @@ def colour_cstree(c,
             # Updating the list of coloured nodes after each pair
             # Can be done only if merge happens but then must repeat
             # code since it must be done before first test happens anyways
-            if colour_scheme.values():
-                coloured = list(colour_scheme.keys())
+
             
             
             # Case (a) : both coloured and same colour
             if (n1 in coloured and n2 in coloured) and (colour_scheme[n1] == colour_scheme[n2]):
                 skipped += 1
-                continue
+                #continue
                     
             # Case (b,c,d,e) : Other than above
             else:
@@ -353,12 +355,29 @@ def colour_cstree(c,
                 not_skipped+=1
                 colour_n1 = colour_scheme.get(n1, None)
                 colour_n2 = colour_scheme.get(n2, None)
+
+                # Case (b)
+                if colour_n1 is not None and colour_n2 is not None:
+                    common_c_n1 = shared_contexts(stages_known_l[colour_n1][0][:], stages_known_l[colour_n1][1][:])
+                    #print(stages_l,"all recorded are\n")
+                    #print(csi_stages)
+                    common_c_n2 = shared_contexts(stages_known_l[colour_n2][0][:], stages_known_l[colour_n2][1][:])
+                    common_c    = shared_contexts(common_c_n1,common_c_n2)
+                # Case (c)
+                if colour_n1 is not None and colour_n2 is None:
+                    common_c_n1 =  shared_contexts(stages_known_l[colour_n1][0][:], stages_known_l[colour_n1][1][:])
+                    common_c    = shared_contexts(common_c_n1, n2[:])
+                # Case (d)
+                if colour_n1 is None and colour_n2 is not None:
+                     common_c_n2 = shared_contexts(stages_known_l[colour_n2][0][:], stages_known_l[colour_n2][1][:])
+                     common_c   = shared_contexts(n1[:], common_c_n2)
+                # Case (e)
+                if colour_n1 is None and colour_n2 is None:
+                    common_c = shared_contexts(n1[:],n2[:])
                 
-                #print("colours are ", colour_n1,colour_n2)
-                
-                
-                # TODO Abstract this part away
-                common_c = shared_contexts(n1[:-1],n2[:-1])
+                    
+
+                #common_c = shared_contexts(n1[:-1],n2[:-1])
 
                 var = ordering[level]
                                 
@@ -401,56 +420,45 @@ def colour_cstree(c,
                         
 
                 if same_distr:
+                    print("adding at level ", level, "commonc", common_c)
                     
                     if common_c == []:
                         num_empty_contexts+=1
-                        #print("added empty context, total now ", num_empty_contexts, level)
-                        #print("empty context data looked at was ", data_n1,data_n2)
-                    
-                    #print("p({}|{})".format(var, common_c))
-                    #print("Merging node colours ", colour_n1, colour_n2)
                     # Nodes below belong to the same stage defined by the common context
 
-                    # To keep track of how many stages we add after colouring from DAG
-                    new_stages+=1
+                    new_nodes = [n for n in nodes_l
+                                 if set(common_c).issubset(set(n[:]))]
+                   
+                    # Remove stages where nodes have common context with new stage
+                    if colour_n1 is not None:
+                        del stages_known_l[tuple(common_c_n1)]
+                        #stages_known_l = {c:ns for c,ns in stages_known_l.items()
+                        #            if not set(common_c_n1).issubset(set(ns[0][:-1]))}
+                    if colour_n2 is not None:
+                        del stages_known_l[tuple(common_c_n2)]
+                        #stages_known_l = {c:ns for c,ns in stages_known_l.items()
+                        #            if not set(common_c_n2).issubset(set(ns[0][:-1]))}
 
-                    # These are the new nodes that belong to the stage represented by the common context
-                    new_nodes = [n for n in nodes_l if set(common_c).issubset(set(n))]
-                    #print("\n new nodes are", new_nodes, "with common context", common_c, "\n")
-                    
-                    #print("length of level", 2**level, "length of new nodes ", len(new_nodes), "len of context ", len(common_c))
-                    #print("common context is", common_c)
-                    #print("level ", level, "stages before ", stages)
-                    # Keep only stages if any nodes in a stage has this common context
-                    #print("ns first item", len(stages_l))
-                    
-                    stages_remaining = {c:ns for c,ns in stages_l.items() if not set(common_c).issubset(set(ns[0]))}
-                    #print("Level ", level, "remaining stages after adding this new stage is ", len(stages_remaining))
-                    stages_known_l = stages_remaining.copy()
-                    #print("level ", level, "stages remaining ", stages)
-
+                    print("just before updating, ", stages_known_l)
                     # Then add the new stage
                     stage_added = False
-                    not_added=0
                     while not stage_added:
-                        not_added+=1
                         # Just to make sure they are different colours
-                        colour="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-                        if colour not in stages_remaining.keys():
-                            #print("Stage added for colour ", colour, not_added)
-                            stages_known_l[colour] = new_nodes
+                        color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+                        if color not in stages_known_l.keys():
+                            # Add new stage
+                            stages_known_l[tuple(common_c)] = new_nodes
                             stage_added    = True
-
-                            
-                    #stages_remaining.update(stages) = dict(stages.items()+stages_remaining.items())
+                    
+                    #stages_known_l.update(stages)
                     # Add colours to node map
-                    # If previously node was another colour, this changes it to the new colour
+                    # If previously node was another colour, change it to the new colour
                     for node in new_nodes:
-                        colour_scheme[node] = colour
-
-        # v2 approach from largest context subsets to empty context
-        # equivalent to v0 since large context subsets imply small common contexts
-        #print("level ", level, "done, number of stages here is now", len(stages_known_l))
+                        colour_scheme[node] = tuple(common_c)
+                    coloured = list(colour_scheme.keys())
+                    print("updated stages ", stages_known_l, "cs upated color", color)
+                    #print("just coloured\n", new_nodes, common_c)
+                    #print("coloured total",coloured)
         csi_stages.update(stages_known_l)
         #Once we are done with all nodes of current level, move to next level
         level +=1
@@ -463,8 +471,14 @@ def colour_cstree(c,
     #print("COLOURING CSTREE ENDEd WITH STAGES ", stages)
     if use_dag:
         assert len(csi_stages)<=len(stages)
+    csi_stages1, colour_scheme1 = {},{}
+    for context,nodes in csi_stages.items():
+         color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+         csi_stages1[color] = nodes
+         for node in nodes:
+             colour_scheme1[node]=color
     
-    return c, csi_stages, colour_scheme
+    return c, csi_stages1, colour_scheme1
 
 
 
@@ -649,7 +663,63 @@ def cstree_pc(dataset,
 
             if len(all_mc_graphs)>1:
                 non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
-                
+
+
+                #f
+                nodes = dataset.shape[1]
+                case = non_empty_mcdags[0]
+
+                (tree, stages, cs, ordering, mec_dag) = case
+
+
+                print("stages are\n")
+                for c,ns in stages.items():
+                    print(c, len(ns) ,ns) 
+                csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
+
+                print("from tree\n", csi_rels_from_tree)
+
+                csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
+
+                print("after axioms\n", csi_rels)
+
+                minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
+
+                print("minimal contexts\n", minimal_contexts)
+
+                #fig, ax = plt.subplots(2,num_mc_graphs)
+
+                all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict)
+                num_mc_graphs = len(all_mc_graphs)
+
+
+                fig=plt.figure(figsize=(24, 12))
+                main_ax = fig.add_subplot(111)
+                tree_ax = plt.subplot(2,1,2)
+                ax = [plt.subplot(2, num_mc_graphs, i+1) for i in range(num_mc_graphs)]
+                node_colors = [cs.get(n, "#FFFFFF") for n in tree.nodes()]
+                if nodes<7:
+                    pos = graphviz_layout(tree, prog="dot", args="")
+                else:
+                    pos = graphviz_layout(tree, prog="twopi", args="")
+                nx.draw(tree, node_color=node_colors, ax=tree_ax,pos=pos, with_labels=False, font_color="white", linewidths=1)
+                tree_ax.set_title("ordering is "+"".join(str(ordering)))
+                tree_ax.set_ylabel("".join(str(ordering)))
+                tree_ax.collections[0].set_edgecolor("#000000")
+                #plt.show()
+
+
+
+                for i, (mc,g) in enumerate(all_mc_graphs):
+                    options = {"node_color":"white","node_size":1000}
+                    ax[i].set_title("MC DAG Context {}".format(mc))
+                    nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
+                    ax[i].collections[0].set_edgecolor("#000000")
+
+                plt.show()
+                return
+
+            #f
 
             
             for mc,g in all_mc_graphs:
@@ -688,6 +758,10 @@ def cstree_pc(dataset,
                     plt.show()
 
                 print("this whole iteration took", time.time()- time_for_wholetree, "s")
+
+
+
+                
 
     return cstree_best, non_empty_mcdags
 
