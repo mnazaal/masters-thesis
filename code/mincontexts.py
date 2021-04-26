@@ -58,12 +58,10 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                 pairs_nocopies.append(p)
         
         for p in pairs_nocopies:
-            print("pair is , ",p)
-            print(csi_rels)
             csi_rels_with_p = [c for c in csi_rels.copy() if union([c[0],c[1]])==set(p)]
-            print("rels with pair",csi_rels_with_p)
-            
             contexts_with_p = [set(c[-1]) for c in csi_rels_with_p]
+            context_vars_found = []
+            Ts_for_this_pair = []
             done_for_rel = False
             for csi_rel in csi_rels_with_p:
                 # Context variables of current CSI relation
@@ -85,11 +83,14 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                 T_found=False
                 if T_size == 0:
                     T = []
+                    possible_Ts = [T]
                 elif T_size == len(C):
                     T = C.copy()
+                    possible_Ts = [T]
                 else:
                     #current_Cs  = [set(c) for (c,_) in minimal_context_dict.keys()]
-                    possible_Ts = [set(i) for i in combinations(C, T_size)]
+                    possible_Ts = [set(i) for i in combinations(C, T_size) if set(i) not in Ts_for_this_pair]
+
                     for possible_T in possible_Ts:
                         vals_T_takes = generate_vals(list(possible_T), val_dict)
                         
@@ -98,7 +99,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                             contained  = context_is_contained(x_T, contexts_with_p.copy())
                             
                             if contained:
-                                print("{} contained for rel {} since contexts are {}".format(x_T, csi_rel, contexts_with_p.copy()))
+                               # print("{} contained for rel {} since contexts are {}".format(x_T, csi_rel, contexts_with_p.copy()))
                                 x_T_count +=1
                             if not contained:
                                 break
@@ -108,10 +109,24 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                                 break
                         if T_found:
                             break                            
-                print("For rel {}, C is {}, chosen T {} from {}".format(csi_rel, C, T, possible_Ts))
-                context_of_rel  = csi_rel[-1]
+
+                if possible_Ts==[]:
+                    continue
+                #print("For rel {}, C is {}, chosen T {} from {}".format(csi_rel, C, T, possible_Ts))
+                context_of_rel   = csi_rel[-1]
+                context_vars     = [var for (var,val) in context_of_rel]
+                Ts_for_this_pair.append(T)
+                new_context_vars = set(context_vars).difference(T)
+                for s in context_vars_found:
+                    assert new_context_vars.intersection(set(T).difference(s))==set()
+
+                
+                context_vars_found.append(new_context_vars)
+
+                #not_possible_Ts = 
+                
                 minimal_context = tuple(tuple(c) for c in context_of_rel if c[0] not in T)
-                print("minimal context is ", minimal_context, "\n")
+                #print("minimal context is ", minimal_context)
                 A = list(p)[0]
                 B = list(p)[1]
                 #(A,B) = p
@@ -124,7 +139,7 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
                 #print("new cond set", cond_set)
 
                 ci_rel_remaining = ({A},{B},cond_set)
-                print("remaing, ", ci_rel_remaining)
+                #print("remaing, ", ci_rel_remaining, "\n")
 
                                 
                 if minimal_context in minimal_cs_dict.keys():

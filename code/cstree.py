@@ -256,7 +256,7 @@ def colour_cstree(c,
                   data_matrix, 
                   stages          = None,
                   colour_scheme   = None,
-                  tol_p_val       = 0.05,
+                  tol_p_val       = 0.1,
                   return_csi_rels = True,
                   test            = "epps",
                   no_dag          = True):
@@ -311,11 +311,20 @@ def colour_cstree(c,
         #print("len of each node in level ",level,list(map(lambda x: len(x), nodes_l)))
         stages_l = {c:ns for c,ns in stages.items() if len(ns[0])==level}
         colour_scheme_l = {n:c for n,c in colour_scheme.items() if len(n)==level}
-        #stages_l = stages_l.copy()
+        coloured = list(colour_scheme_l.keys())
 
+        print("level {} stages {}".format(level,stages_l))
+        
+
+        
+        #stages_l = stages_l.copy()
+        cont_string="SKIPPED ALL STAGES STEP"
         if len(stages_l) == 1:
             level+=1
-            csi_stages.update(stages_l)
+            skipped+=len(colour_scheme_l)
+            #csi_stages.append(stages_l)
+            colour_scheme_list.append(colour_scheme_l)
+            print("added for level {} colour {}".format(level-1,colour_scheme_l.values()))
             continue
         # v0, generate common contexts starting from the empty context to the full contexts
         
@@ -324,6 +333,7 @@ def colour_cstree(c,
         # For each pair of nodes in this level
         break_counter=0
         for n1,n2 in combinations(nodes_l,2):
+            coloured = list(colour_scheme_l.keys())
             # Cases: Both coloured
             #        |--> (a) Both same colour
             #        |--> (b) Both different colour
@@ -337,12 +347,14 @@ def colour_cstree(c,
             # code since it must be done before first test happens anyways
 
             
-            coloured = list(colour_scheme_l.keys())
+            
                 
             # Case (a) : both coloured and same colour
             #print(set(colour_scheme[n1]))
-            if (n1 in coloured and n2 in coloured) and colour_scheme_l.get(n1) == colour_scheme_l.get(n2):
+            if (n1 in coloured and n2 in coloured) and colour_scheme_l.get(n1,"c1") == colour_scheme_l.get(n2,"c2"):
                 skipped += 1
+                #print("skipping with colors {},{}".format(colour_scheme_l.get(n1),colour_scheme_l.get(n2)))
+                
                 continue
                     
             # Case (b,c,d,e) : Other than above
@@ -357,9 +369,6 @@ def colour_cstree(c,
                     colour_n1 = tuple(colour_n1)
                     colour_n2 = tuple(colour_n2)
 
-                    
-                    
-                    
                     #common_c_n1 = shared_contexts(stages_l[colour_n1][0][:],
                     #                              stages_l[colour_n1][1][:])
                     #common_c_n2 = shared_contexts(stages_l[colour_n2][0][:],
@@ -495,7 +504,8 @@ def colour_cstree(c,
         #print("level ",level,"must have {} stages".format(stages_added_l-stages_removed_l))
         
     if use_dag:
-        assert len(csi_stages)<=len(stages)
+        pass
+        #assert len(csi_stages)<=len(stages)
     print("skip ratio",skipped/(skipped+not_skipped))
 
 
@@ -514,7 +524,9 @@ def colour_cstree(c,
                 csi_stages1[color] = nodes_w_this_context
                 for node in nodes_w_this_context:
                     colour_scheme1[node] = color
-        
+    if use_dag:
+        pass
+        #assert len(csi_stages1)<=len(stages)
 
     #for node, context in colour_scheme.items():
         
@@ -550,7 +562,7 @@ def cstree_pc(dataset,
                draw_mc_dags          = False,
                draw_tree_after_dag   = False,
                draw_tree_after_tests = False,
-               test                  = "epps", 
+               test                  = "anderson", 
                use_dag               = True):
     
     
@@ -579,7 +591,7 @@ def cstree_pc(dataset,
         # Get CPDAG skeleton
         (g, sep_set) = estimate_skeleton(indep_test_func=pc_test,
                                          data_matrix=dataset,
-                                        alpha=0.05)
+                                         alpha=0.01)
 
         # Get the CPDAG
         cpdag = estimate_cpdag(skel_graph=g, sep_set=sep_set)
@@ -588,6 +600,8 @@ def cstree_pc(dataset,
     elif pc_method=="pgmpy":
         cpdag_model = PC(pd.DataFrame(dataset, columns=[i for i in range(1,dataset.shape[1]+1)]))
         cpdag_pgmpy = cpdag_model.estimate(return_type="cpdag")
+        print("CPDAG edges", list(cpdag_pgmpy.edges))
+        break
         cpdag = nx.DiGraph()
         cpdag.add_nodes_from([i for i in range(1, dataset.shape[1]+1)])
         cpdag.add_edges_from(list(cpdag_pgmpy.edges()))
@@ -597,6 +611,7 @@ def cstree_pc(dataset,
     
     # Generating all DAGs inthe MEC
     dags_bn = []
+    # Does not having enough data simply say no, yes
     all_arcs = cpdag.all_dags()
     for dags in all_arcs:
         temp_graph = nx.DiGraph()
@@ -666,27 +681,30 @@ def cstree_pc(dataset,
             #print("stages after generating tree")
             #print(stages, "\n")
 
-            stages_after_dag = len(stages)
+            stages_after_dag = (nodes_per_tree(val_dict)-1)-len(cs)+ len(stages)
 
             # Perform further context-specific tests
             t1=time.time()
-            tree, stages, cs = colour_cstree(tree, ordering, dataset, stages.copy(), cs.copy(), test=test)
+            tree, stages, new_cs = colour_cstree(tree, ordering, dataset, stages.copy(), cs.copy(), test=test)
 
             #print("stages after csi tests")
             #print(stages , "\n")
 
-            stages_after_csitests = len(stages)
+            stages_after_csitests = (nodes_per_tree(val_dict)-1)-len(new_cs)+ len(stages)
 
-            stages_current = (len(tree.nodes)-1) - (len(cs)) + len(stages)
+            assert stages_after_dag >=stages_after_csitests
+
+            stages_current = (len(tree.nodes)-1) - (len(new_cs)) + len(stages)
 
             if stages_current<stages_best:
                 stages_best = stages_current
-                cstree_best = [(tree,stages,cs,ordering, mec_dag)]
+                cstree_best = [(tree,stages,new_cs,ordering, mec_dag)]
             if stages_current==stages_best:
-                cstree_best.append((tree,stages,cs,ordering, mec_dag))
+                cstree_best.append((tree,stages,new_cs,ordering, mec_dag))
                 
             # TODO this is temp
             if use_dag:
+                #pass
                 assert stages_after_dag >= stages_after_csitests
             
             csi_rels_tree = stages_to_csi_rels(stages.copy(), ordering)
@@ -702,7 +720,7 @@ def cstree_pc(dataset,
             #    print("min context", k, "ci rels", v,"\n")
 
 
-            def equal_dags(g1,g2):
+            def equal_dags1(g1,g2):
                 for n1 in g1.nodes:
                     for n2 in g2.nodes:
                         if (n1 not in list(g2.nodes) or n2 not in list(g1.nodes)):
@@ -712,67 +730,98 @@ def cstree_pc(dataset,
                         if (e1 not in list(g2.edges)) or (e2 not in list(g1.edges)):
                             return False
                 return True
+
+            def equal_dags(g1,g2):
+                es = True if  set(g1.edges)==set(g2.edges) else False
+                ns = True if set(g1.nodes)==set(g2.nodes) else False
+                return es and ns
             
             if mec_dag is None and use_dag:
                 mec_dag = cpdag.copy()
 
             all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict, mec_dag, csi_rels_tree.copy())
             tempi=0
-            #if len(all_mc_graphs)>1:
-                #non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
+            
+            #for mc,g in all_mc_graphs:
+            #assert mc == ()
+            #    if mc==() and use_dag and len(all_mc_graphs)==1:
+            #        g = nx.relabel_nodes(g,lambda x:int(x))
+            #        mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
+            #        assert equal_dags1(g, mec_dag)
+                        
+                #print(ordering)
+                #print("\ncsi rels tree", csi_rels_tree)
+                #print("mec",mec_dag.edges)
+                #print("emp",g.edges,"\n")
+                #print("minimalcontexts are", mctemp)
+
+            
+            if ordering==[2,4,5,1,3,6]:
+                    #non_empty_mcdags.append((tree.copy(), stages.copy(), cs.copy(), ordering.copy(), cpdag.copy()))
 
 
-                #f
-            nodes = dataset.shape[1]
-                #case = non_empty_mcdags[tempi]
-                #tempi+=1
+                    #f
+                nodes = dataset.shape[1]
+                    #case = non_empty_mcdags[tempi]
+                    #tempi+=1
 
-            #(tree, stages, cs, ordering, mec_dag) = case
-            print("ORDER BEGIN", ordering)
-            print("stages are\n")
-            for c,ns in stages.items():
-                print(c, len(ns) ,len(ns[0])) 
-            csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
+                #(tree, stages, cs, ordering, mec_dag) = case
+                print("ORDER BEGIN", ordering)
+                print("stages are\n")
+                for c,ns in stages.items():
+                    print(c, len(ns) ,len(ns[0])) 
+                csi_rels_from_tree = stages_to_csi_rels(stages.copy(),ordering)
 
-            print("from tree\n", csi_rels_from_tree)
+                print("from tree\n", csi_rels_from_tree)
 
-            csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
+                csi_rels = graphoid_axioms(csi_rels_from_tree.copy())
 
-            print("after axioms\n", csi_rels)
+                print("after axioms\n", csi_rels)
 
-            minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
+                minimal_contexts = binary_minimal_contexts(csi_rels.copy(), val_dict)
 
-            print("minimal contexts\n", minimal_contexts)
+                print("minimal contexts\n", minimal_contexts)
 
-            print("ORDER END", ordering)
-            #fig, ax = plt.subplots(2,num_mc_graphs)
+                print("ORDER END", ordering)
+                #fig, ax = plt.subplots(2,num_mc_graphs)
 
-            all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict)
-            num_mc_graphs = len(all_mc_graphs)
+                all_mc_graphs = minimal_context_dags(ordering, csi_rels.copy(), val_dict)
+                num_mc_graphs = len(all_mc_graphs)
 
 
-            fig=plt.figure(figsize=(24, 12))
-            main_ax = fig.add_subplot(111)
-            tree_ax = plt.subplot(2,1,2)
-            ax = [plt.subplot(2, num_mc_graphs, i+1) for i in range(num_mc_graphs)]
-            node_colors = [cs.get(n, "#FFFFFF") for n in tree.nodes()]
-            if nodes<7:
-                pos = graphviz_layout(tree, prog="dot", args="")
-            else:
-                pos = graphviz_layout(tree, prog="twopi", args="")
-            nx.draw(tree, node_color=node_colors, ax=tree_ax,pos=pos, with_labels=False, font_color="white", linewidths=1)
-            tree_ax.set_title("ordering is "+"".join(str(ordering)))
-            tree_ax.set_ylabel("".join(str(ordering)))
-            tree_ax.collections[0].set_edgecolor("#000000")
-            #plt.show()
+                fig=plt.figure(figsize=(24, 12))
+                main_ax = fig.add_subplot(111)
+                tree_ax = plt.subplot(2,1,2)
+                ax = [plt.subplot(2, num_mc_graphs, i+1) for i in range(num_mc_graphs)]
+                node_colors = [new_cs.get(n, "#FFFFFF") for n in tree.nodes()]
+                if nodes<7:
+                    pos = graphviz_layout(tree, prog="dot", args="")
+                else:
+                    pos = graphviz_layout(tree, prog="twopi", args="")
+                nx.draw(tree, node_color=node_colors, ax=tree_ax,pos=pos, with_labels=False, font_color="white", linewidths=1)
+                tree_ax.set_title("ordering is "+"".join(str(ordering)))
+                tree_ax.set_ylabel("".join(str(ordering)))
+                tree_ax.collections[0].set_edgecolor("#000000")
+                #plt.show()
 
-            for i, (mc,g) in enumerate(all_mc_graphs):
-                options = {"node_color":"white","node_size":1000}
-                ax[i].set_title("MC DAG Context {}".format(mc))
-                nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
-                ax[i].collections[0].set_edgecolor("#000000")
+                for i, (mc,g) in enumerate(all_mc_graphs):
+                    if mc==():
+                        print("minimal context graph is ", g.edges)
+                        print("mec dag is ", mec_dag.edges)
+                    options = {"node_color":"white","node_size":1000}
+                    ax[i].set_title("MC DAG Context {}".format(mc))
+                    nx.draw_networkx(g,pos = nx.drawing.layout.shell_layout(g), ax=ax[i],**options)
+                    ax[i].collections[0].set_edgecolor("#000000")
+                if use_dag:
+                    fig=plt.figure()
+                    nx.draw(mec_dag,with_labels=True, **options)
+                    axt=plt.gca()
+                    axt.collections[0].set_edgecolor("#000000")
+                    plt.show()
+                    
 
-        plt.show()
+                plt.show()
+        #non_empty_mcdag.append((tree,stages,cs, ordering, mec_))
 
 
                 
@@ -780,18 +829,6 @@ def cstree_pc(dataset,
 
             #f
 
-            
-        for mc,g in all_mc_graphs:
-            #assert mc == ()
-            if mc==() and use_dag:
-                g = nx.relabel_nodes(g,lambda x:int(x))
-                mec_dag = nx.relabel_nodes(mec_dag, lambda x:int(x))
-                #print(ordering)
-                #print("\ncsi rels tree", csi_rels_tree)
-                #print("mec",mec_dag.edges)
-                #print("emp",g.edges,"\n")
-                #print("minimalcontexts are", mctemp)
-                assert equal_dags(g, mec_dag)
 
 
 
