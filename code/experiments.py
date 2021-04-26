@@ -98,7 +98,7 @@ def coronary_experiment():
     val_dict = generate_state_space(dataset)
     nodes = dataset.shape[1]
  
-    list_stages, nonempty = cstree_pc(dataset, pc_method="pc",test="epps",use_dag=True)
+    list_stages, nonempty = cstree_pc(dataset, pc_method="pgmpy",test="anderson",use_dag=True)
     
     # Non empty minimal context DAGs
     

@@ -336,7 +336,11 @@ def test_binary_minimal_contexts1():
 def test_binary_minimal_contexts2():
     val_dict = binary_dict(4)
     csi_rels = [({4},{2},set(),[(1,0),(3,0)]), ({4},{2},set(),[(1,0),(3,1)]),({4},{2},set(),[(1,1),(3,0)]),({3},{1},set(),[(2,0)])]
-    min_contexts = set(list(binary_minimal_contexts(csi_rels,val_dict).keys()))
+    min_context_dict = binary_minimal_contexts(csi_rels,val_dict)
+    min_contexts = set(list(min_context_dict.keys()))
+
+    print(min_context_dict)
+    
     assert min_contexts == {((1,0),),((2,0),),((3,0),)}
     
 def test_weak_union():

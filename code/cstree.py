@@ -316,9 +316,7 @@ def colour_cstree(c,
         print("level {} stages {}".format(level,stages_l))
         
 
-        
         #stages_l = stages_l.copy()
-        cont_string="SKIPPED ALL STAGES STEP"
         if len(stages_l) == 1:
             level+=1
             skipped+=len(colour_scheme_l)
@@ -600,10 +598,8 @@ def cstree_pc(dataset,
     elif pc_method=="pgmpy":
         cpdag_model = PC(pd.DataFrame(dataset, columns=[i for i in range(1,dataset.shape[1]+1)]))
         cpdag_pgmpy = cpdag_model.estimate(return_type="cpdag")
-        print("CPDAG edges", list(cpdag_pgmpy.edges))
-        break
         cpdag = nx.DiGraph()
-        cpdag.add_nodes_from([i for i in range(1, dataset.shape[1]+1)])
+        cpdag.add_nodes_from([i+1 for i in range(dataset.shape[1])])
         cpdag.add_edges_from(list(cpdag_pgmpy.edges()))
         
     #dags_bn = cpdag_to_dags(cpdag.copy())
@@ -649,14 +645,16 @@ def cstree_pc(dataset,
             raise ValueError("No DAG in MEC of CPDAG with this ordering")
     cstree_count=0
 
-    cpdag_edges = len(dags_bn[0].edges)
+    # Once got a DAG with 1 extra edge
+    mecdag_edges = len(dags_bn[0].edges)
 
 
     cstree_best = []
     stages_best = nodes_per_tree(val_dict)-1
     non_empty_mcdags = []
     for mec_dag_num, mec_dag in enumerate(dags_bn):
-        if len(mec_dag.edges)!= cpdag_edges:
+        if len(mec_dag.edges)!= mecdag_edges:
+        #    print("FOUND DAG WITH MORE EDGES IN MEC CLASS")
             continue
 
         
