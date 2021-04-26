@@ -6,7 +6,7 @@ import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 
 from cstree import dag_to_cstree, stages_to_csi_rels, cstree_pc
-from datasets import synthetic_dag_binarydata
+from datasets import synthetic_dag_binarydata, coronary_data
 from graphoid import decomposition, weak_union, weak_union, decomposition, graphoid_axioms
 from algorithms import dag_to_ci_model
 from mincontexts import binary_minimal_contexts,minimal_context_dags
@@ -328,6 +328,10 @@ def test_cstree_pc6():
     cstree_pc(data, val_dict)
     """
 
+def test_dag_v_nodag():
+    val_dict = binary_dict(6)
+    data = coronary_data()
+
 def test_binary_minimal_contexts1():
     val_dict = binary_dict(6)
     csi_rels = [({2},{1},set(),[(6,1),(3,1)]), ({2},{1},set(), [(6,1),(3,0)])]
@@ -337,10 +341,7 @@ def test_binary_minimal_contexts2():
     val_dict = binary_dict(4)
     csi_rels = [({4},{2},set(),[(1,0),(3,0)]), ({4},{2},set(),[(1,0),(3,1)]),({4},{2},set(),[(1,1),(3,0)]),({3},{1},set(),[(2,0)])]
     min_context_dict = binary_minimal_contexts(csi_rels,val_dict)
-    min_contexts = set(list(min_context_dict.keys()))
-
-    print(min_context_dict)
-    
+    min_contexts = set(list(min_context_dict.keys()))    
     assert min_contexts == {((1,0),),((2,0),),((3,0),)}
     
 def test_weak_union():

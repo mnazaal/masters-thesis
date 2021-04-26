@@ -43,7 +43,7 @@ def recursive_search(T_sizes, C, contexts_with_p, val_dict):
 def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     minimal_cs      = set()
     minimal_cs_dict = {}
-    print("beagn with", csi_rels,"\n")
+    #print("beagn with", csi_rels,"\n")
     # TODO edge cases when C is empty
 
     # We get all the unique pairs involved in all the csi relations with non-empty contexts
@@ -168,6 +168,7 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
 
     
     for minimal_context, ci_rels in minimal_contexts.items():
+        
         if closure:
             for rel in closure:
                 if set(rel[-1])==set(minimal_context):
@@ -191,7 +192,7 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
                 for ci_rel in ci_rels:
                     A = ci_rel[0]
                     B = ci_rel[1]
-                    Ci = ci_rel[-1]
+                    Ci = ci_rel[2]
                     if A.union(B) == {pi_i,pi_j} and set(Ci).issubset(conditioning_set):
                         if minimal_context_dag.has_edge(pi_i,pi_j):
                             minimal_context_dag.remove_edge(pi_i,pi_j)
@@ -206,10 +207,10 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
                 if edge not in mec_dag.edges:
                     ci_rels_w_vars = [rel for rel in ci_rels if rel[0].union(rel[1]) == {edge[0]}.union({edge[1]})]
                     if not order_printed:
-                        print(order)
+                        #print(order)
                         order_printed=True
-                        print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
-                        print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
+                        #print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
+                        #print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
         
 
         minimal_context_dags.append((minimal_context, minimal_context_dag))

@@ -116,7 +116,6 @@ def cpdag_to_dags(g):
         except:
             yield g
     else:
-        print("da")
         
         u = undirected_edges.pop()
         # pick just the first undirected edge, then recursively move on
@@ -170,8 +169,7 @@ def parents(g,node):
 
 def generate_vals(T, state_space_dict):
     # generate all possible values for the variables in subset T 
-    # TODO Check if we still use this
-    # list of lists containins the values 
+    # list of lists containing the values 
     s_vals = [state_space_dict[t] for t in T]
     all_vals_prod = list(product(*s_vals)) # all values without variables in front 
     f = lambda tup: [(T[i], tup[i]) for i in range(len(T))]
@@ -218,7 +216,6 @@ def data_to_contexts(data : np.ndarray,
 
 
 def context_is_contained(c, cs):
-    
     # Given a context c, and a list of contexts cs,
     # return the context x in cs if c is a subcontext of x
     contained=None
@@ -231,7 +228,8 @@ def context_is_contained(c, cs):
 
 
 def get_size(obj, seen=None):
-    """Recursively finds size of objects"""
+    """Recursively finds size of objects
+    Code from stackoverflow"""
     size = sys.getsizeof(obj)
     if seen is None:
         seen = set()
