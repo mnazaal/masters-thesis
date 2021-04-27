@@ -99,6 +99,11 @@ def dermatology_data(grouped=True):
 def micecortex_data():
     # Requires xlrd package
     micecortex_pd = pd.read_excel("../datasets/micecortex.xls")
+
+    #for col in micecortex_pd.columns:
+    #    print(col, micecortex_pd[col].isna().sum())
+
+
     micecortex_pd = micecortex_pd.dropna()
     micecortex_pd = micecortex_pd.drop(columns=["MouseID", "Genotype"])
 
@@ -126,16 +131,16 @@ def micecortex_data():
     # We divide each feature into 2 classes based on the median
     reduced_micecortex_medians = reduced_micecortex_pd.median()
 
-    
-    reduced_micecortex_pd["DYRK1A_N"] = reduced_micecortex_pd["DYRK1A_N"]>reduced_micecortex_pd["DYRK1A_N"].median()
 
-    reduced_micecortex_pd.to_csv("reducedfeatures1.csv")
 
-    for i,feature in enumerate(feature_names):
-        median = reduced_micecortex_medians[i]
-        reduced_micecortex_pd[:,i] = reduced_micecortex_pd[feature].ge(median).astype(int)
+    for col in reduced_micecortex_pd.columns[:-2]:
+        reduced_micecortex_pd[col] =  (reduced_micecortex_pd[col]> reduced_micecortex_pd[col].median()).astype(int)
 
-    
+    reduced_micecortex_pd.to_csv("reducedfeatures.csv")
+        
+
+    # Chain as type int
+
     micecortex_np = reduced_micecortex_pd.values.astype(np.int)
 
     micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
