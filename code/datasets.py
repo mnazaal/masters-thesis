@@ -96,13 +96,12 @@ def dermatology_data(grouped=True):
     # 1 - {1}{2,3,4}, 2 - {1,2}{3,4}, 3 - {1,2,3}{4}
 
 
-def micecortex_data():
+def micecortex_data(num_features=10):
     # Requires xlrd package
     micecortex_pd = pd.read_excel("../datasets/micecortex.xls")
 
     #for col in micecortex_pd.columns:
     #    print(col, micecortex_pd[col].isna().sum())
-
 
     micecortex_pd = micecortex_pd.dropna()
     micecortex_pd = micecortex_pd.drop(columns=["MouseID", "Genotype"])
@@ -117,37 +116,24 @@ def micecortex_data():
     X, y = micecortex_pd.values[:,:-1], micecortex_pd.values[:,-1]
     estimator = LinearSVC()
     #selector = RFECV(estimator, step=1, cv=5)
-    selector = RFE(estimator, n_features_to_select=10, step=1)
+    selector = RFE(estimator, n_features_to_select=num_features, step=1)
     selector = selector.fit(X,y)
     feature_indices = [i for i in range(X.shape[1]) if selector.support_[i]]
     feature_names   = [micecortex_pd.columns[i] for i in feature_indices]
 
     reduced_micecortex_pd = micecortex_pd[feature_names]
 
-    print(reduced_micecortex_pd)
-
-    reduced_micecortex_pd.to_csv("reducedfeatures.csv")
-
     # We divide each feature into 2 classes based on the median
     reduced_micecortex_medians = reduced_micecortex_pd.median()
 
-
-
-    for col in reduced_micecortex_pd.columns[:-2]:
-        reduced_micecortex_pd[col] =  (reduced_micecortex_pd[col]> reduced_micecortex_pd[col].median()).astype(int)
-
-    reduced_micecortex_pd.to_csv("reducedfeatures.csv")
-        
-
-    # Chain as type int
+    for i,col in enumerate(reduced_micecortex_pd.columns[:-2]):
+        reduced_micecortex_pd[col] =  (reduced_micecortex_pd[col]> reduced_micecortex_medians[i]).astype(int)
 
     micecortex_np = reduced_micecortex_pd.values.astype(np.int)
 
     micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
 
-    print(micecortex_np)
-
-micecortex_data()
+    return micecortex_np
     
 
 def coronary_data():
