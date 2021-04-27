@@ -8,6 +8,7 @@ from causaldag import pdag
 import pandas as pd
 import matplotlib.pyplot as plt
 from utils.pc import estimate_cpdag, estimate_skeleton
+import random
 
 from networkx.drawing.nx_agraph import graphviz_layout
 
@@ -72,6 +73,8 @@ class CSTree(object):
     def cstree_bic(tree, stages):
         pass
 
+        
+        
 
 
     def visualize(self,
@@ -79,65 +82,87 @@ class CSTree(object):
                   use_dag=True,
                   all_trees=True,
                   dag=None,
+                  plot_mcdags=False,
                   pc_method="pgmpy",
                   csi_test="anderson",
-                  limit = 5,
+                  learn_limit = 3,
+                  plot_limit = 3,
                   save_dir=None):
         iteration=0
-        trees = self.learn(ordering, use_dag,all_trees, dag, pc_method,csi_test)
+        trees = self.learn(ordering, use_dag,all_trees, dag, pc_method,csi_test,learn_limit)
+        nodes = len(list(self.val_dict.keys()))
         for (tree, stages, color_scheme, ordering) in trees:
             # Save information like CSI relations from it etc
             iteration+=1
-            if iteration==limit:
+            if iteration==plot_limit:
                 break
 
-            # CSI relations from tree
-            print("Tree {} generating CSI rels from tree".format(iteration))
-            csi_rels = stages_to_csi_rels(stages.copy(), ordering)
+            if plot_mcdags:
+                # CSI relations from tree
+                print("Tree {} generating CSI rels from tree".format(iteration))
+                csi_rels = stages_to_csi_rels(stages.copy(), ordering)
 
-            # Apply weak union, decomposition, specialization iteratively
-            # Intersection and contraction afterwards
-            print("Applying graphoid axioms")
-            csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
+                # Apply weak union, decomposition, specialization iteratively
+                # Intersection and contraction afterwards
+                print("Applying graphoid axioms")
+                csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
 
-            # Get all minimal context DAGs of this CSTree
-            print("Generating minimal contexts and minimal context DAGs")
-            all_mc_dags = minimal_context_dags(ordering, csi_rels.copy(), self.val_dict)
-            num_mc_dags = len(all_mc_dags)
-            nodes = len(all_mc_dags[0][1].nodes)
-            fig = plt.figure(figsize=(24,12))
-            main_ax = fig.add_subplot(111)
-            tree_ax = plt.subplot(2,1,2)
-            dag_ax  = [plt.subplot(2, num_mc_dags, i+1) for i in range(num_mc_dags)]
-            tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
+                # Get all minimal context DAGs of this CSTree
+                print("Generating minimal contexts and minimal context DAGs")
+                all_mc_dags = minimal_context_dags(ordering, csi_rels.copy(), self.val_dict)
+                num_mc_dags = len(all_mc_dags)
+                fig = plt.figure(figsize=(24,12))
+                main_ax = fig.add_subplot(111)
+                tree_ax = plt.subplot(2,1,2)
+                dag_ax  = [plt.subplot(2, num_mc_dags, i+1) for i in range(num_mc_dags)]
+                tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
 
-            if nodes < 8:
-                cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
-                tree_pos = graphviz_layout(tree, prog="dot", args="")
-                tree_ax.set_ylabel(cstree_ylabel)
-            else:
-                tree_pos = graphviz_layout(tree, prog="twopi", args="")
-
-            nx.draw_networkx(tree, node_color=tree_node_colors, ax=tree_ax, pos=tree_pos,
-                    with_labels=False, font_color="white", linewidths=1)
-            
-            tree_ax.collections[0].set_edgecolor("#000000")
-
-            for i, (minimal_context, dag) in enumerate(all_mc_dags):
-                options = {"node_color":"white", "node_size":1000}
-                if minimal_context!=():
-                    mcdag_title = "".join(["$X_{}={}$  ".format(minimal_context[i][0],minimal_context[i][1]) for i in range(len(minimal_context))])
+                if nodes < 8:
+                    cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
+                    tree_pos = graphviz_layout(tree, prog="dot", args="")
+                    tree_ax.set_ylabel(cstree_ylabel)
                 else:
-                    mcdag_title = "Empty"
-                dag_ax[i].set_title(mcdag_title)
-                dag_pos = nx.drawing.layout.shell_layout(dag)
-                nx.draw_networkx(dag, pos=dag_pos, ax=dag_ax[i], **options)
-                dag_ax[i].collections[0].set_edgecolor("#000000")
-            if save_dir:
-                plt.savefig(save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
+                    tree_pos = graphviz_layout(tree, prog="twopi", args="")
 
-            plt.show()
+                nx.draw_networkx(tree, node_color=tree_node_colors, ax=tree_ax, pos=tree_pos,
+                        with_labels=False, font_color="white", linewidths=1)
 
+                tree_ax.collections[0].set_edgecolor("#000000")
+
+                for i, (minimal_context, dag) in enumerate(all_mc_dags):
+                    options = {"node_color":"white", "node_size":1000}
+                    if minimal_context!=():
+                        mcdag_title = "".join(["$X_{}={}$  ".format(minimal_context[i][0],minimal_context[i][1]) for i in range(len(minimal_context))])
+                    else:
+                        mcdag_title = "Empty"
+                    dag_ax[i].set_title(mcdag_title)
+                    dag_pos = nx.drawing.layout.shell_layout(dag)
+                    nx.draw_networkx(dag, pos=dag_pos, ax=dag_ax[i], **options)
+                    dag_ax[i].collections[0].set_edgecolor("#000000")
+                if save_dir:
+                    plt.savefig(save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
+
+                plt.show()
+
+            else:
+                # If we do not plot the minimal context DAGs
+                fig = plt.figure(figsize=(24,12))
+                tree_ax = fig.add_subplot(111)
+                tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
+
+                if nodes < 8:
+                    cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
+                    tree_pos = graphviz_layout(tree, prog="dot", args="")
+                    tree_ax.set_ylabel(cstree_ylabel)
+                else:
+                    tree_pos = graphviz_layout(tree, prog="twopi", args="")
+
+                nx.draw_networkx(tree, node_color=tree_node_colors, ax=tree_ax, pos=tree_pos,
+                        with_labels=False, font_color="white", linewidths=1)
+
+                tree_ax.collections[0].set_edgecolor("#000000")
+
+                plt.show()
 
     
 
@@ -147,7 +172,8 @@ class CSTree(object):
               all_trees=True,
               dag =None,
               pc_method="pgmpy",
-              csi_test="anderson"):
+              csi_test="anderson",
+              learn_limit=None):
 
         # If user provides DAG
         if dag:
@@ -180,6 +206,13 @@ class CSTree(object):
         # To store the CSTrees and resulting stages
         trees = []
 
+        # Limits to see results quicker
+        if learn_limit:
+            if len(dags_bn)>learn_limit:
+                dags_bn = random.sample(dags_bn,learn_limit)
+                
+                
+
         # For each DAG in the MEC
         for mec_dag_num, mec_dag in enumerate(dags_bn):
             assert len(mec_dag.edges) == mec_dag_edges
@@ -188,6 +221,9 @@ class CSTree(object):
                 orderings = [ordering]
             else:
                 orderings = nx.all_topological_sorts(mec_dag)
+                if learn_limit:
+                    orderings = [list(orderings)[0]]
+
 
             # For each valid causal ordering
             for ordering_num, ordering in enumerate(orderings):
@@ -218,6 +254,10 @@ class CSTree(object):
                         trees.append((tree, stages, color_scheme, ordering))
                     if stages_after_csitests==min_stages:
                         trees.append((tree,stages,color_scheme, ordering))
+                        
+                if learn_limit and len(trees)==learn_limit and all_trees:
+                    break
+                    
 
         return trees      
                 

@@ -139,7 +139,7 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
         # Nodes in current level
         current_level_nodes = tuple([(var, val) for val in vals])
                 
-        # If we are at the first variable, construct the Root node
+        # If we are at the first level for the first variable, construct the Root node
         if ordering.index(var)==0:
             edges = [("Root", (n,)) for n in current_level_nodes]
         # Otherwise chain from previous roots
@@ -158,7 +158,8 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
         
         if dag:
             # TODO Delete below
-            # π_k+1
+            # If we are at level k, this is variable π_k+1
+            # Since Python indexes at 0, we do not access the index level+1
             next_var       = ordering[level]
  
             # Parents_G(π_k+1)
@@ -213,6 +214,8 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
 
                         for node in stage_nodes:
                             color_scheme[node]=color
+
+            
             # Description of coloring tree from DAG
             # get the variable after var, v_i+1
             # get parents of v_i+1 in DAG, call it Parents(v_i+1)
@@ -246,7 +249,10 @@ def stages_to_csi_rels(stages, ordering):
             X_k                  = {ordering[l]}
             X_C                  = set([var for (var,val) in common_context])
             X_k_minus_one        = set([var for (var, val) in nodes[0]])
-            X_k_minus_one_diff_C = X_k_minus_one.difference(X_C)
+            if X_C == set():
+                X_k_minus_one_diff_C = X_k_minus_one.copy()
+            else:
+                X_k_minus_one_diff_C = X_k_minus_one.difference(X_C)
             
             csi_rels.append((X_k, X_k_minus_one_diff_C, set(), common_context))
     return csi_rels

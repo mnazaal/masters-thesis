@@ -30,12 +30,14 @@ def synthetic_dag_binarydata_experiment(nodes, p_edge, n, use_dag=False):
     cstree_object.visualize(ordering=ordering, use_dag=use_dag)
 
 
-def dermatology_experiment():
-    dataset = dermatology_data()
+def dermatology_experiment(grouped=True):
+    dataset = dermatology_data(grouped)
 
     cstree_object = CSTree(dataset)
 
-    cstree_object.learn(all_trees=False)
+    #cstree_object.learn(all_trees=False)
+
+    cstree_object.visualize()
     
 def coronary_experiment():
     # Load dataset
@@ -50,4 +52,4 @@ def coronary_experiment():
 
 #synthetic_dag_binarydata_experiment(9, 0.2, 350)
 #coronary_experiment()
-dermatology_experiment()
+dermatology_experiment(grouped=True)

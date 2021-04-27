@@ -7,7 +7,7 @@ import random
 
 from utils.utils import dag_topo_sort, parents
 #from utils.COMBO.combofunc import COMBO
-from sklearn.feature_selection import RFECV
+from sklearn.feature_selection import RFECV, RFE
 from sklearn.svm import SVR, LinearSVC
 from sklearn.linear_model import LogisticRegressionCV
 from pandas.plotting import scatter_matrix
@@ -18,7 +18,7 @@ import seaborn as sns
 # Remember to cite scikit-learn
 
 
-def dermatology_data():
+def dermatology_data(grouped=True):
     # Remember to cite https://archive.ics.uci.edu/ml/datasets/Dermatology
     dermatology_pd = pd.read_csv("../datasets/dermatology.csv")
     print(dermatology_pd.shape)
@@ -71,15 +71,17 @@ def dermatology_data():
 
     # Select the dataframe with these features
     reduced_dermatology_pd = dermatology_pd[feature_names]
-    colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(len(feature_names)) ]
+
     #sns.pairplot(selected_features, hue=dermatology_pd.columns[-1], diag_kind="hist")
     #plt.show()
     print("Selected features are {}".format(feature_names))
     if "11: family history, (0 or 1)" in feature_names:
         print("Warning family history chosen as a feature, the mapping from scores to binary values need manual fixing")
+
+    if grouped:
+        dermatology_dict = {0:0,1:0,2:1,3:1}
+        reduced_dermatology_pd = reduced_dermatology_pd.replace(dermatology_dict)
         
-    dermatology_dict = {0:0,1:0,2:1,3:1}
-    reduced_dermatology_pd = reduced_dermatology_pd.replace(dermatology_dict)
     dermatology_np = reduced_dermatology_pd.values.astype(np.int)
 
     # Put the predictor values in
@@ -90,11 +92,58 @@ def dermatology_data():
     
 
     # Partition each feature into 2 groups which jointly maximize some score
+    # Using Combinatorial Bayesian optimization
     # 1 - {1}{2,3,4}, 2 - {1,2}{3,4}, 3 - {1,2,3}{4}
+
+
+def micecortex_data():
+    # Requires xlrd package
+    micecortex_pd = pd.read_excel("../datasets/micecortex.xls")
+    micecortex_pd = micecortex_pd.dropna()
+    micecortex_pd = micecortex_pd.drop(columns=["MouseID", "Genotype"])
+
+    # TODO Apply reindex
+
+    # Automatically mapping non-numerical categories to ints
+    for col in micecortex_pd.select_dtypes(exclude=["int","double","float" ]).columns:
+        micecortex_pd[col] = pd.Categorical(micecortex_pd[col], categories=micecortex_pd[col].unique()).codes
+        
+
+    X, y = micecortex_pd.values[:,:-1], micecortex_pd.values[:,-1]
+    estimator = LinearSVC()
+    #selector = RFECV(estimator, step=1, cv=5)
+    selector = RFE(estimator, n_features_to_select=10, step=1)
+    selector = selector.fit(X,y)
+    feature_indices = [i for i in range(X.shape[1]) if selector.support_[i]]
+    feature_names   = [micecortex_pd.columns[i] for i in feature_indices]
+
+    reduced_micecortex_pd = micecortex_pd[feature_names]
+
+    print(reduced_micecortex_pd)
+
+    reduced_micecortex_pd.to_csv("reducedfeatures.csv")
+
+    # We divide each feature into 2 classes based on the median
+    reduced_micecortex_medians = reduced_micecortex_pd.median()
+
     
+    reduced_micecortex_pd["DYRK1A_N"] = reduced_micecortex_pd["DYRK1A_N"]>reduced_micecortex_pd["DYRK1A_N"].median()
+
+    reduced_micecortex_pd.to_csv("reducedfeatures1.csv")
+
+    for i,feature in enumerate(feature_names):
+        median = reduced_micecortex_medians[i]
+        reduced_micecortex_pd[:,i] = reduced_micecortex_pd[feature].ge(median).astype(int)
+
     
-    #dermatology_pd.columns = []
-dermatology_data()
+    micecortex_np = reduced_micecortex_pd.values.astype(np.int)
+
+    micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
+
+    print(micecortex_np)
+
+micecortex_data()
+    
 
 def coronary_data():
     coronary_pd      = pd.read_csv("../datasets/coronary.csv")
