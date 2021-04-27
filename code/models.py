@@ -1,6 +1,5 @@
-from utils import cpdag_to_dags, generate_vals, parents,generate_state_space
+from utils.utils import cpdag_to_dags, generate_vals, parents,generate_state_space, generate_dag, generate_state_space, nodes_per_tree
 from cstree import stages_to_csi_rels, dag_to_cstree, color_cstree
-from utils import generate_dag, generate_state_space, nodes_per_tree
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
 import networkx as nx
@@ -8,7 +7,7 @@ from pgmpy.estimators import PC
 from causaldag import pdag
 import pandas as pd
 import matplotlib.pyplot as plt
-from pc import estimate_cpdag, estimate_skeleton
+from utils.pc import estimate_cpdag, estimate_skeleton
 
 from networkx.drawing.nx_agraph import graphviz_layout
 
@@ -113,24 +112,30 @@ class CSTree(object):
             tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
 
             if nodes < 8:
+                cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
                 tree_pos = graphviz_layout(tree, prog="dot", args="")
+                tree_ax.set_ylabel(cstree_ylabel)
             else:
                 tree_pos = graphviz_layout(tree, prog="twopi", args="")
 
-            nx.draw(tree, node_color=tree_node_colors, ax=tree_ax, pos=tree_pos,
+            nx.draw_networkx(tree, node_color=tree_node_colors, ax=tree_ax, pos=tree_pos,
                     with_labels=False, font_color="white", linewidths=1)
-            tree_ax.set_title("Ordering is "+"".join(str(ordering)))
-            tree_ax.set_ylabel("".join(str(ordering)))
+            
             tree_ax.collections[0].set_edgecolor("#000000")
 
             for i, (minimal_context, dag) in enumerate(all_mc_dags):
                 options = {"node_color":"white", "node_size":1000}
-                dag_ax[i].set_title("MC DAG {}".format(minimal_context))
+                if minimal_context!=():
+                    mcdag_title = "".join(["$X_{}={}$  ".format(minimal_context[i][0],minimal_context[i][1]) for i in range(len(minimal_context))])
+                else:
+                    mcdag_title = "Empty"
+                dag_ax[i].set_title(mcdag_title)
                 dag_pos = nx.drawing.layout.shell_layout(dag)
                 nx.draw_networkx(dag, pos=dag_pos, ax=dag_ax[i], **options)
                 dag_ax[i].collections[0].set_edgecolor("#000000")
             if save_dir:
                 plt.savefig(save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
+
             plt.show()
 
 
@@ -159,7 +164,6 @@ class CSTree(object):
         # above which respect this ordering
         if ordering:
             ordering_given=True
-            dags_bn = self.all_mec_dags(pc_method)
             dags_bn = [dag for dag in dags_bn if ordering in nx.all_topological_sorts(dag)]
             if dags_bn == []:
                 raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")

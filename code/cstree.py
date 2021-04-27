@@ -10,7 +10,7 @@ import networkx as nx
 from scipy.stats import epps_singleton_2samp,anderson_ksamp
 from gsq.ci_tests import ci_test_bin, ci_test_dis
 from networkx.drawing.nx_agraph import graphviz_layout
-from pc import estimate_cpdag, estimate_skeleton
+from utils.pc import estimate_cpdag, estimate_skeleton
 import pgmpy
 import pandas as pd
 from pgmpy.estimators import PC
@@ -18,10 +18,9 @@ from causaldag import pdag
 import numpy as np
 
 # Project imports
-from utils import contained, flatten, cpdag_to_dags, generate_vals, parents, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage
+from utils.utils import contained, flatten, cpdag_to_dags, generate_vals, parents, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage,nodes_per_tree
 from mincontexts import minimal_context_dags,binary_minimal_contexts
 from graphoid import decomposition, weak_union, intersection, graphoid_axioms
-from utils import nodes_per_tree
 
 
 #logger= logging.getLogger(__name__)
@@ -318,9 +317,9 @@ def color_cstree(c,
 
         #print("level {} stages {}".format(level,stages_l))
         
-
-        #stages_l = stages_l.copy()
-        if len(stages_l) == 1:
+        if len(stages_l) == 1 and len(color_scheme_l)==len(nodes_l):
+            # If we have only one stage that contains all the nodes in this level
+            # We go to the next level
             level+=1
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)

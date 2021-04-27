@@ -3,15 +3,105 @@ import networkx as nx
 import pandas as pd
 from pgmpy.factors.discrete import TabularCPD
 import bnlearn
+import random
 
-from utils import dag_topo_sort, parents
+from utils.utils import dag_topo_sort, parents
+#from utils.COMBO.combofunc import COMBO
+from sklearn.feature_selection import RFECV
+from sklearn.svm import SVR, LinearSVC
+from sklearn.linear_model import LogisticRegressionCV
+from pandas.plotting import scatter_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# Remember to cite scikit-learn
+
+
+def dermatology_data():
+    # Remember to cite https://archive.ics.uci.edu/ml/datasets/Dermatology
+    dermatology_pd = pd.read_csv("../datasets/dermatology.csv")
+    print(dermatology_pd.shape)
+    dermatology_pd.columns=[
+        "1: erythema",
+        "2: scaling",
+        "3: definite borders",
+        "4: itching",
+        "5: koebner phenomenon",
+        "6: polygonal papules",
+        "7: follicular papules",
+        "8: oral mucosal involvement",
+        "9: knee and elbow involvement",
+        "10: scalp involvement",
+        "11: family history, (0 or 1)",
+        "34: Age (linear)",
+        "12: melanin incontinence",
+        "13: eosinophils in the infiltrate",
+        "14: PNL infiltrate",
+        "15: fibrosis of the papillary dermis",
+        "16: exocytosis",
+        "17: acanthosis",
+        "18: hyperkeratosis",
+        "19: parakeratosis",
+        "20: clubbing of the rete ridges",
+        "21: elongation of the rete ridges",
+        "22: thinning of the suprapapillary epidermis",
+        "23: spongiform pustule",
+        "24: munro microabcess",
+        "25: focal hypergranulosis",
+        "26: disappearance of the granular layer",
+        "27: vacuolisation and damage of basal layer",
+        "28: spongiosis",
+        "29: saw-tooth appearance of retes",
+        "30: follicular horn plug",
+        "31: perifollicular parakeratosis",
+        "32: inflammatory monoluclear inflitrate",
+        "33: band-like infiltrate",
+        "35: predictor"]
+    # -2 because we omit age and predictor in last variable
+    X, y = dermatology_pd.values[:,:-2], dermatology_pd.values[:,-1].astype('int')
+    estimator = LinearSVC()
+    #estimator = SVR(kernel="linear")
+    #estimator=LogisticRegressionCV()
+    selector = RFECV(estimator, step=1, cv=5)
+    selector = selector.fit(X,y)
+    feature_indices = [i for i in range(X.shape[1]) if selector.support_[i]]
+    feature_names   = [dermatology_pd.columns[i] for i in feature_indices]
+    #+[dermatology_pd.columns[-1]]
+
+    # Select the dataframe with these features
+    reduced_dermatology_pd = dermatology_pd[feature_names]
+    colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(len(feature_names)) ]
+    #sns.pairplot(selected_features, hue=dermatology_pd.columns[-1], diag_kind="hist")
+    #plt.show()
+    print("Selected features are {}".format(feature_names))
+    if "11: family history, (0 or 1)" in feature_names:
+        print("Warning family history chosen as a feature, the mapping from scores to binary values need manual fixing")
+        
+    dermatology_dict = {0:0,1:0,2:1,3:1}
+    reduced_dermatology_pd = reduced_dermatology_pd.replace(dermatology_dict)
+    dermatology_np = reduced_dermatology_pd.values.astype(np.int)
+
+    # Put the predictor values in
+    dermatology_np  = np.concatenate((dermatology_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
+    #print(np.unique(dermatology_np[:,-1]))
+
+    return dermatology_np
+    
+
+    # Partition each feature into 2 groups which jointly maximize some score
+    # 1 - {1}{2,3,4}, 2 - {1,2}{3,4}, 3 - {1,2,3}{4}
+    
+    
+    #dermatology_pd.columns = []
+dermatology_data()
 
 def coronary_data():
     coronary_pd      = pd.read_csv("../datasets/coronary.csv")
-    coronary_pd.columns = ["id:0", "S:1", "MW:2", "PW:3", "P:4", "L:5", "F:6"]
-    values_dict      = {"yes":1,"no" :0,"<140":0, ">140":1, "<3":0, ">3":1, "neg":0,"pos":1}
+    coronary_pd.columns = ["0:id", "1:S", "2:MW", "3:PWW", "4:P", "5:L", "6:F"]
+    coronary_dict      = {"yes":1,"no" :0,"<140":0, ">140":1, "<3":0, ">3":1, "neg":0,"pos":1}
     # Convert outcomes into numerical values
-    coronary_pd      = coronary_pd.replace(values_dict)
+    coronary_pd      = coronary_pd.replace(coronary_dict)
     # Convert into numpy array, 1st row is column names
     # and first column had id so we ignore these
     coronary_np      = coronary_pd.values[1:,1:].astype(np.int)

@@ -1,5 +1,5 @@
 from itertools import combinations
-from utils import generate_vals
+from utils.utils import generate_vals
 
 union        = lambda sets: set.union(*sets)
 intersection = lambda sets: set.intersection(*sets)
@@ -9,7 +9,7 @@ set_difference = lambda A,B: A.difference(B)
 def decomposition(csi_rel, pairwise=True):
     new_rels = []
     (A, B, S, C) = csi_rel
-    assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
+    #assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
 
     if len(B)==1:
         # If |B|=1 we cannot drop any element
@@ -27,7 +27,7 @@ def decomposition(csi_rel, pairwise=True):
 def specialization(csi_rel, val_dict, pairwise=True):
     new_rels = []
     (A,B,S,C) = csi_rel
-    assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
+    #assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
     
     if pairwise:
         if len(A)>1:
@@ -52,7 +52,7 @@ def specialization(csi_rel, val_dict, pairwise=True):
 def weak_union(csi_rel, pairwise=True):
     new_rels = []
     (A, B, S, C) = csi_rel
-    assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
+    #assert set.intersection(A,B,S,set([var for (var,val) in C]))==set()
 
     if len(B)==1:
         # Cannot push any element in B into
@@ -77,8 +77,8 @@ def intersection(csi_rels, memo, pairwise=True):
             (A1,B1,S1,C1) = rel1
             (A2,B2,S2,C2) = rel2
             
-            assert set.intersection(A1,B1,S1,set([var for (var,val) in C1]))==set()
-            assert set.intersection(A2,B2,S2,set([var for (var,val) in C2]))==set()
+            #assert set.intersection(A1,B1,S1,set([var for (var,val) in C1]))==set()
+            #assert set.intersection(A2,B2,S2,set([var for (var,val) in C2]))==set()
             if len(A1)>1 or len(A2)>1:
                 raise ValueError("Using pairwise case but |A|>1")
             if A1==A2 and set(C1)==set(C2) and B1.union(S1)==B2.union(S2):
@@ -105,8 +105,8 @@ def contraction(csi_rels, memo, pairwise=True):
             (A1,B1,S1,C1) = rel1
             (A2,B2,S2,C2) = rel2
             
-            assert set.intersection(A1,B1,S1,set([var for (var,val) in C1]))==set()
-            assert set.intersection(A2,B2,S2,set([var for (var,val) in C2]))==set()
+            #assert set.intersection(A1,B1,S1,set([var for (var,val) in C1]))==set()
+            #assert set.intersection(A2,B2,S2,set([var for (var,val) in C2]))==set()
             if len(A1)>1 or len(A2)>1:
                 raise ValueError("Using pairwise case but |A|>1")
             if A1==A2 and set(C1)==set(C2) and S1==B2.union(S2):
@@ -120,6 +120,7 @@ def contraction(csi_rels, memo, pairwise=True):
 
 def graphoid_axioms(csi_rels, val_dict):
     # TODO Removing the while condition
+    print("Started applying weak union and decomposition to {} relations".format(len(csi_rels)))
     J = []
     if csi_rels == []:
         all_axioms_return_empty =  True
@@ -157,12 +158,14 @@ def graphoid_axioms(csi_rels, val_dict):
             csi_rels.remove(csi_rel)
             if csi_rels == []:
                 all_axioms_return_empty = True
-    print("Applying specialization")
-    for rel in J:
-        J+=specialization(rel, val_dict)
-    print("Applying intersection")
+
+    print("Applying intersection to {} relations".format(len(J)))
     intersected, _ = intersection(J.copy(), [])
     #contracted,  _ = contraction(J.copy(),[])
     J += intersected
     #J += contracted
+    print("Applying specialization to {} relations".format(len(J)))
+    for rel in J:
+        J+=specialization(rel, val_dict)
+    print("Giving {} relations to get minimal contexts".format(len(J)))
     return J

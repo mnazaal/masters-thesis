@@ -10,7 +10,7 @@ from datasets import synthetic_dag_binarydata, coronary_data
 from graphoid import decomposition, weak_union, weak_union, decomposition, graphoid_axioms
 from algorithms import dag_to_ci_model
 from mincontexts import binary_minimal_contexts,minimal_context_dags
-from utils import binary_dict, ternary_dict, mixed_dict, generate_dag, nodes_per_tree
+from utils.utils import binary_dict, ternary_dict, mixed_dict, generate_dag, nodes_per_tree
 
 # Arrange,  Act,  Assert
 # pytst prefixtures
@@ -236,7 +236,7 @@ def  test_graphoid_pairwise():
     cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
 
-    closure = graphoid_axioms(csi_rels.copy())
+    closure = graphoid_axioms(csi_rels.copy(), val_dict)
 
     assert len(closure)>len(csi_rels)
 
@@ -250,7 +250,7 @@ def test_minimal_contexts_randdag():
     cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
 
-    closure = graphoid_axioms(csi_rels.copy())
+    closure = graphoid_axioms(csi_rels.copy(),val_dict)
 
    # print(len(csi_rels),len(closure))
 

@@ -8,7 +8,7 @@ import networkx as nx
 
 # Project imports
 from legacy import Variable, Context, Distribution, CiRelation
-from utils import contained, flatten
+from utils.utils import contained, flatten
 
 # TODO Write wrappers which uses bnlearn, causaldag, pc packages
 # rather than calling them directly in between main code

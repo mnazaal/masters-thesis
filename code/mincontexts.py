@@ -3,7 +3,7 @@ import time
 
 import networkx as nx
 
-from utils import generate_vals, context_is_contained, parents
+from utils.utils import generate_vals, context_is_contained, parents
             
 union = lambda sets : set.union(*sets)
 
