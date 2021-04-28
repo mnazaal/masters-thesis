@@ -14,7 +14,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 
 from utils.utils import contained, flatten, cpdag_to_dags, generate_vals, parents, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage,get_size, binary_dict
 from cstree import  cstree_pc, stages_to_csi_rels
-from datasets import synthetic_dag_binarydata, bnlearn_data,coronary_data, dermatology_data, micecortex_data
+from datasets import synthetic_dag_binarydata, bnlearn_data,coronary_data, dermatology_data, micecortex_data, susy_data
 from utils.utils import generate_dag, binary_dict, generate_state_space
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts

@@ -136,8 +136,11 @@ def micecortex_data(num_features=10):
     return micecortex_np
 
 
-def susy_data():
-    susy_pd      = pd.read_csv("../../../../SUSY.csv")
+def susy_data(laptop=True):
+    if laptop:
+        susy_pd      = pd.read_csv("../../../../Downloads/SUSY.csv")
+    else:
+        susy_pd =  pd.read_csv("../datasets/SUSY.csv")
     susy_medians = susy_pd.median()
 
     for i,col in enumerate(susy_pd.columns[1:]):

@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from utils.pc import estimate_cpdag, estimate_skeleton
 import random
+import math
 
 from networkx.drawing.nx_agraph import graphviz_layout
 
@@ -105,8 +106,8 @@ class CSTree(object):
             assert len(x)==node
             for i in range(nodes):
                 for C in al_stages[i+1]:
-                    numerator = pass
-                    denominator=pass
+                    numerator = 1
+                    denominator=1
                     p = p*numerator/denominator
         mle = math.prod(list(map(lambda x:pr(x) , list(self.dataset))))
                 
@@ -187,8 +188,8 @@ class CSTree(object):
                     dag_ax[i].collections[0].set_edgecolor("#000000")
                 if save_dir:
                     plt.savefig(save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
-
-                plt.show()
+                else:
+                    plt.show()
 
             else:
                 # If we do not plot the minimal context DAGs
@@ -208,7 +209,10 @@ class CSTree(object):
 
                 tree_ax.collections[0].set_edgecolor("#000000")
 
-                plt.show()
+                if save_dir:
+                    plt.savefig(save_dir+str(iteration)+"_cstree.pdf")
+                else:
+                    plt.show()
 
     
 
