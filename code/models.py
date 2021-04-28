@@ -15,6 +15,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 class CSTree(object):
     def __init__(self, dataset, val_dict=None):
         self.dataset=dataset
+        self.best_cstrees = None
         if val_dict:
             self.val_dict=val_dict
         else:
@@ -70,8 +71,50 @@ class CSTree(object):
         return dags_bn
 
 
-    def cstree_bic(tree, stages):
-        pass
+    def cstree_bic(self, tree, stages, color_scheme):
+        # Can vectorize this perhaps
+        nodes = len(self.val_dict)
+        sizes = list(self.val_dict.values())
+        u_shape = tuple(len(sizes[i]) for i in range(nodes))
+        u = np.zeros(u_shape)
+
+        for i in range(self.dataset.shape[0]):
+            u[tuple(self.dataset[i,:])] +=1
+
+        # -1 because index i corresponds to variable i+1
+        u_x_C = lambda C: np.sum(u, axis=tuple(set(ordering).difference(set(c-1 for c in C))))
+
+        for i in range(1,len(ordering)+1):
+            all_stages[i]=[]
+        
+        for node in tree.nodes:
+            level = len(node)
+            color =  color_scheme.get(node, "singleton-stage")
+            if color=="singleton-stage":
+                common_c_vars = [var for (var,val) in node]
+                all_stages[level].append(common_c_vars)
+            else:
+                nodes = stages[color]
+                common_c = shared_contexts(nodes[0],nodes[1])
+                common_c_vars = [var for (var,val) in common_c]
+                all_stages[level].append(common_c_vars)
+
+        # TODO Store stages by their common context and level rather than colors
+        def pr(x):
+            p=1
+            assert len(x)==node
+            for i in range(nodes):
+                for C in al_stages[i+1]:
+                    numerator = pass
+                    denominator=pass
+                    p = p*numerator/denominator
+        mle = math.prod(list(map(lambda x:pr(x) , list(self.dataset))))
+                
+                
+                
+            
+            
+        
 
         
         
@@ -86,10 +129,13 @@ class CSTree(object):
                   pc_method="pgmpy",
                   csi_test="anderson",
                   learn_limit = 3,
+                  last_var=None,
                   plot_limit = 3,
                   save_dir=None):
+
+        # Learn the CSTrees and visualize them
         iteration=0
-        trees = self.learn(ordering, use_dag,all_trees, dag, pc_method,csi_test,learn_limit)
+        trees = self.learn(ordering, use_dag,all_trees, dag, pc_method,csi_test,learn_limit,last_var)
         nodes = len(list(self.val_dict.keys()))
         for (tree, stages, color_scheme, ordering) in trees:
             # Save information like CSI relations from it etc
@@ -172,8 +218,11 @@ class CSTree(object):
               all_trees=True,
               dag =None,
               pc_method="pgmpy",
-              csi_test="anderson",
-              learn_limit=None):
+              csi_test="epps",
+              learn_limit=None,
+              last_var=None):
+        # Learn the CSTrees and return them as a list containing
+        # the tree, its non-singleton stages, ordering and a dictionary with the color scheme
 
         # If user provides DAG
         if dag:
@@ -221,43 +270,75 @@ class CSTree(object):
                 orderings = [ordering]
             else:
                 orderings = nx.all_topological_sorts(mec_dag)
+                # We need a separate generator to count ordering
+                # if we do not want to use it up in the counting process
+                orderings_for_counting =  nx.all_topological_sorts(mec_dag)
                 if learn_limit:
                     orderings = [list(orderings)[0]]
 
+            print("MEC DAG {} with {} edges which are {} has {} orderings".format(mec_dag_num+1, len(list(mec_dag.edges)), list(mec_dag.edges), len(list(orderings_for_counting))))
+
 
             # For each valid causal ordering
+            # Remember orderings is a generator so copy it when you use it
+            # since any use of it will empty its elements
+            
             for ordering_num, ordering in enumerate(orderings):
+                if last_var:
+                    print("Skipping ordering {} since the last variable is not {}".format(ordering, last_var))
+                    continue
+
+                
                 if not use_dag:
                     mec_dag=None
 
                 # Generate CSTree from DAG
-                print("MEC DAG {} ordering {}, applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
+                print("="*40)
+                print("MEC DAG number {} ordering number {} applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
                 tree, stages,color_scheme = dag_to_cstree(self.val_dict, ordering, mec_dag)
 
                 stages_after_dag = (len(tree.nodes)-1)-len(color_scheme)+len(stages)
+                print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
+
+                if get_bic:
+                    dag_bic = cstree_bic(tree, stages.copy())
 
                 # Learn CSI relations
                 print("Learning CSI relations")
                 tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, stages.copy(), color_scheme.copy(), test=csi_test)
 
                 stages_after_csitests = (len(tree.nodes)-1)-len(color_scheme)+len(stages)
+                print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
+
+                # Compute BIC here
+                if get_bic:
+                    bic=self.cstree_bic(tree, stages.copy())                    
+                    print("BIC after converting DAG to CSTree is {}, after CSI relations is {}".format(dag_bic,bic))
+                else:
+                    bic=None
+                    
+                    
 
                 if use_dag:
                     assert stages_after_dag>=stages_after_csitests
                 print("Adding learnt CSTree to list")
                 # If we are saving all trees
                 if all_trees:
-                    trees.append((tree, stages, color_scheme, ordering))
+                    trees.append((tree, stages, color_scheme, ordering, bic))
                 # If we are saving trees with the least stages
                 else:
                     if stages_after_csitests<min_stages:
-                        trees.append((tree, stages, color_scheme, ordering))
+                        min_stages = stages_after_csitests
+                        trees.append((tree, stages, color_scheme, ordering, bic))
                     if stages_after_csitests==min_stages:
-                        trees.append((tree,stages,color_scheme, ordering))
+                        trees.append((tree,stages,color_scheme, ordering, bic))
                         
                 if learn_limit and len(trees)==learn_limit and all_trees:
                     break
-                    
+
+        if not all_trees:
+            print("{} CSTrees have the same number of minimum stages, which is {}".format(len(trees), min_stages))
+            self.best_cstrees = trees.copy()
 
         return trees      
                 

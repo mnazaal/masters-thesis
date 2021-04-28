@@ -423,7 +423,7 @@ def color_cstree(c,
                         else:
                             same_distr=False
                 if test=="anderson":
-                    if len(data_n1)<5 or len(data_n2)<5 or skewed_data or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1:
+                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1:
                         less_data_counter +=1
                         p=0
                         same_distr=False
@@ -508,19 +508,12 @@ def color_cstree(c,
         level +=1
         
         #print("level ",level,"must have {} stages".format(stages_added_l-stages_removed_l))
-        
-    if use_dag:
-        pass
-        #assert len(csi_stages)<=len(stages)
+
     #print("skip ratio",skipped/(skipped+not_skipped))
 
 
     csi_stages1,color_scheme1 = {},{}
     for color_scheme in color_scheme_list:
-        
-        #print(color_scheme)
-        #print(len(color_scheme))
-        #print(len(set(color_scheme.values())))
 
         for common_context in set(color_scheme.values()):
             color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
@@ -534,24 +527,7 @@ def color_cstree(c,
         pass
         #assert len(csi_stages1)<=len(stages)
 
-    #for node, context in color_scheme.items():
-        
-    
-    #csi_stages1={}
-    #for n,c11 in color_scheme.items():
-    #    csi_stages1[c]=n
-    """
-    csi_stages1, color_scheme1 = {},{}
-    for stages_per_level in csi_stages:
-        for context,nodes in stages_per_level.items():
-            color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-            csi_stages1[color] = list(nodes)
-            for node in nodes:
-                color_scheme1[node]=color"""
-    
-    #print("FINAL STAGE COUNT", len(csi_stages1), csi_stages1)
-
-        #print(shared_contexts(v[0],v[1]))
+    print("Skipped {} tests because of few data".format(less_data_counter))
     
     return c, csi_stages1, color_scheme1
 
