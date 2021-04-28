@@ -134,6 +134,16 @@ def micecortex_data(num_features=10):
     micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
 
     return micecortex_np
+
+
+def susy_data():
+    susy_pd      = pd.read_csv("../../../../SUSY.csv")
+    susy_medians = susy_pd.median()
+
+    for i,col in enumerate(susy_pd.columns[1:]):
+        susy_pd[col] =  (susy_pd[col]> susy_medians[i]).astype(int)
+    susy_np = susy_pd.values[:,1:]
+    return susy_np
     
 
 def coronary_data():

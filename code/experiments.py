@@ -48,7 +48,15 @@ def micecortex_experiment(num_features=10):
     cstree_object.visualize(all_trees=False, plot_limit=None, learn_limit=None)
 
     
+def susy_experiment():
+    dataset = susy_data()
+
+    cstree_object = CSTree(dataset)
+
+    cstree_object.visualize(all_trees=False)
+
     
+
     
 def coronary_experiment():
     # Load dataset
@@ -65,25 +73,5 @@ def coronary_experiment():
 #coronary_experiment()
 #dermatology_experiment(grouped=True)
 #micecortex_experiment()
+susy_experiment()
 
-dataset=coronary_data()
-val_dict = binary_dict(6)
-
-shape = tuple(len(list(val_dict.values())[i]) for i in range(len(val_dict)))
-table = np.zeros(shape)
-
-print(table.shape)
-
-
-print(table[0,0,0,0,0,0])
-
-print(dataset.shape)
-
-print(dataset.tolist().count(list([0,0,0,0,0,0])))
-
-for n in range(dataset.shape[0]):
-    table[tuple(dataset[n,:])]+=1
-
-test_array = np.random.rand(3,3,3)
-print(test_array)
-print(np.sum(test_array, axis=(2,1)))
