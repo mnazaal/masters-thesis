@@ -49,11 +49,11 @@ def micecortex_experiment(num_features=10):
 
     
 def susy_experiment():
-    dataset = susy_data()
+    dataset = susy_data(False)
 
     cstree_object = CSTree(dataset)
 
-    cstree_object.visualize(all_trees=False)
+    cstree_object.visualize(all_trees=False, save_dir="here", use_dag=False)
 
     
 

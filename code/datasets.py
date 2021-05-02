@@ -141,11 +141,15 @@ def susy_data(laptop=True):
         susy_pd      = pd.read_csv("../../../../Downloads/SUSY.csv")
     else:
         susy_pd =  pd.read_csv("../datasets/SUSY.csv")
+
+
+    susy_pd      = susy_pd.sample(frac=0.02, replace=True, random_state=1)
+    print("Dataset has shape {}".format(susy_pd.shape))
     susy_medians = susy_pd.median()
 
     for i,col in enumerate(susy_pd.columns[1:]):
         susy_pd[col] =  (susy_pd[col]> susy_medians[i]).astype(int)
-    susy_np = susy_pd.values[:,1:]
+    susy_np = susy_pd.values[1:,:].astype(np.int)
     return susy_np
     
 

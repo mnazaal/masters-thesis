@@ -61,6 +61,9 @@ class CSTree(object):
     def all_mec_dags(self, pc_method="pgmpy"):
         # Wrapper to get the DAG as a networkx DiGraph
         cpdag = self.cpdag_from_pc(pc_method)
+
+        print("CPDAG from PC has edges {}".format(list(cpdag.edges)))
+        
         cpdag = pdag.PDAG(nodes=cpdag.nodes, edges=cpdag.edges)
         dags_bn = []
         all_arcs = cpdag.all_dags()
@@ -83,7 +86,9 @@ class CSTree(object):
             u[tuple(self.dataset[i,:])] +=1
 
         # -1 because index i corresponds to variable i+1
-        u_x_C = lambda C: np.sum(u, axis=tuple(set(ordering).difference(set(c-1 for c in C))))
+        u_C = lambda C: np.sum(u, axis=tuple(set(ordering).difference(set(c-1 for c in C))))
+        indexer = lambda x: [list(range(len(x)))[i] for i in range]
+        u_x_C = lambda x, C: u_C(C)[tuple(np.argsort(list(x)))]
 
         for i in range(1,len(ordering)+1):
             all_stages[i]=[]
@@ -106,9 +111,11 @@ class CSTree(object):
             assert len(x)==node
             for i in range(nodes):
                 for C in al_stages[i+1]:
-                    numerator = 1
-                    denominator=1
+                    x=[i for i in x if i in C]
+                    numerator   = u_x_C(x,list(set(C).union(i+1)))
+                    denominator = u_x_C(x,list(C))
                     p = p*numerator/denominator
+        
         mle = math.prod(list(map(lambda x:pr(x) , list(self.dataset))))
                 
                 
@@ -224,7 +231,8 @@ class CSTree(object):
               pc_method="pgmpy",
               csi_test="epps",
               learn_limit=None,
-              last_var=None):
+              last_var=None,
+              get_bic=False):
         # Learn the CSTrees and return them as a list containing
         # the tree, its non-singleton stages, ordering and a dictionary with the color scheme
 
@@ -276,11 +284,13 @@ class CSTree(object):
                 orderings = nx.all_topological_sorts(mec_dag)
                 # We need a separate generator to count ordering
                 # if we do not want to use it up in the counting process
-                orderings_for_counting =  nx.all_topological_sorts(mec_dag)
+                #orderings_for_counting =  nx.all_topological_sorts(mec_dag)
+                # TODO Put continue statement instead of converting
+                # orderings to list which can take long time for some DAGs
                 if learn_limit:
-                    orderings = [list(orderings)[0]]
+                    orderings = [next(orderings)]
 
-            print("MEC DAG {} with {} edges which are {} has {} orderings".format(mec_dag_num+1, len(list(mec_dag.edges)), list(mec_dag.edges), len(list(orderings_for_counting))))
+            print("MEC DAG {} with {} edges which are {} has {} orderings".format(mec_dag_num+1, len(list(mec_dag.edges)), list(mec_dag.edges), "not printed"))
 
 
             # For each valid causal ordering
