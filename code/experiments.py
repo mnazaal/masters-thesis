@@ -26,12 +26,16 @@ from models import CSTree
 
 ex1 = Experiment("empty_context_dag")
 ex2 = Experiment("synthetic_dag_binarydata")
-#ex3 = Experiment("dermatology")
-#ex4 = Experiment("micecortex")
-#ex5 = Experiment("susy")
+ex3 = Experiment("dermatology")
+ex4 = Experiment("micecortex")
+ex5 = Experiment("susy")
+
+@ex1.config
+def empty_context_dag_config():
+    nodes=10
 
 @ex1.automain
-def empty_context_dag_experiment(nodes=10):
+def empty_context_dag_experiment(nodes):
     full_dag = generate_dag(nodes,p_edge=1)
     empty_dag = generate_dag(nodes, p_edge=0)
 
@@ -40,8 +44,18 @@ def empty_context_dag_experiment(nodes=10):
     # DAGs are same for fully connected case and empty case
     pass
 
+
+@ex2.config
+def synthetic_dag_binarydata_config():
+    nodes=6
+    p_edge=1
+    n=10000
+    use_dag=False
+    csi_test="anderson"
+    balanced_samples_only=True
+
 @ex2.automain
-def synthetic_dag_binarydata_experiment(nodes=6, p_edge=1 , n=100000, use_dag=False):
+def synthetic_dag_binarydata_experiment(nodes, p_edge,n,use_dag,csi_test,balanced_samples_only):
     # Using epps and Anderson
     # With and without DAG CI relations
     # Effect of unbalanced data with Anderson test on full DAG
@@ -53,6 +67,8 @@ def synthetic_dag_binarydata_experiment(nodes=6, p_edge=1 , n=100000, use_dag=Fa
     ordering=None
     #assert set(ordering)==set(list(val_dict.keys()))
     try:
+        ordering_count = cstree_object.count_orderings()
+        print("Current experiment has {} orderings".format(ordering_count))
         cstree_object.visualize(ordering=ordering, use_dag=use_dag)
     except ValueError as e:
         exception_type, exception_object, exception_traceback = sys.exc_info()
@@ -64,8 +80,14 @@ def synthetic_dag_binarydata_experiment(nodes=6, p_edge=1 , n=100000, use_dag=Fa
         for line in (traceback.format_tb(exception_traceback)):
             print(line)
 
+
+@ex3.config
+def dermatology_config():
+    grouped=True
+    csi_test="anderson"
+
 #@ex3.automain
-def dermatology_experiment(grouped=True):
+def dermatology_experiment():
     dataset = dermatology_data(grouped)
     nodes = dataset.shape[1]
     val_dict = {i+1:[0,1] for i in range(nodes)}
@@ -76,16 +98,30 @@ def dermatology_experiment(grouped=True):
     cstree_object.visualize(use_dag=False)
 
 
-def micecortex_experiment(num_features=10):
+@ex4.config
+def micecortex_config():
+    num_features=10
+    
+#@ex4.automain
+def micecortex_experiment():
     dataset = micecortex_data(num_features)
 
     cstree_object = CSTree(dataset)
 
     cstree_object.visualize(all_trees=False, plot_limit=None, learn_limit=None)
 
+@ex5.config
+def susy_config():
+    ratio=0.1
+    csi_test="anderson"
+    use_dag=True
+    balanced_samples_only=True
+    #make save_dir here
     
+
+#@ex5.automain
 def susy_experiment():
-    dataset = susy_data(False)
+    dataset = susy_data(False, ratio)
 
     n,p = dataset.shape
 
@@ -93,7 +129,7 @@ def susy_experiment():
 
     cstree_object = CSTree(dataset, val_dict) 
 
-    cstree_object.visualize(all_trees=True, save_dir="susy_50percentdata", use_dag=False, plot_limit=10, learn_limit=10)
+    cstree_object.visualize(all_trees=True, save_dir=save_dir, use_dag=False, plot_limit=10, learn_limit=10)
 
     
 

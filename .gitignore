@@ -8,6 +8,7 @@ datasets/
 figs
 figures
 __pycache__
+logs
 *.bbl
 *.aux
 *.fdb_latexmk
