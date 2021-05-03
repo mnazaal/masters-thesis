@@ -198,7 +198,7 @@ class CSTree(object):
                     nx.draw_networkx(dag, pos=dag_pos, ax=dag_ax[i], **options)
                     dag_ax[i].collections[0].set_edgecolor("#000000")
                 if save_dir:
-                    plt.savefig(save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
+                    plt.savefig("figs/"+save_dir+str(iteration)+"_cstree_and_mcdags.pdf")
                 else:
                     plt.show()
 
@@ -266,12 +266,17 @@ class CSTree(object):
         # above which respect this ordering
         if ordering:
             ordering_given=True
-            dags_bn = [dag for dag in dags_bn if ordering in nx.all_topological_sorts(dag)]
-            if dags_bn == []:
+            dags_bn_w_ordering = [dag for dag in dags_bn if ordering in nx.all_topological_sorts(dag)]
+            if dags_bn_w_ordering == [] and use_dag:
                 raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
 
-            # we only need one DAG since they all encode the same CSI relations
-            dags_bn = [dags_bn[0]]
+
+                # If we have ordering and want a DAG to encode CI relations
+            # we only need one DAG since they all encode the same CI relations
+            if use_dag:
+                dags_bn = [dags_bn_w_ordering[0]]
+            else:
+                dags_bn = [dags_bn[0]]
         else:
             ordering_given=False
 
@@ -291,7 +296,8 @@ class CSTree(object):
 
         # For each DAG in the MEC
         for mec_dag_num, mec_dag in enumerate(dags_bn):
-            assert len(mec_dag.edges) == mec_dag_edges
+            if use_dag:
+                assert len(mec_dag.edges) == mec_dag_edges
 
             if ordering_given:
                 orderings = [ordering]

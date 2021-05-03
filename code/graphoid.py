@@ -119,6 +119,7 @@ def contraction(csi_rels, memo, pairwise=True):
 
 
 def graphoid_axioms(csi_rels, val_dict):
+    # Applies graphoid axioms in a pairwise manner
     # TODO Removing the while condition
     print("Started applying weak union and decomposition to {} relations".format(len(csi_rels)))
     J = []
@@ -141,15 +142,15 @@ def graphoid_axioms(csi_rels, val_dict):
 
             weak_unioned  = weak_union(csi_rel)
             decomposed    = decomposition(csi_rel)
-            #specialized   = specialization(csi_rel, val_dict)
-            #intersected, intersec_memo  = intersection(csi_rels.copy()+J.copy(), intersec_memo)
-            # contracted, contrac_memo = contraction(csi_rels.copy()+J.copy(), contrac_memo)
+            specialized   = specialization(csi_rel, val_dict)
+            intersected, intersec_memo  = intersection(csi_rels.copy()+J.copy(), intersec_memo)
+            contracted, contrac_memo = contraction(csi_rels.copy()+J.copy(), contrac_memo)
             
             csi_rels += weak_unioned
             csi_rels += decomposed
-            #csi_rels += specialized
-            #csi_rels += intersected
-            #csi_rels += contracted
+            csi_rels += specialized
+            csi_rels += intersected
+            csi_rels += contracted
 
 
             # Remove it from list of relations
@@ -158,14 +159,16 @@ def graphoid_axioms(csi_rels, val_dict):
             csi_rels.remove(csi_rel)
             if csi_rels == []:
                 all_axioms_return_empty = True
-
-    print("Applying intersection to {} relations".format(len(J)))
-    intersected, _ = intersection(J.copy(), [])
+    # Below is to test the applicability of applying computationally
+    # intensive axioms once
+    
+    #print("Applying intersection to {} relations".format(len(J)))
+    #intersected, _ = intersection(J.copy(), [])
     #contracted,  _ = contraction(J.copy(),[])
-    J += intersected
+    #J += intersected
     #J += contracted
-    print("Applying specialization to {} relations".format(len(J)))
-    for rel in J:
-        J+=specialization(rel, val_dict)
-    print("Giving {} relations to get minimal contexts".format(len(J)))
+    #print("Applying specialization to {} relations".format(len(J)))
+    #for rel in J:
+    #    J+=specialization(rel, val_dict)
+    #print("Giving {} relations to get minimal contexts".format(len(J)))
     return J
