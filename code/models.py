@@ -3,6 +3,7 @@ from cstree import stages_to_csi_rels, dag_to_cstree, color_cstree
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
 import networkx as nx
+import numpy as np
 from pgmpy.estimators import PC
 from causaldag import pdag
 import pandas as pd
@@ -23,6 +24,9 @@ class CSTree(object):
             # Assumes each value for each variable occurs
             # atleast once in the dataset
             self.val_dict = generate_state_space(dataset)
+        for var in list(self.val_dict.keys()):
+            if len(np.unique(np.array(self.val_dict[var])))<2:
+                raise ValueError("Each variable must take atleast 2 values")
 
 
     def cpdag_from_pc(self, pc_method="pgmpy"):
@@ -145,11 +149,11 @@ class CSTree(object):
         iteration=0
         trees = self.learn(ordering, use_dag,all_trees, dag, pc_method,csi_test,learn_limit,last_var)
         nodes = len(list(self.val_dict.keys()))
-        for (tree, stages, color_scheme, ordering) in trees:
+        for (tree, stages, color_scheme, ordering, _) in trees:
             # Save information like CSI relations from it etc
-            iteration+=1
             if iteration==plot_limit:
                 break
+            iteration+=1
 
             if plot_mcdags:
                 # CSI relations from tree
@@ -171,7 +175,7 @@ class CSTree(object):
                 dag_ax  = [plt.subplot(2, num_mc_dags, i+1) for i in range(num_mc_dags)]
                 tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
 
-                if nodes < 8:
+                if nodes < 11:
                     cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
                     tree_pos = graphviz_layout(tree, prog="dot", args="")
                     tree_ax.set_ylabel(cstree_ylabel)
@@ -204,7 +208,7 @@ class CSTree(object):
                 tree_ax = fig.add_subplot(111)
                 tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
 
-                if nodes < 8:
+                if nodes < 11:
                     cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in ordering[::-1]])
                     tree_pos = graphviz_layout(tree, prog="dot", args="")
                     tree_ax.set_ylabel(cstree_ylabel)
@@ -217,9 +221,20 @@ class CSTree(object):
                 tree_ax.collections[0].set_edgecolor("#000000")
 
                 if save_dir:
-                    plt.savefig(save_dir+str(iteration)+"_cstree.pdf")
+                    plt.savefig("figs/"+save_dir+str(iteration)+"_cstree.pdf")
                 else:
                     plt.show()
+
+
+    def count_orderings(self, pc_method="pgmpy", limit=None):
+        orderings_count=0
+        dags_bn = self.all_mec_dags(pc_method)
+        for mec_dag in dags_bn:
+            orderings = nx.all_topological_sorts(mec_dag)
+            for ordering in orderings:
+                orderings_count+=1
+        return orderings_count
+        
 
     
 
@@ -229,7 +244,7 @@ class CSTree(object):
               all_trees=True,
               dag =None,
               pc_method="pgmpy",
-              csi_test="epps",
+              csi_test="anderson",
               learn_limit=None,
               last_var=None,
               get_bic=False):
@@ -262,7 +277,7 @@ class CSTree(object):
 
         # If we only want to save the best trees
         if not all_trees:
-            min_stages = nodes_per_tree(self.val_dict)+1
+            min_stages = nodes_per_tree(self.val_dict, ordering)+1
 
         # To store the CSTrees and resulting stages
         trees = []
@@ -298,6 +313,7 @@ class CSTree(object):
             # since any use of it will empty its elements
             
             for ordering_num, ordering in enumerate(orderings):
+                # If the user knows the last variable
                 if last_var:
                     print("Skipping ordering {} since the last variable is not {}".format(ordering, last_var))
                     continue
@@ -311,7 +327,11 @@ class CSTree(object):
                 print("MEC DAG number {} ordering number {} applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
                 tree, stages,color_scheme = dag_to_cstree(self.val_dict, ordering, mec_dag)
 
-                stages_after_dag = (len(tree.nodes)-1)-len(color_scheme)+len(stages)
+                if not use_dag:
+                    # TODO Move this into algorithm itself
+                    color_scheme, stages = {},{}
+
+                stages_after_dag = nodes_per_tree(self.val_dict, ordering) -len(color_scheme)+len(stages)
                 print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
 
                 if get_bic:
@@ -321,7 +341,7 @@ class CSTree(object):
                 print("Learning CSI relations")
                 tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, stages.copy(), color_scheme.copy(), test=csi_test)
 
-                stages_after_csitests = (len(tree.nodes)-1)-len(color_scheme)+len(stages)
+                stages_after_csitests = (nodes_per_tree(self.val_dict, ordering))-len(color_scheme)+len(stages)
                 print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
 
                 # Compute BIC here

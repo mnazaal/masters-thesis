@@ -1,4 +1,4 @@
-% Created 2021-04-26 Mon 22:21
+% Created 2021-05-02 Sun 22:15
 % Intended LaTeX compiler: pdflatex
 \documentclass{tufte-book}
 \usepackage[utf8]{inputenc}
@@ -15,15 +15,15 @@
 \usepackage{capt-of}
 \usepackage{hyperref}
 \input{templates/tufte-book}
-\author{Mohamed Nazaal Ibrahim}
+\author{nazaal}
 \date{\today}
 \title{}
 \hypersetup{
- pdfauthor={Mohamed Nazaal Ibrahim},
+ pdfauthor={nazaal},
  pdftitle={},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 27.1 (Org mode 9.4.4)}, 
+ pdfcreator={Emacs 26.3 (Org mode 9.4.4)}, 
  pdflang={English}}
 \begin{document}
 
@@ -49,25 +49,25 @@ Despite having a philosophical grounding from empiricism that span some centurie
  \newpage 
 
 \chapter{Introduction}
-\label{sec:org642acc3}
+\label{sec:orgcfde70e}
 \label{sec:Intro}
 \section{Motivation}
-\label{sec:orga8cf587}
+\label{sec:org8da8014}
 At the heart of scientific discovery, and thus of modern society, is our ability to gain knowledge about causal relations based on observations and experimentation. Whilst being an active research area for its own sake, causal discovery has many applications to diverse fields ranging from economics  \cite{huang-2019-causal-discov} and genomics \cite{hu-2018-applic-causal} to the climate sciences \cite{runge-2019-infer-causat}. In fact, any field involving any form of measurements/observations which are hypothesized to involve causal interactions can benefit from the tools which this research area has to offer, by allowing the user to get some causal model of the system from which their data is generated from. Armed with such a causal model, the user can answer more complex queries than they can using just observed data. Such queries form a hierarchy, referred to as Pearl's Causal Hierarchy, which starts from those related to observations, then interventions, then counterfactuals \cite{pearl-2018-book-why}. In fact it has been recently shown that their strict distinction holds in the measure theoretic sense \cite{elias-2020-pearl-hierar}.
 
 \section{Classical methods}
-\label{sec:org8db8cfd}
+\label{sec:orga769fab}
 Historically speaking the task of causal discovery was achieved by using clever experimental design \cite{fisher-1935}. In particular, Randomized Controlled Trials (RCTs) are often called the gold standard in this regard. The common RCT setting involves allocating subjects in the experiment randomly into 2 groups, where one group called the treatment group receives an intervention and the other group called the control group receives no intervention, often in the form of a placebo. One of the main limitations of RCTs is that not every system on which we want to infer causal relationships lends to this setting. For example, it is not a good idea to have a RCT to determine whether smoking causes lung cancer which would involve forcing the subjects to smoke. 
 
 
 \section{Relevance to machine learning}
-\label{sec:orga3c9e55}
+\label{sec:orge613ead}
 Causal discovery as a subfield of causal modelling contains many ideas which can help in overcoming hard barriers in machine learning. Machine learning can be summarized as the field where practitioners formulate mathematical models of a system of interest, followed by incorporating observed data into this model using various algorithms with the aim of making better predictions about the system. This field has been enjoying significant breakthroughs recently in part due to the availability of a lot of data and faster computers. However, a lot of the work in this field are set in the assumption of independent and identically distributed (i.i.d) data, and ignores information from interventions, domain shifts and temporal structure \cite{schoelkopf-2019-causal-machin-learn}. As such, there are various problems which still require a causal model, which without it in some cases even give rise to seemingly nuanced paradoxes \cite{pearl-2018-book-why}, such as Simpsons paradox \cite{simpson-1951-inter-inter}, where one might for example have an increasing relationship between 2 variables over the whole data, but dividing the samples into further groups would result in a decreasing relationship within each group.  This is not just a theoretical issue, and has been reported in many real life data as well \cite{wagner-1982-simps-parad}.
 
 
 
 \chapter{The Causal Discovery problem}
-\label{sec:orge47d483}
+\label{sec:orgfe473af}
 We first provide a formalization of the causal discovery problem. Suppose we have a system of \(p\) variables \(X_1,...,X_p\) which we assume has some underlying probability distribution \(\mathbb{P}\), and from which we have \(n\) samples \(\{x_1^i,...,x_p^i\}_{i=1}^n\). The goal of causal discovery is to recover a structure \(\mathbb{G}\) that best represents the causal mechanisms of the system with. The structure \(\mathbb{G}\) is often a graph with certain properties that enables it to encode information about the system - this means we must make an assumption that such a structure \(\mathbb{G}\) exists and it is related to the distribution \(\mathbb{P}\). This information about the system is extracted from the samples we have from the distribution \(\mathbb{P}\) - this means we have to make further assumptions to relate information we get from samples in \(\mathbb{P}\) to our structure \(\mathbb{G}\).
 
 
@@ -78,17 +78,17 @@ There are two common approaches to causal discovery \cite{glymour-2019-review-ca
 
 
 \chapter{Causal Discovery with Directed Acyclic Graphs}
-\label{sec:orgf02b9bf}
+\label{sec:orgef418cd}
 We start this section with important definitions and concepts related to Directed Acyclic Graphs (DAGs). They are a convenient and informative graphical means of visualizing the directional relationships between variables in a system, and the de-facto choice to model causal structures.
 
 \section{Direct Acyclic Graphs (DAGs)}
-\label{sec:orgf9fcb8d}
+\label{sec:org0156d4b}
 
 \begin{definition}[DAGs]\label{dagdef}
     A Directed Acyclic Graphic (DAG) is a directed graph $\mathbb{G} = (\mathbb{V},\mathbb{E})$ which has no cycles.
 \end{definition}
 
- \begin{marginfigure} \includegraphics[width=\linewidth]{ ./figures/dageg.pdf}\caption{ Example of a DAG.} \end{marginfigure} 
+ \begin{marginfigure} \includegraphics[width=\linewidth]{ ./figures/dageg.pdf}\caption{ Example of a DAG $\mathbb{G}=(\mathbb{V},\mathbb{E})$ with $\mathbb{V} = \{1,2,3,4,5 \}$ and $\mathbb{E} = \{(1,2),(1,3),(1,5),(2,4) \}$} \end{marginfigure} 
 
  \begin{marginfigure} \includegraphics[width=\linewidth]{ ./figures/dagneg.pdf}\caption{ This graph is not a DAG since there is a cycle} \end{marginfigure} 
 
@@ -190,7 +190,7 @@ Two DAGs $\mathbb{G}_1$ and $\mathbb{G}_2$ are Markov Equivalent if and only if 
 For example, the Chain and Fork graphs from the previous page belong to the same Markov Equivalence class.
 
 \section{Causal Discovery Algorithms for DAGs}
-\label{sec:org9532050}
+\label{sec:org787231c}
 
 Theorem \ref{thm:dagci} suggests that we can make use of CI testing on a distribution \(\mathbb{P}\) to learn a DAG \mathbb{G}. However, the distribution \(\mathbb{P}\) may contain CI relations not encoded in the DAG, thus we make the following assumption.
 
@@ -213,7 +213,7 @@ The PC algorithm \cite{spirtes-2000-causation-prediction-search,kalisch-2007-est
 
 
 \section{Limitations of using DAGs}
-\label{sec:org4c6fb8f}
+\label{sec:orgc234a91}
 DAGs are a simple and informative structure for causal discovery, however their ability to only encode CI relations is a limitation. This is because the CI relation  \((X_A \indep_{\mathbb{P}} X_B \,|\, X_S)\) implies that \(X_A\) and \(X_B\) are independent for all possible outcomes of \(X_S\), which in some cases might be too strong of an assumption. A generalization of such relations is Context Specific Independence (CSI) relations, defined below.
 \begin{definition}[Context Specific Independence]\label{def:csirel}
 Let  $\mathbb{P}$ be a distribution with variables $X_1,...,X_p$ with a state space $\mathcal{X} = \prod_{i=1}^p \mathcal{X}_i$. Given non-empty subsets $A,B \subset [p]$ and (possibly empty) subsets $S,C \subset [p]$ and $x_C \in \prod_{i \in C}\mathcal{X}_i $ such that $\mathbb{P}(X_B, X_S, X_C = x_C)>0$ and $A \cap B \cap S \cap C = \{\}$, we say the variables $X_A$ and $X_B$ are conditional independent given $S$, in the context $X_C=x_C$ (denoted $(X_A\indep_{\mathbb{P}} X_B \,|\, X_S)$) if $\mathbb{P}(X_A \,|\,X_B, X_S,X_C=x_C) = \mathbb{P}(X_A \, |\, X_S,X_C=x_C)$ holds for all possible outcomes of $X_A,X_B,X_S$.
@@ -226,11 +226,11 @@ In the next chapter we introduce Context Specific Trees (CSTrees) which can enco
  \newpage 
 
 \chapter{Causal Discovery with Context Specific Trees}
-\label{sec:orge06fd5b}
+\label{sec:org1d80bdc}
 One intuition is that to capture context specific relations one needs to make use of a structure that explicitly represents separate outcomes of a distribution. Typically in high school some might have encountered the use of trees to model small probabilistic systems, and they fully include all possible outcomes involved, and serve as an important tool to compute probabilities for relevant events. As we will see in this chapter, this is a correct way to approach the problem of encoding context information as well.
 
 \section{Context Specific Trees (CSTrees)}
-\label{sec:org57be1c4}
+\label{sec:orgeb4b532}
 Before defining CSTrees we start by defining staged trees, which contain CSTrees as a subset. Both of these are rooted trees.  \footnote{$CH_{\mathbb{G}}$($v$) refers to the set of children of node $v$ in $\mathbb{G}$. A rooted tree $\mathbb{T} = (\mathbb{V},\mathbb{E})$ is a directed graph whose skeleton is a tree and there exists a unique node $r$ such that $PA_{\mathbb{T}}(r) = \{\}$ which is called the root.} 
    \begin{definition}[Staged trees]
    Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a rooted tree, $\mathbb{L}$ a finite set of labels for the edges, and $\theta : \mathbb{E} \rightarrow \mathbb{L}$ a labelling of the edges. Let $E_{\mathbb{T}}(v) = \{v \rightarrow w \in \mathbb{E} \,:\, w \in CH_{\mathbb{T}}(v) \}$,   i.e. the set of edges coming out of $v$ in $\mathbb{T}$. The pair $(\mathbb{T}, \theta)$ is a staged tree if 
@@ -303,7 +303,7 @@ Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a CSTree with levels $X_1,...,X_p 
 
 
 \section{Learning CSTrees from observed data}
-\label{sec:orgeaf94c0}
+\label{sec:orge127a90}
 Given a system of variables \(X_1,...,X_p\), we would first need a causal ordering \(\pi_1 \cdots \pi_p\) in order to construct a CSTree for these variables. Since CSTrees encode CSI relations, they can also encode CI relations, which means we can generate a CSTree from a DAG. The following proposition formalizes this notion \cite{duarte-2020-algeb}.
 
 \begin{proposition}[Equivalent DAGs and CSTrees]\label{prop:dagandcstree}
@@ -448,7 +448,7 @@ Algorithm \ref{alg:cstreepc} considers many possible candidate CSTree models, th
 Unlike DAGs, as the number of variables increase it gets progessively harder to visually understand the learnt causal structure by just looking at the learnt CSTree. 
 
 \section{Understanding high-dimensional CSTrees}
-\label{sec:org334da4a}
+\label{sec:org3197b38}
  From a pragmatic perspective the aim of this section is to introduce the notion of Minimal Context (MC) DAGs which can help visualize CSTrees with more variables and the context specific information they encode. On a theoretical note, this work has led to
 the generalization of Theorem \ref{thm:vermapearl} to define a characterization of Markov Equivalence for CSTrees \cite{duarte-2021-repres-learn}. We start by first describing the procedure  \footnote{\textsc{StagesInLevel} takes a set of stages and a level and returns the stages in that level; \textsc{ContextOfStage} takes a stage and returns the common context of that stage; \textsc{VariablesOfContext} takes a context and returns the variables in it}  to generate the CSI relations from a CSTree and its stages, which uses Lemma \ref{lem:cstreecsi}
 
@@ -700,9 +700,9 @@ Given variables $X_1,...,X_p$, assuming that the data generating distribution is
 
 
 \chapter{Experiments}
-\label{sec:org439490c}
+\label{sec:org518a782}
 \section{Encoding DAGs as CSTrees}
-\label{sec:org3733bd5}
+\label{sec:org8bb5410}
 We first run a sanity check on generating the CSTrees from DAGs in the 2 extreme cases, when we have no connectivity and full connectivity.
 
 \begin{figure}[!h]\label{fig:dagtocstree_cstree}
@@ -724,7 +724,7 @@ We first run a sanity check on generating the CSTrees from DAGs in the 2 extreme
 The results are as expected since there are no conditional independence stations encoded in the fully connected, and no context specific independence statements since they are unable to encode them, meaning no 2 nodes share a fixed context and all stages have a single element. For the DAG with no edges, each variable is independent of each other, and each node has no parents thus by Proposition \ref{prop:dagandcstrees}
 
 \section{Recovering the empty context DAG}
-\label{sec:org034a010}
+\label{sec:orgd58cac5}
 We start by generating random DAGs and generating the CSTrees as per Algorithm \ref{alg:dagtocstree}. This is done by first choosing the number of variables (nodes in the DAG) \(p\), and then choosing an edge with probability \(p_{edge} \in (0,1)\), and then keeping edge \((u,v)\) if and only if \(u<v\). We show the generated CSTree below, and recover the original DAG as a minimal context DAG with the empty context with Algorithm \ref{alg:mcdags}.
 
 \begin{figure}[!h]\label{fig:dagtocstree_cstree}
@@ -766,11 +766,11 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
 
 
 \begin{table}[htbp]
-\caption{Statistics from generating CSTrees for random DAGs, Space refers to the amount of RAM occuppied by the CSTree structure, and time refers to the amount of time taking to encode the CI relations in the DAG to the CSTree.}
+\caption{Statistics from generating CSTrees for random DAGs, Space refers to the amount of RAM occuppied by the CSTree structure, and time refers to the amount of time taken to encode the CI relations in the DAG to the CSTree.}
 \centering
 \begin{tabular}{r|r|r|r}
 \hline
-\(p_{edge}\) & Nodes & Space  (GB) & Time (s)\\
+\(p_{edge}\) & DAG Nodes & Space  (GB) & Time  (s)\\
 \hline
 0.2 & 20 & 1.203 & 14\\
 \hline
@@ -784,18 +784,62 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
 \end{table}
 
 \section{Synthetic data}
-\label{sec:orgbca246e}
+\label{sec:org07a5b8f}
 Next we generate a random DAG \(\mathbb{G}\) using the procedure above, and then generate samples from this DAG. We then discard the DAG and apply Algorithm \ref{alg:cstreepc}. We let all variables be binary valued, and for each variable \(X_i\), generate conditional probability distribution tables when conditioned on the all possible outcomes of the parents of \(X_i\). We give variables without parents a Bernoulli distribution with a randomly chosen parameter for each such variable. To introduce a causal element, we divide the rows of each such table into 2 halves, and for the all the outcomes of the first half we assign a higher probability for \(X_i\) to take 0, and for the second half we assign a higher probability for \(X_i\) to be 1. We then normalize probabilities such that \(\mathbb{P}(X_i=1|X_{Pa_{\mathbb{G}(i)}}=x)+\mathbb{P}(X_i=0|X_{Pa_{\mathbb{G}(i)}}=x)=1\) for each possible outcome \(x\) of the parent set.
 
 
-\section{Empirical study of algorithms}
-\label{sec:orgb435aaa}
+\section{Coronary disease data}
+\label{sec:orgb9070e3}
+This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men \cite{reinis-1981-progn-signif}. These features are detailed below.
+\begin{center}
+\begin{tabular}{ll}
+\hline
+Variable & Outcome space\\
+\hline
+Smoking & \{Yes,No\}\\
+Strenuous mental work & \{Yes,No\}\\
+Strenuous physical work & \{Yes,No\}\\
+Systolic blood pressure & \{<140,>140\}\\
+Ratio of beta and alpha lipoproteins & \{<3,>3\}\\
+Family history of coronary heart disease & \{Negative,Positive\}\\
+ & \\
+\end{tabular}
+\end{center}
+This data set does not require further pre-processing since the outcome space is already categorical, and there were no missing values.
+
+
+\section{Mice protein expression data}
+\label{sec:orgc21369d}
+This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice \cite{higuera-2015-self-organ}. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns \(BAD_N, BCL2_N, H3AcK18_N, EGR1_N H3MeK4_N\). This still leaves 72 features, which we further reduce by recursive feature elimination \cite{guyon-2002} where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want, which in this experiment we set as 10. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. The 10 features we use are detailed below.
+
+
+
+\section{Supersymmetry data}
+\label{sec:org2775094}
+This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features \cite{baldi-2014-searc-exotic}. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features.
+
+
+\section{Discussion of empirical performance}
+\label{sec:org1cd310e}
 Here we look at some more general empirical results which we observed throughout our experiments.
 \begin{itemize}
 \item A high ratio of tests are skipped in practice
 \item As we moving up the levels, the number of samples to run the independence tests decrease rapidly, in which case we assume they are dependent
 \item The staging can be highly sensitive to the independence testing being done. We use the Epps and Singleton test \cite{epps-1986-omnib-test,goerg-2009-nonpar-testin} and the  Anderson-Darling test \cite{scholz-1987-k-sampl}.
+\item Model selection in practice
 \end{itemize}
+
+
+\chapter{Conclusions}
+\label{sec:orgdb84672}
+\section{Summary}
+\label{sec:org9d9fbb3}
+
+
+\section{Future work}
+\label{sec:org730c3d1}
+
+
 
 
 
@@ -804,13 +848,13 @@ Here we look at some more general empirical results which we observed throughout
 
 
 \bibliographystyle{unsrt}
-\bibliography{../../../Dropbox/org/bibliography/references}
+\bibliography{../../Dropbox/org/bibliography/references}
 
  \newpage 
 
 \chapter{Appendix A}
-\label{sec:org3e58cd9}
+\label{sec:org47c1c02}
 \section{Remarks on implementation}
-\label{sec:org2964741}
-Implementation of this work was done in Python. Draft code repository is available at github.com/mnazaal/masters-thesis. This document was generated with org-mode.
+\label{sec:orgd4fb398}
+Implementation of this work was done in Python. Draft code repository is available at github.com/mnazaal/masters-thesis. This document was generated with org-mode. Use of scikit, pandas, numpy
 \end{document}

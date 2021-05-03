@@ -114,7 +114,7 @@ We start this section with important definitions and concepts related to Directe
 \end{definition}
 #+END_EXPORT
 
-{{{marginfigure( width=\linewidth, ./figures/dageg, Example of a DAG.)}}}
+{{{marginfigure( width=\linewidth, ./figures/dageg, Example of a DAG $\mathbb{G}=(\mathbb{V}\,\mathbb{E})$ with $\mathbb{V} = \{1\,2\,3\,4\,5 \}$ and $\mathbb{E} = \{(1\,2)\,(1\,3)\,(1\,5)\,(2\,4)  \}$ )}}}
 # TODO !!! Throughout this paper we will use $\mathbb{V} = \{1,...,p\} =[p]$ where $p$ is the number of variables in the system of interest, thereby mapping the possibly qualitative variables of the system into numbers for notational ease.
 {{{marginfigure( width=\linewidth, ./figures/dagneg, This graph is not a DAG since there is a cycle)}}}
 
@@ -380,7 +380,7 @@ A CSTree encodes Context Specific Independence (CSI) relations from the followin
 #+begin_export latex
 \begin{lemma}[CSTrees and Context Specific Independence relations]\label{lem:cstreecsi}
 
-Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a CSTree with levels $X_1,...,X_p \sim L_1,...,L_p$ and stages $S_1,...,S_m$. Then for any $\mathbb{P} \in \mathbb{M}_{(\mathbb{T},\theta)}$ and $S_i \subset L_{k-1}$, $\mathbb{P}$ entails the CSI relation $(X_k \indep_{\mathbb{P}} X_{[k-1] \textbackslash C_i} \, | \, X_{C_i} = x_{C_i})$ where $C_i$ is the context fixed by the stage $S_i$.
+Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a CSTree with levels $X_1,...,X_p \sim L_1,...,L_p$ and stages $S_1,...,S_m$. Then for any $\mathbb{P} \in \mathbb{M}_{(\mathbb{T},\theta)}$ and $S_i \subset L_{k-1}$, $\mathbb{P}$ entails the CSI relation $(X_k \indep_{\mathbb{P}} X_{[k-1] \textbackslash C_i} \, | \, X_{C_i} = x_{C_i})$ where $X_{C_i}=x_{C_i}$ is the context fixed by the stage $S_i$.
 
 \end{lemma}
 #+end_export
@@ -821,12 +821,19 @@ To see why we need to consider all Markov equivalent DAGs in Algorithm \ref{alg:
    
 
 #+begin_export latex
-\begin{theorem}\label{alg:cstreepccorrectness}
+\begin{theorem}\label{thm:cstreepccorrectness}
 Given variables $X_1,...,X_p$, assuming that the data generating distribution is faithful to some unknown CSTree $\mathbb{T}$ with a known causal ordering $\pi = \pi_1 \cdots \pi_p$, Algorithm \ref{alg:cstreepc} is consistent, i.e. it recovers $\mathbb{T}$ as the number of samples $n \rightarrow \infty$.
 \end{theorem}
 #+end_export
 # !!! TODO Proof of above
 
+
+** Model selection for CSTrees
+   In Algorithm \ref{alg:cstreepc} we select the CSTree (or CSTrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the Bayesian Information Criterion (BIC) for CSTrees alongside a proof that it is loally consistant for CSTrees, meaning it can be applicable to greedy search methods for CSTrees.
+
+# !!! TODO Write the likelihood, contingency tables, and BIC formula
+
+   
 # !!! TODO Example on how pairwise independence does not imply triplewise independence
 
 
@@ -903,19 +910,19 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
 
    
    
- #+CAPTION: Statistics from generating CSTrees for random DAGs, Space refers to the amount of RAM occuppied by the CSTree structure, and time refers to the amount of time taking to encode the CI relations in the DAG to the CSTree. 
- |------------+-------+-------------+----------|
- |          / |     < |           < |        < |
- | $p_{edge}$ | Nodes | Space  (GB) | Time (s) |
- |------------+-------+-------------+----------|
- |        0.2 |    20 |       1.203 |       14 |
- |------------+-------+-------------+----------|
- |        0.2 |    21 |       2.422 |       43 |
- |------------+-------+-------------+----------|
- |        0.2 |    22 |       4.875 |       74 |
- |------------+-------+-------------+----------|
- |        0.2 |    23 |       9.812 |      240 |
- |------------+-------+-------------+----------|
+ #+CAPTION: Statistics from generating CSTrees for random DAGs, Space refers to the amount of RAM occuppied by the CSTree structure, and time refers to the amount of time taken to encode the CI relations in the DAG to the CSTree. 
+ |------------+-----------+-------------+-----------|
+ |          / |         < |           < |         < |
+ | $p_{edge}$ | DAG Nodes | Space  (GB) | Time  (s) |
+ |------------+-----------+-------------+-----------|
+ |        0.2 |        20 |       1.203 |        14 |
+ |------------+-----------+-------------+-----------|
+ |        0.2 |        21 |       2.422 |        43 |
+ |------------+-----------+-------------+-----------|
+ |        0.2 |        22 |       4.875 |        74 |
+ |------------+-----------+-------------+-----------|
+ |        0.2 |        23 |       9.812 |       240 |
+ |------------+-----------+-------------+-----------|
 
 
  # !!! TODO Get the average of above for some number of runs
@@ -928,7 +935,49 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
     # [!!! TODO Put table with statistics for changing $p$ etc]
    
    
-# ** Coronary dataset
+** Coronary disease data
+   This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men cite:reinis-1981-progn-signif. These features are detailed below.
+   |------------------------------------------+---------------------|
+   | Variable                                 | Outcome space       |
+   |------------------------------------------+---------------------|
+   | Smoking                                  | {Yes,No}            |
+   | Strenuous mental work                    | {Yes,No}            |
+   | Strenuous physical work                  | {Yes,No}            |
+   | Systolic blood pressure                  | {<140,>140}         |
+   | Ratio of beta and alpha lipoproteins     | {<3,>3}             |
+   | Family history of coronary heart disease | {Negative,Positive} |
+   |                                          |                     |
+This data set does not require further pre-processing since the outcome space is already categorical, and there were no missing values.
+
+# TODO cite table number for above
+
+# TODO With or withot DAG encodings
+
+# TODO Print all possible orderings
+
+
+** Mice protein expression data
+   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want, which in this experiment we set as 10. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. The 10 features we use are detailed below.
+
+   # !!! TODO create variable table for above
+
+   # TODO With or without DAG independence encoding
+
+   # TODO Print all possible orderings
+
+   
+
+** Supersymmetry data
+   This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features cite:baldi-2014-searc-exotic. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features.
+
+   # TODO With DAG, without DAG, number of samples changes
+                                        
+
+   # !!! TODO Cite table number above
+
+   # TODO Print all possible orderings
+
+   # TODO Skipped tests due to single values
 
 
 # ** Apply to large variable data set
@@ -936,11 +985,21 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
   # [!!! TODO apply to interesting datasets]
 
    
-** Empirical study of algorithms
+** Discussion of empirical performance
    Here we look at some more general empirical results which we observed throughout our experiments.
    - A high ratio of tests are skipped in practice
    - As we moving up the levels, the number of samples to run the independence tests decrease rapidly, in which case we assume they are dependent
    - The staging can be highly sensitive to the independence testing being done. We use the Epps and Singleton test cite:epps-1986-omnib-test,goerg-2009-nonpar-testin and the  Anderson-Darling test cite:scholz-1987-k-sampl.
+   - Model selection in practice
+
+
+* Conclusions
+** Summary
+
+   
+** Future work
+   
+   
 
    
 
@@ -962,8 +1021,6 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 #  - Explicitly mention getting the case where for minimal contexts you can have for a given pair contexts involving (1,2,3), (1,2) and (4,5) in which case T must be empty
 #    A very important case that the contexts provided 
 
-#  - DAG to CSTree conversion for empty graph, fully connected DAG
-
  # - Explain the special case for the DAG to cstree algorithm, second variable if independent of the first this means 2_||_1 and we colour all nodes in level 1 the same as well
  # - put paths and blocked paths visualization, intuition of information flowing
 
@@ -975,6 +1032,7 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 
 # - table with number of dags and cstrees tabel
 # - increasing sequence of sets from distributions to markov distributions od dags, to markov distributions of cstrees
+
 # - separate the use of DAGs for probabilistic modelling, and causal modelling - fundamental assumption of different semantics where the observational and interventiona ldistributions are the same for no parents. then no reason to assume parent-child distributions should stay the same under intervention - modularity property.
 # - probabilistic dag and causal dag are different! 
 # - extended conditional independence when ci relations contain non random variables
@@ -1005,6 +1063,9 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 
   # - some cases we might know part of the dag structure for sure in this case maybe its good to add an experiment for this
 
+# Things about model selection
+# Intervention data http://www.sciencemag.org/content/suppl/2005/04/21/308.5721.523.DC1/Sachs.SOM.Datasets.zip
+
 * Appendix A
 ** Remarks on implementation
-   Implementation of this work was done in Python. Draft code repository is available at github.com/mnazaal/masters-thesis. This document was generated with org-mode.
+   Implementation of this work was done in Python. Draft code repository is available at github.com/mnazaal/masters-thesis. This document was generated with org-mode. Use of scikit, pandas, numpy. Test driven development with pytest.
