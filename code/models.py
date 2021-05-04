@@ -266,17 +266,17 @@ class CSTree(object):
         # above which respect this ordering
         if ordering:
             ordering_given=True
-            dags_bn_w_ordering = [dag for dag in dags_bn if ordering in nx.all_topological_sorts(dag)]
-            if dags_bn_w_ordering == [] and use_dag:
+            dags_bn = [dag for dag in dags_bn if ordering in nx.all_topological_sorts(dag)]
+            if dags_bn == [] and use_dag:
                 raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
 
 
                 # If we have ordering and want a DAG to encode CI relations
             # we only need one DAG since they all encode the same CI relations
-            if use_dag:
-                dags_bn = [dags_bn_w_ordering[0]]
-            else:
-                dags_bn = [dags_bn[0]]
+            #if use_dag:
+            #    dags_bn = [dags_bn_w_ordering[0]]
+            #else:
+            #    dags_bn = [dags_bn[0]]
         else:
             ordering_given=False
 
@@ -291,8 +291,7 @@ class CSTree(object):
         if learn_limit:
             if len(dags_bn)>learn_limit:
                 dags_bn = random.sample(dags_bn,learn_limit)
-                
-                
+
 
         # For each DAG in the MEC
         for mec_dag_num, mec_dag in enumerate(dags_bn):
@@ -331,11 +330,13 @@ class CSTree(object):
                 # Generate CSTree from DAG
                 print("="*40)
                 print("MEC DAG number {} ordering number {} applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
-                tree, stages,color_scheme = dag_to_cstree(self.val_dict, ordering, mec_dag)
+                tree, stages,color_scheme,stage_list,color_scheme_list = dag_to_cstree(self.val_dict, ordering, mec_dag)
 
                 if not use_dag:
                     # TODO Move this into algorithm itself
                     color_scheme, stages = {},{}
+
+                print("after converting DAG to CSTree, we colored {} nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
                 stages_after_dag = nodes_per_tree(self.val_dict, ordering) -len(color_scheme)+len(stages)
                 print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
@@ -345,11 +346,14 @@ class CSTree(object):
 
                 # Learn CSI relations
                 print("Learning CSI relations")
-                tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, stages.copy(), color_scheme.copy(), test=csi_test)
+                tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, stage_list.copy(), color_scheme_list.copy(), test=csi_test)
+
+                print("after CSI tests, we have {} colored nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
                 stages_after_csitests = (nodes_per_tree(self.val_dict, ordering))-len(color_scheme)+len(stages)
                 print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
 
+                
                 # Compute BIC here
                 if get_bic:
                     bic=self.cstree_bic(tree, stages.copy())                    

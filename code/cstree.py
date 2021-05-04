@@ -113,8 +113,13 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     cstree = nx.DiGraph()
     
     # Initialize dictionary to store colors of non-singleton stages
-    stages        = {}
+    stages       = {}
     color_scheme = {}
+
+    # List containing dict of non-singleton stage
+    # information for each level separately
+    stage_list = []
+    color_scheme_list=[]
     
     # Create first root node
     # This is a tuple so the Cartesian product makes sense later
@@ -123,6 +128,7 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     #if not construct_last:
     #    ordering = ordering[:-1]
     level=0
+    
     for var in ordering[:-1]:        
         # Level of the current variable
         level+=1
@@ -149,70 +155,57 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
         
         # Encoding CI rels if DAG is given
         #if dag and ordering.index(var)==0:
-            
-        
-        
+        stages_l = {}
+        color_scheme_l={}
         if dag:
-            # TODO Delete below
             # If we are at level k, this is variable π_k+1
             # Since Python indexes at 0, we do not access the index level+1
             next_var       = ordering[level]
- 
             # Parents_G(π_k+1)
             pars           = parents(dag, next_var)
-
             if len(pars)==level:
-                # All variables
-                # prior to var in
-                # ordering are parents
-                # thus this level is all white
+                # All variables prior to var in ordering
+                # are parents thus this level is all white
+                stage_list.append(stages_l)
+                color_scheme_list.append(color_scheme_l)              
                 continue
-            
 
             preceding_vars   = ordering[:level]
             independent_vars = [i for i in preceding_vars if i not in pars]
             
-            # TODO Put a condition to stop the case where we have no full cartesian prodict
-            # i guess its the len(sc)!=level below
-            #if len(pars)==level:
-            #    print("we got parents same as variables, mistake somewher")
-            #    pars=[]
-            #if pars == [] and ordering.index(var)==0:
-            #    stage_contexts = []
-            #else:
             stage_contexts=generate_vals(pars,val_dict)
-                        
-
             for sc in stage_contexts:
                 # special case when 2nd variable has no parents, it implies it is independent of the first variable
                 # but independence holds both ways and we must encode this fact for the nodes in the first level
                 if level == 1 and pars == []:
-                    # Nodes in level 1
+                    # Nodes in level 1 except Root
                     stage_nodes = [n for n in list(cstree.nodes)[1:] if n[0][0] == ordering[level-1]]# -1 because python indexing
 
-                    
                    # logger.debug("Nodes {} belong to stage with common context {}".format(stage_nodes,sc))
 
                     color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     if stage_nodes != []: # In root level its empty
-                        stages[color] = stage_nodes
+                        stages[color]=stage_nodes
+                        stages_l[tuple(sc)] = stage_nodes
 
                         for node in stage_nodes:
                             color_scheme[node]=color
-    
-
+                            color_scheme_l[node]=tuple(sc)
                 else:
                     # Nodes in current such that sc is a subcontext 
                     stage_nodes = [n for n in roots if set(sc).issubset(n)]
 
                     color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     if stage_nodes != []: # In root level its empty
-                        stages[color] = stage_nodes
+                        stages[color]=stage_nodes
+                        stages_l[tuple(sc)] = stage_nodes
 
                         for node in stage_nodes:
                             color_scheme[node]=color
+                            color_scheme_l[node]=tuple(sc)
+        stage_list.append(stages_l)
+        color_scheme_list.append(color_scheme_l)
 
-            
             # Description of coloring tree from DAG
             # get the variable after var, v_i+1
             # get parents of v_i+1 in DAG, call it Parents(v_i+1)
@@ -221,7 +214,8 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
             # All nodes in this level represent p(v_i+1|C)
             # Which means we need to enumerate all possible values C can take and label nodes accordingly
             # Also remember to add to color_dict
-    return cstree, stages, color_scheme
+        
+    return cstree, stages, color_scheme, stage_list, color_scheme_list
 
 
 
@@ -253,14 +247,24 @@ def stages_to_csi_rels(stages, ordering):
             
             csi_rels.append((X_k, X_k_minus_one_diff_C, set(), common_context))
     return csi_rels
-  
+
+
+def color_to_context_stages(color_stage_dict, nodes):
+    # This is a very ugly hack which I should tidy up asap
+    
+    for color,ns in color_stage_dict.items():
+        for i in range(1,nodes+1):
+            continue
+        continue
+            
+              
         
         
 def color_cstree(c, 
                   ordering, 
                   data_matrix, 
-                  stages          = None,
-                  color_scheme   = None,
+                  stage_list    = None,
+                  color_scheme_list   = None,
                   tol_p_val       = 0.05,
                   return_csi_rels = True,
                   test            = "anderson",
@@ -279,50 +283,60 @@ def color_cstree(c,
     skipped     = 0
     not_skipped = 0
     new_stages  = 0
-    
-    if stages is None:
-        stages = {}
 
-    if stages == {}:
+    levels = len(ordering)
+
+    print("stage list is",stage_list)
+    
+    if stage_list is None or stage_list == []:
+        stage_list = [{} for i in range(levels)]
+
+    if stage_list == []:
         use_dag = False
     else:
         use_dag = True
 
     
-    if color_scheme is None:
-        color_scheme = {}
+    if color_scheme_list is None:
+        color_scheme_list = [{} for i in range(levels)]
         colored = []
     else:
-        colored = list(color_scheme.keys())
+        colored = list(list(scheme.keys()) for scheme in color_scheme_list)
+        colored = [item for sublist in colored for item in sublist]
         
     less_data_counter = 0
     num_empty_contexts = 0
-    
-    levels = len(ordering)
-    
+     
     csi_stages = {}
 
     csi_stages = []
-    color_scheme_list = []
+    newcolor_scheme_list = []
 
     #print("COLORING CSTREE STARTED WITH STAGES ", stages)
     
-    while level<levels+1:
+    while level<levels:
         stages_removed_l=0
         stages_added_l=0
         
         # Nodes in this level
         nodes_l  = [n for n in c.nodes if nx.shortest_path_length(c, "Root", n)==level]
+        # TODO remove later
+        #assert np.log2(len(nodes_l))==level
+        
         #print("len of each node in level ",level,list(map(lambda x: len(x), nodes_l)))
-        stages_l = {c:ns for c,ns in stages.items() if len(ns[0])==level}
-        color_scheme_l = {n:c for n,c in color_scheme.items() if len(n)==level}
+        print(len(stage_list))
+        stages_l = stage_list[level-1]
+        color_scheme_l = color_scheme_list[level-1]
         colored = list(color_scheme_l.keys())
 
+        print(stages_l, color_scheme_l)
+
         #print("level {} stages {}".format(level,stages_l))
-        
+        # If the DAG already coloured this level the same colour, move on
         if len(stages_l) == 1 and len(color_scheme_l)==len(nodes_l):
             # If we have only one stage that contains all the nodes in this level
             # We go to the next level
+            print("DAG had finished with this level, namely {}".format(stages_l))
             level+=1
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)
@@ -356,16 +370,17 @@ def color_cstree(c,
             #print(set(color_scheme[n1]))
             if (n1 in colored and n2 in colored) and color_scheme_l.get(n1,"c1") == color_scheme_l.get(n2,"c2"):
                 skipped += 1
-                #print("skipping with colors {},{}".format(color_scheme_l.get(n1),color_scheme_l.get(n2)))
-                
+                print("skipping with colors {},{}".format(color_scheme_l.get(n1),color_scheme_l.get(n2)))
                 continue
                     
             # Case (b,c,d,e) : Other than above
             else:
+                
                 # We do not skip the test if 2 nodes do not have the same color
                 not_skipped+=1
                 color_n1 = color_scheme_l.get(n1, None)
                 color_n2 = color_scheme_l.get(n2, None)
+                print("not skipping, colours are {},{} nodes are {},{}".format(color_n1,color_n2,n1,n2))
                # print(level,n1,n2)
                 # Case (b)
                 if color_n1 is not None and color_n2 is not None:
@@ -419,8 +434,8 @@ def color_cstree(c,
                             same_distr=True
                         else:
                             same_distr=False
-                if test=="anderson":
-                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1 or skewed_data:
+                elif test=="anderson":
+                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1:
                         less_data_counter +=1
                         p=0
                         same_distr=False
@@ -441,12 +456,14 @@ def color_cstree(c,
 
                 if same_distr:
                     stages_added_l+=1
+                    print("level {}, staging {}".format(level, common_c))
                     #print("level ",level, "added 1")
                     #print("adding at level ", level, "commonc", common_c)
 
                     
                     if common_c == []:
                         num_empty_contexts+=1
+                        
                     # Nodes below belong to the same stage defined by the common context
 
                     new_nodes = [n for n in nodes_l
@@ -455,55 +472,9 @@ def color_cstree(c,
                     stages_l[tuple(common_c)] = new_nodes
                     for node in new_nodes:
                         color_scheme_l[tuple(node)] = tuple(common_c)
-
-                    """
-                    # Remove stages where nodes have common context with new stage
-                    if color_n1 is not None:
-                        stages_removed_l+=1
-                        #print("level ",level,"removing nodes with common c", common_c_n1)
-                        temp= len(stages_l.keys())
-                        keys_to_keep = set(stages_l.keys())-{tuple(common_c_n1)}
-                        print("removed ", temp -len(keys_to_keep))
-                        stages_l = {k:stages_l[k] for k in keys_to_keep}
-                        #stages_l = {c:ns for c,ns in stages_l.items()
-                        #            if not set(common_c_n1).issubset(set(ns[0][:-1]))}
-                    if color_n2 is not None:
-                        temp=len(stages_l.keys())
-                        stages_removed_l+=1
-                        #print("level ",level,"removing nodes with common c", common_c_n2) 
-                        keys_to_keep = set(stages_l.keys())-{tuple(common_c_n2)}
-                        print("removed ",temp - len(keys_to_keep))
-                        stages_l = {k:stages_l[k] for k in keys_to_keep}
-                    
-
-                    # Then add the new stage
-                    stage_added = False
-                    while not stage_added:
-                        # Just to make sure they are different colors
-                        color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-                        if color not in stages_l.keys():
-                            # Add new stage
-                            stages_l[tuple(common_c)] = new_nodes
-                            stage_added    = True
-                   """
-                   
-                    
-                    #stages_l.update(stages)
-                    # Add colors to node map
-                    # If previously node was another color, change it to the new color
-                    #for node in new_nodes:
-                    #    color_scheme[node] = tuple(common_c)
-
-        #contexts = set(color_scheme.values())
-        #stages_temp = {}
-        #for ntemp,context in color_scheme_l.items():
-        #    print(type(ntemp),ntemp)
-        #    print(type(context), context)
-        #    stages_temp[context]=list(ntemp)
-            
                         
         #csi_stages.append(stages_l)
-        color_scheme_list.append(color_scheme_l)
+        newcolor_scheme_list.append(color_scheme_l)
         #Once we are done with all nodes of current level, move to next level
         level +=1
         
@@ -511,9 +482,8 @@ def color_cstree(c,
 
     #print("skip ratio",skipped/(skipped+not_skipped))
 
-
     csi_stages1,color_scheme1 = {},{}
-    for color_scheme in color_scheme_list:
+    for color_scheme in newcolor_scheme_list:
 
         for common_context in set(color_scheme.values()):
             color="#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])

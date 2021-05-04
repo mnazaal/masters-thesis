@@ -184,8 +184,8 @@ def synthetic_dag_binarydata(dag_received, n):
         if list(dag_received.in_edges(node)) ==  list(dag_received.out_edges(node)):
             separate_nodes.append(node)
 
-    # Making the dag only with nodes having edges
-    # We sample nodes without edges later on
+    # First making the dag only with nodes having edges
+    # We sample data from nodes without edges later on
     # bnlearn requires it this way
     dag = nx.DiGraph()
     dag_edges = [e for e in dag_received.edges]
