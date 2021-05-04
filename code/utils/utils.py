@@ -221,15 +221,20 @@ def data_to_contexts(data : np.ndarray,
     return data[:,var-1] #-1 because indices are labelled from 0
 
 
-def context_is_contained(c, cs):
+def context_is_contained(c, cs, possible_mc):
     # Given a context c, and a list of contexts cs,
     # return the context x in cs if c is a subcontext of x
+    # and there is no context variable in cs such that
+    # it is the same as a context variable in c
     contained=None
     for context in cs:
+        possible_mc_here = set([(var,val) for (var,val) in context if (var,val) not in c])
         
-        if set(c).issubset(context):
+        if set(c).issubset(context) and possible_mc.issubset(possible_mc_here):
             contained=context
+            
             break
+        
     return contained
 
 

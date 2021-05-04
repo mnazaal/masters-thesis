@@ -121,7 +121,7 @@ def contraction(csi_rels, memo, pairwise=True):
 def graphoid_axioms(csi_rels, val_dict):
     # Applies graphoid axioms in a pairwise manner
     # TODO Removing the while condition
-    print("Started applying weak union and decomposition to {} relations".format(len(csi_rels)))
+    #print("Started applying weak union and decomposition to {} relations".format(len(csi_rels)))
     J = []
     if csi_rels == []:
         all_axioms_return_empty =  True
@@ -137,15 +137,20 @@ def graphoid_axioms(csi_rels, val_dict):
             # Add this relation to the closure
             if csi_rel not in J:
                 J.append(csi_rel)
-            if len(J)==20:
-                print(len(J))
 
             weak_unioned  = weak_union(csi_rel)
             decomposed    = decomposition(csi_rel)
             specialized   = specialization(csi_rel, val_dict)
             intersected, intersec_memo  = intersection(csi_rels.copy()+J.copy(), intersec_memo)
             contracted, contrac_memo = contraction(csi_rels.copy()+J.copy(), contrac_memo)
-            
+            """
+            print("rel is ", csi_rel)
+            print("weakunion", weak_unioned)
+            print("decomposd", decomposed)
+            print("specialized", specialized)
+            print("intersection", intersected)
+            print("contrac", contracted)
+            """
             csi_rels += weak_unioned
             csi_rels += decomposed
             csi_rels += specialized

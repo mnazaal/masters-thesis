@@ -19,7 +19,7 @@ from utils.utils import binary_dict, ternary_dict, mixed_dict, generate_dag, nod
 
 
 def dag_to_cstree_util(nodes, val_dict, ordering, dag, expected_stages):
-    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering, dag)
+    cstree, stages, colour_scheme,_,_ = dag_to_cstree(val_dict, ordering, dag)
     if expected_stages==0 or expected_stages==nodes-1:
         assert len(stages)==expected_stages
 
@@ -62,7 +62,7 @@ def test_dag_to_cstree_randdag():
 
 
 def stages_to_csi_rels_util(nodes, val_dict, ordering, dag):
-    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
+    cstree, stages, colour_scheme,_,_ = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
     assert len(csi_rels)==len(stages)
     all_vars = []
@@ -173,7 +173,7 @@ def test_weak_union_randdag():
     dag = generate_dag(nodes,0.3)
     # get csi rels  from dag to cstree model
     # generate own examples
-    cstree, stages, colour_scheme = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
+    cstree, stages, colour_scheme,_,_ = dag_to_cstree(val_dict, ordering=ordering, dag=dag)
     csi_rels = stages_to_csi_rels(stages, ordering)
 
     pairwise = True
@@ -196,7 +196,7 @@ def test_weak_union_randdag():
             # set so th below inequalities must hold
             assert len(B2)<len(B1)
 
-
+"""
 def test_decomposition_randdag():
     nodes = 10
     ordering = [i+1 for i in range(nodes)]
@@ -259,7 +259,7 @@ def test_minimal_contexts_randdag():
 
     minimal_contexts = binary_minimal_contexts(closure, val_dict)
     assert list(minimal_contexts.keys())[0] == ()
-"""
+
 @pytest.mark.skip
 def test_cstree_pc1():
     # TODO Look more into the following DAGs
@@ -347,6 +347,35 @@ def test_binary_minimal_contexts2():
     min_contexts = set(list(min_context_dict.keys()))    
     assert min_contexts == {((1,0),),((2,0),),((3,0),)}
 
+
+def test_binary_minimal_contexts3():
+    val_dict = binary_dict(5)
+    csi_rels = [({3}, {2}, set(), [(1, 1)]), ({4}, {1, 2, 3}, set(), []), ({5}, {2, 3, 4}, set(), [(1, 0)]), ({4}, {1}, {2, 3}, []), ({4}, {3}, {1, 2}, []), ({4}, {2}, set(), []), ({5}, {2}, {3, 4}, [(1, 0)]), ({5}, {4}, {2, 3}, [(1, 0)]), ({5}, {3}, set(), [(1, 0)]), ({4}, {1, 3}, {2}, []), ({4}, {1}, {3}, [(2, 0)]), ({4}, {1}, {2}, [(3, 0)]), ({5}, {2, 4}, {3}, [(1, 0)]), ({4}, {3}, {2}, [(1, 0)]), ({4}, {3}, {1}, [(2, 0)]), ({4}, {2, 3}, {1}, []), ({5}, {2}, {4}, [(1, 0), (3, 1)]), ({5}, {2}, {3}, [(1, 0), (4, 1)]), ({5}, {4}, {3}, [(1, 0), (2, 1)]), ({5}, {4}, {2}, [(1, 0), (3, 1)]), ({4}, {1}, {2}, []), ({4}, {1, 3}, set(), [(2, 0)]), ({4}, {2, 3}, set(), []), ({5}, {4}, {3}, [(1, 0)]), ({5}, {2, 3}, set(), [(1, 0)]), ({4}, {2}, {1, 3}, []), ({4}, {2}, {1}, []), ({5}, {2, 3}, set(), [(1, 0), (4, 1)]), ({4}, {1}, set(), [(2, 0)]), ({4}, {1, 3}, set(), [(2, 1)]), ({4}, {1, 2}, set(), [(3, 0)]), ({4}, {3}, {2}, []), ({4}, {3}, set(), []), ({5}, {3}, {2}, [(1, 0)]), ({5}, {2, 4}, set(), [(1, 0), (3, 0)]), ({4}, {2}, {3}, [(1, 0)]), ({4}, {2}, {1}, [(3, 0)]), ({5}, {2}, set(), [(1, 0), (4, 1)]), ({4}, {1}, {3}, [(2, 1)]), ({4}, {1}, set(), [(2, 1)]), ({4}, {1}, set(), [(3, 0)]), ({5}, {2}, {4}, [(1, 0), (3, 0)]), ({5}, {2}, set(), [(1, 0), (3, 0)]), ({3}, {2}, set(), [(1, 0)]), ({5}, {3, 4}, set(), [(1, 1), (2, 1)]), ({5}, {3}, {2, 4}, [(1, 0)]), ({5}, {4}, set(), [(1, 0)]), ({4}, {1}, {2}, [(3, 1)]), ({4}, {3}, {2}, [(1, 1)]), ({5}, {2}, {3}, [(1, 0), (4, 0)]), ({5}, {4}, {2}, [(1, 0), (3, 0)]), ({4}, {2, 3}, set(), [(1, 0)]), ({4}, {3}, {1}, []), ({4}, {1, 2}, set(), [(3, 1)]), ({5}, {2}, set(), [(1, 0)]), ({5}, {2, 4}, set(), [(1, 0), (3, 1)]), ({4}, {2}, {1}, [(3, 1)]), ({5}, {3}, set(), [(1, 0), (4, 1)]), ({4}, {3}, {1}, [(2, 1)]), ({5}, {4}, set(), [(1, 0), (3, 0)]), ({5}, {4}, {3}, [(1, 1), (2, 1)]), ({5}, {4}, set(), [(1, 1), (2, 1)]), ({5}, {3}, {4}, [(1, 0), (2, 1)]), ({5}, {3}, {2}, [(1, 0), (4, 1)]), ({4}, {2}, set(), [(1, 0)]), ({4}, {2, 3}, set(), [(1, 1)]), ({4}, {2}, {3}, [(1, 1)]), ({4}, {2}, set(), [(3, 1)]), ({5}, {4}, set(), [(1, 0), (3, 1)]), ({4}, {3}, set(), [(1, 1)]), ({5}, {3, 4}, set(), [(1, 1), (2, 0)]), ({4}, {1, 2}, {3}, []), ({5}, {4}, {3}, [(1, 0), (2, 0)]), ({4}, {1, 2}, set(), []), ({5}, {3, 4}, set(), [(1, 0)]), ({5}, {3, 4}, set(), [(1, 0), (2, 1)]), ({4}, {3}, set(), [(2, 0)]), ({5}, {2}, {3}, [(1, 0)]), ({5}, {3, 4}, set(), [(1, 0), (2, 0)]), ({4}, {2}, set(), [(3, 0)]), ({5}, {3}, {4}, [(1, 1), (2, 1)]), ({5}, {3}, {4}, [(1, 0), (2, 0)]), ({4}, {3}, set(), [(1, 0)]), ({4}, {2}, set(), [(1, 1)]), ({5}, {4}, {3}, [(1, 1), (2, 0)]), ({5}, {4}, set(), [(1, 1), (2, 0)]), ({4}, {2}, {3}, []), ({5}, {4}, set(), [(1, 0), (2, 1)]), ({5}, {4}, set(), [(1, 0), (2, 0)]), ({4}, {1}, set(), []), ({5}, {3, 4}, {2}, [(1, 0)]), ({5}, {3}, {2}, [(1, 0), (4, 0)]), ({4}, {1}, set(), [(3, 1)]), ({5}, {2}, set(), [(1, 0), (3, 1)]), ({5}, {3}, {4}, [(1, 1), (2, 0)]), ({5}, {3}, set(), [(1, 0), (2, 1)]), ({4}, {1, 3}, set(), []), ({5}, {4}, {2}, [(1, 0)]), ({5}, {2, 3}, {4}, [(1, 0)]), ({5}, {3}, set(), [(1, 1), (2, 1)]), ({5}, {3}, set(), [(1, 1), (2, 0)]), ({5}, {3}, set(), [(1, 0), (2, 0)]), ({4}, {1}, {3}, []), ({5}, {2, 4}, set(), [(1, 0)]), ({5}, {3}, {4}, [(1, 0)]), ({5}, {2, 3}, set(), [(1, 0), (4, 0)]), ({5}, {3}, set(), [(1, 0), (4, 0)]), ({4}, {3}, set(), [(2, 1)]), ({5}, {2}, {4}, [(1, 0)]), ({5}, {2}, set(), [(1, 0), (4, 0)])]
+    min_context_dict = binary_minimal_contexts(csi_rels,val_dict)
+    min_contexts = set(list(min_context_dict.keys()))    
+    assert min_contexts == {(),((1,0),)}
+
+def test_binary_minimal_contexts4():
+    val_dict = binary_dict(5)
+    csi_rels =[({3}, {2}, set(), [(1, 1)]), ({3}, {2}, set(), [(1, 0)]), ({4}, {1, 2, 3}, set(), []), ({5}, {3, 4}, set(), [(1, 1), (2, 0)]), ({5}, {2, 3, 4}, set(), [(1, 0)]), ({5}, {3, 4}, set(), [(1, 1), (2, 1)])]
+
+    min_context_dict = binary_minimal_contexts(csi_rels,val_dict)
+    min_contexts = set(list(min_context_dict.keys()))    
+    assert min_contexts == {()}
+
+
+def test_binary_minimal_contexts5():
+    val_dict = binary_dict(5)
+    csi_rels =[({5}, {2}, set(), [(1, 0), (4, 1)]),
+               ({5}, {2}, set(), [(1, 0), (3, 0)]),
+               ({5}, {2}, set(), [(1, 0)]),
+               ({5}, {2}, set(), [(1, 0), (3, 1)]),
+({5}, {2}, set(), [(1, 0), (4, 0)])]
+
+    min_context_dict = binary_minimal_contexts(csi_rels,val_dict)
+    min_contexts = set(list(min_context_dict.keys()))    
+    assert min_contexts == {((1,0),)}
+
 def test_ternary_minimal_contexts1():
     val_dict = ternary_dict(4)
     csi_rels = [({4},{1}, set(), [(1,0)]), ({4},{1},set(),[(1,1)])]
@@ -362,6 +391,9 @@ def test_ternary_minimal_contexts2():
     min_context_dict = binary_minimal_contexts(csi_rels, val_dict)
     min_contexts = set(list(min_context_dict.keys()))
     assert min_contexts == {()}
+
+    
+
 
     
 def test_weak_union():

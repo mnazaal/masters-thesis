@@ -285,8 +285,6 @@ def color_cstree(c,
     new_stages  = 0
 
     levels = len(ordering)
-
-    print("stage list is",stage_list)
     
     if stage_list is None or stage_list == []:
         stage_list = [{} for i in range(levels)]
@@ -324,23 +322,22 @@ def color_cstree(c,
         #assert np.log2(len(nodes_l))==level
         
         #print("len of each node in level ",level,list(map(lambda x: len(x), nodes_l)))
-        print(len(stage_list))
         stages_l = stage_list[level-1]
         color_scheme_l = color_scheme_list[level-1]
         colored = list(color_scheme_l.keys())
+        #print("coloring tree level {} already has {} colored and {} stages".format(level, len(colored), len(stages_l)))
 
-        print(stages_l, color_scheme_l)
+        #print(stages_l, color_scheme_l)
 
         #print("level {} stages {}".format(level,stages_l))
         # If the DAG already coloured this level the same colour, move on
         if len(stages_l) == 1 and len(color_scheme_l)==len(nodes_l):
             # If we have only one stage that contains all the nodes in this level
             # We go to the next level
-            print("DAG had finished with this level, namely {}".format(stages_l))
             level+=1
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)
-            color_scheme_list.append(color_scheme_l)
+            newcolor_scheme_list.append(color_scheme_l)
             #print("added for level {} color {}".format(level-1,color_scheme_l.values()))
             continue
         # v0, generate common contexts starting from the empty context to the full contexts
@@ -363,14 +360,12 @@ def color_cstree(c,
             # Can be done only if merge happens but then must repeat
             # code since it must be done before first test happens anyways
 
-            
-            
-                
+
             # Case (a) : both colored and same color
             #print(set(color_scheme[n1]))
             if (n1 in colored and n2 in colored) and color_scheme_l.get(n1,"c1") == color_scheme_l.get(n2,"c2"):
                 skipped += 1
-                print("skipping with colors {},{}".format(color_scheme_l.get(n1),color_scheme_l.get(n2)))
+                #print("skipping with colors {},{}".format(color_scheme_l.get(n1),color_scheme_l.get(n2)))
                 continue
                     
             # Case (b,c,d,e) : Other than above
@@ -380,7 +375,7 @@ def color_cstree(c,
                 not_skipped+=1
                 color_n1 = color_scheme_l.get(n1, None)
                 color_n2 = color_scheme_l.get(n2, None)
-                print("not skipping, colours are {},{} nodes are {},{}".format(color_n1,color_n2,n1,n2))
+                #print("not skipping, colours are {},{} nodes are {},{}".format(color_n1,color_n2,n1,n2))
                # print(level,n1,n2)
                 # Case (b)
                 if color_n1 is not None and color_n2 is not None:

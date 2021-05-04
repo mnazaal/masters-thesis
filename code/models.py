@@ -160,6 +160,8 @@ class CSTree(object):
                 print("Tree {} generating CSI rels from tree".format(iteration))
                 csi_rels = stages_to_csi_rels(stages.copy(), ordering)
 
+                print(csi_rels)
+
                 # Apply weak union, decomposition, specialization iteratively
                 # Intersection and contraction afterwards
                 print("Applying graphoid axioms")
@@ -332,6 +334,10 @@ class CSTree(object):
                 print("MEC DAG number {} ordering number {} applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
                 tree, stages,color_scheme,stage_list,color_scheme_list = dag_to_cstree(self.val_dict, ordering, mec_dag)
 
+                print("aftre dag color scheme")
+                for c,n in color_scheme.items():
+                    print(c,n)
+
                 if not use_dag:
                     # TODO Move this into algorithm itself
                     color_scheme, stages = {},{}
@@ -353,6 +359,9 @@ class CSTree(object):
                 stages_after_csitests = (nodes_per_tree(self.val_dict, ordering))-len(color_scheme)+len(stages)
                 print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
 
+                print("aftrer csi tests color scheme")
+                for c,n in color_scheme.items():
+                    print(c,n)
                 
                 # Compute BIC here
                 if get_bic:

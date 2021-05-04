@@ -71,8 +71,8 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
     exp_name += "removed_skew"
 
 
-    for i in range(1):
-        dataset_subsample_size = int(n/(10**(2)))
+    for i in range(3):
+        dataset_subsample_size = int(n/(10**(i)))
         dataset_subsample_indices = random.sample(range(n), dataset_subsample_size)
         dataset_subsample         = dataset[tuple(dataset_subsample_indices),:]
         cstree_object = CSTree(dataset_subsample, val_dict)
