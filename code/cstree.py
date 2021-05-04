@@ -96,17 +96,13 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
         if len(ordering) != len(list(dag.nodes)):
             raise ValueError("The size of the given ordering and nodes in given DAG do not match")
         if ordering not in list(nx.all_topological_sorts(dag)):
-            print(ordering)
-            print(dag.edges)
-            print(list(nx.all_topological_sorts(dag)))
             raise ValueError("The ordering given is not valid for the given DAG")
     
-    for var in ordering:
-        if var not in list(val_dict.keys()):
-            raise ValueError("Variables in ordering and value dictionary do not match")
+    if set(ordering) != set(list(val_dict.keys())):
+        raise ValueError("Variables in ordering and value dictionary do not match")
     
     # If DAG given but ordering is not, take some topological ordering
-    if dag and ordering is None:
+    if dag and (ordering is None):
         ordering = dag_topo_sort(dag)
 
         
@@ -206,6 +202,7 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     
 
                 else:
+                    # Nodes in current such that sc is a subcontext 
                     stage_nodes = [n for n in roots if set(sc).issubset(n)]
 
                     color = "#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
@@ -264,9 +261,9 @@ def color_cstree(c,
                   data_matrix, 
                   stages          = None,
                   color_scheme   = None,
-                  tol_p_val       = 0.1,
+                  tol_p_val       = 0.05,
                   return_csi_rels = True,
-                  test            = "epps",
+                  test            = "anderson",
                   no_dag          = True):
     # c is the Fal
     # levels is the number of levels in the cstree
@@ -407,7 +404,7 @@ def color_cstree(c,
                 # Possibly ignore the test if the samples are imbalanced
                 avg_data = 0.5*(len(data_n1)+len(data_n2))
                 skewed_data=False
-                if len(data_n1)< 0.4*avg_data or len(data_n2)< 0.5*avg_data:
+                if len(data_n1)< 0.75*avg_data or len(data_n2)< 0.75*avg_data:
                     skewed_data=True
                     #same_distr=False
 
@@ -423,7 +420,7 @@ def color_cstree(c,
                         else:
                             same_distr=False
                 if test=="anderson":
-                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1:
+                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1 or skewed_data:
                         less_data_counter +=1
                         p=0
                         same_distr=False
@@ -431,6 +428,9 @@ def color_cstree(c,
                         statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
                         if p>tol_p_val:
                             same_distr=True
+                            unique1, counts1 = np.unique(data_n1, return_counts=True)
+                            unique2, counts2 = np.unique(data_n2, return_counts=True)
+                            print("accepted, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
                         else:
                             same_distr=False
                 else:

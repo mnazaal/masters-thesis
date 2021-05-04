@@ -27,12 +27,18 @@ def generate_dag(nodes, p_edge):
     dag = nx.relabel_nodes(dag, lambda x: x+1)
     return dag
 
-def nodes_per_tree(val_dict):
-    dict_as_items = list(val_dict.items())
-    if len(val_dict)==2:
-        return len(dict_as_items[0][-1])
-    else:
-        return len(dict_as_items[0][-1]) +  len(dict_as_items[0][-1])* nodes_per_tree({k:v for k,v in dict_as_items[1:]})
+
+def nodes_per_tree(val_dict, ordering):
+    assert len(val_dict)==len(ordering)
+
+    # nodes per each level
+    nodes=[]
+    nodes.append(len(val_dict[ordering[0]]))
+    
+    for i in range(1,len(ordering)):
+        nodes.append(nodes[i-1]*len(val_dict[ordering[i]]))
+        
+    return sum(nodes)
 
 
 def contained(p, rels, s):
