@@ -344,6 +344,8 @@ class CSTree(object):
 
                 print("after converting DAG to CSTree, we colored {} nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
+                print("CSI rels from tree after dag", stages_to_csi_rels(
+
                 stages_after_dag = nodes_per_tree(self.val_dict, ordering) -len(color_scheme)+len(stages)
                 print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
 
