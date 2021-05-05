@@ -986,7 +986,7 @@ This data set does not require further pre-processing since the outcome space is
 Applying Algorithm \ref{alg:cstreepc} yields 55 CSTrees which have the same number of stages, which is 69. If we exclude singleton stages corresponding to the last level this is 5 stages, which results in a full independence model.
 
 This motivated the exploration of other CSTrees with a causal ordering consistent with the CPDAG. In total the coronary dataset gave rise to 288 trees, and although much of it resulted in very sparse CSTrees, i.e. those with very few stages close to the minimum stages, there were some models which were more complex than this, one of which we show below. The amount of context specific independence tests skipped due to no available data was at most around 25 per CSTree.
-We show one of these 55 CSTrees below.
+We show one of these 55 CSTrees below in Figure \ref{fig:coronary1}.
 
 
 
