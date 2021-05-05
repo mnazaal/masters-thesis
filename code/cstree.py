@@ -218,9 +218,6 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     return cstree, stages, color_scheme, stage_list, color_scheme_list
 
 
-
-
-
     
 def stages_to_csi_rels(stages, ordering):
     
@@ -339,7 +336,7 @@ def color_cstree(c,
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)
             newcolor_scheme_list.append(color_scheme_l)
-            #print("added for level {} color {}".format(level-1,color_scheme_l.values()))
+            print("added for level {} color {}".format(level,list(color_scheme_l.values())[0]))
             continue
         # v0, generate common contexts starting from the empty context to the full contexts
         
@@ -421,7 +418,7 @@ def color_cstree(c,
 
                 if test=="epps":
                     # If we have enough data, do the test
-                    if len(data_n1)<5 or len(data_n2)<5 or skewed_data:
+                    if len(data_n1)<5 or len(data_n2)<5:
                         less_data_counter +=1
                         same_distr=False
                     else:

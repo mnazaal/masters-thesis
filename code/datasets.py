@@ -103,10 +103,10 @@ def micecortex_data(num_features=10):
     #for col in micecortex_pd.columns:
     #    print(col, micecortex_pd[col].isna().sum())
 
-    micecortex_pd = micecortex_pd.dropna()
-    micecortex_pd = micecortex_pd.drop(columns=["MouseID", "Genotype"])
+    micecortex_pd = micecortex_pd.drop(columns=['BAD_N', 'BCL2_N', 'H3AcK18_N', 'EGR1_N', 'H3MeK4_N',"MouseID", "Genotype", "Treatment",  "Behavior"])
 
     # TODO Apply reindex
+    micecortex_pd = micecortex_pd.dropna()
 
     # Automatically mapping non-numerical categories to ints
     for col in micecortex_pd.select_dtypes(exclude=["int","double","float" ]).columns:
@@ -119,31 +119,31 @@ def micecortex_data(num_features=10):
     selector = RFE(estimator, n_features_to_select=num_features, step=1)
     selector = selector.fit(X,y)
     feature_indices = [i for i in range(X.shape[1]) if selector.support_[i]]
-    feature_names   = [micecortex_pd.columns[i] for i in feature_indices]
+    feature_names   = [micecortex_pd.columns[i] for i in feature_indices]+[micecortex_pd.columns[-1]]
 
     reduced_micecortex_pd = micecortex_pd[feature_names]
 
     # We divide each feature into 2 classes based on the median
     reduced_micecortex_medians = reduced_micecortex_pd.median()
 
-    for i,col in enumerate(reduced_micecortex_pd.columns[:-2]):
+    for i,col in enumerate(reduced_micecortex_pd.columns[:-1]):
         reduced_micecortex_pd[col] =  (reduced_micecortex_pd[col]> reduced_micecortex_medians[i]).astype(int)
 
     micecortex_np = reduced_micecortex_pd.values.astype(np.int)
 
-    micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
+    #micecortex_np = np.concatenate((micecortex_np, y.reshape(y.shape[0],1)),axis=1).astype(np.int)
 
     return micecortex_np
 
 
-def susy_data(laptop=True):
+def susy_data(laptop, ratio):
     if laptop:
         susy_pd      = pd.read_csv("../../../../Downloads/SUSY.csv")
     else:
         susy_pd =  pd.read_csv("../datasets/SUSY.csv")
 
 
-    susy_pd      = susy_pd.sample(frac=0.5, replace=True, random_state=1)
+    susy_pd      = susy_pd.sample(frac=ratio, replace=True, random_state=1)
     susy_medians = susy_pd.median()
 
     for i,col in enumerate(susy_pd.columns[1:]):

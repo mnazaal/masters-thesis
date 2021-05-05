@@ -169,9 +169,8 @@ def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
     for rel in csi_rels:
         (A,B,S,Ci) = rel
         for mincontext in list(minimal_cs_dict.keys()):
-            if set(Ci) == set(mincontext):
-                
-                minimal_cs_dict[mincontext].append(rel)
+            if set(Ci) == set(mincontext) and (A,B,S) not in minimal_cs_dict[mincontext]:
+                minimal_cs_dict[mincontext].append((A,B,S))
                 
     return minimal_cs_dict
 
@@ -186,6 +185,7 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
 
     
     for minimal_context, ci_rels in minimal_contexts.items():
+        print(ci_rels)
         
         if closure:
             for rel in closure:
@@ -201,24 +201,26 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
                 pi_i = remaining_vars[i]
                 pi_j = remaining_vars[j]
 
-                minimal_context_dag.add_nodes_from([pi_i, pi_j])
+                
                 
                 minimal_context_dag.add_edge(pi_i,pi_j)
 
                 conditioning_set = set(remaining_vars[:j]).difference({pi_i,pi_j})
 
+                print("added edge {}, cond set is {}".format((pi_i,pi_j), conditioning_set))
+
                 for ci_rel in ci_rels:
                     A = ci_rel[0]
                     B = ci_rel[1]
                     Ci = ci_rel[2]
-                    if A.union(B) == {pi_i,pi_j} and set(Ci).issubset(conditioning_set):
+                    if A.union(B) == {pi_i,pi_j} and Ci.issubset(conditioning_set):
                         if minimal_context_dag.has_edge(pi_i,pi_j):
                             minimal_context_dag.remove_edge(pi_i,pi_j)
-                        else:
-                            pass
+                            minimal_context_dag.add_nodes_from([pi_i, pi_j])
                             #print("did not remove, conditiioning set is ,",conditioning_set, "ci rel is", Ci, Ci.issubset(conditioning_set))
                             
         #print("order is, ",order)
+        
         if mec_dag:
             for edge in minimal_context_dag.edges:
                 order_printed=False
@@ -230,6 +232,6 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
                         #print(parents(mec_dag,edge[0]), parents(mec_dag, edge[1]))
                         #print(edge, "\ncirels w var\n", ci_rels_w_vars, "\nall mc ci rels\n",ci_rels,"\ncsi rels from graphoid\n", csi_rels,"\nfrom tree\n", closure)
         
-
+        print("Adding mc {} and mcdag nodes {} edges {}".format(minimal_context, minimal_context_dag.nodes,minimal_context_dag.edges))
         minimal_context_dags.append((minimal_context, minimal_context_dag))
     return minimal_context_dags

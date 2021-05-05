@@ -16,12 +16,16 @@ def decomposition(csi_rel, pairwise=True):
         return new_rels
     
     if pairwise:
-        for b in B:
-            new_rels.append((A, {b}, S, C))
+        if len(A)>1:
+            raise ValueError("Using pairwise case but |A|>1")
+        removing_set_sizes = [i for i in range(1,len(B))]
+        for size in removing_set_sizes:
+            removing_sets = [set(i) for i in combinations(list(B), size)]
+            for D in removing_sets:
+                new_rels.append((A, B.difference(D), S, C))
 
     else:
         raise NotImplementedError("Implement decomposition for non pairwise case")
-            
     return new_rels
 
 def specialization(csi_rel, val_dict, pairwise=True):
@@ -62,8 +66,11 @@ def weak_union(csi_rel, pairwise=True):
     if pairwise:
         if len(A)>1:
             raise ValueError("Using pairwise case but |A|>1")
-        for b in B:
-            new_rels.append((A, {b}, S.union(B.difference({b})), C))
+        removing_set_sizes = [i for i in range(1,len(B))]
+        for size in removing_set_sizes:
+            removing_sets = [set(i) for i in combinations(list(B), size)]
+            for D in removing_sets:
+                new_rels.append((A, B.difference(D), S.union(D), C))
     else:
         raise NotImplementedError("Implement weak union for non pairwise case")
 

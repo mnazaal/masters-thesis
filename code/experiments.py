@@ -68,12 +68,13 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
 
     exp_name = "synthetic-empirical"
     exp_name = exp_name+"w_dag" if use_dag else exp_name+"wout_dag"
-    exp_name += "removed_skew"
+    exp_name += "removed_skew_anderson"
 
 
     for i in range(3):
-        dataset_subsample_size = int(n/(10**(i)))
-        dataset_subsample_indices = random.sample(range(n), dataset_subsample_size)
+        #dataset_subsample_size = int(n/(10**(i)))
+        #dataset_subsample_indices = random.sample(range(n), dataset_subsample_size)
+        dataset_subsample_indices = tuple(j for j in range(int(n/(10**i))))
         dataset_subsample         = dataset[tuple(dataset_subsample_indices),:]
         cstree_object = CSTree(dataset_subsample, val_dict)
         ordering=[i+1 for i in range(p)]
@@ -82,7 +83,7 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
         try:
             ordering_count = cstree_object.count_orderings()
             print("Current experiment has {} orderings".format(ordering_count))
-            cstree_object.visualize(plot_mcdags=True,ordering=ordering, use_dag=use_dag, save_dir=exp_name+str(i))
+            cstree_object.visualize(plot_mcdags=True,csi_test="anderson",ordering=ordering, use_dag=use_dag, save_dir=exp_name+str(i))
         except ValueError as e:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             filename = exception_traceback.tb_frame.f_code.co_filename
@@ -105,15 +106,16 @@ def synthetic_dag_binarydata_experiment_4(nodes, p_edge, n):
     # Effect of not including imbalanced data
     pass
 
-#dag = generate_dag(5, 0.5)
+"""
+#dag = generate_dag(4, 0.8)
 #print("DAG edges",list(dag.edges))
-#dataset = synthetic_dag_binarydata(dag, 1000000)
+#dataset = synthetic_dag_binarydata(dag, 100000)
 #np.savetxt('dataset.csv', dataset, fmt="%d", delimiter=",")
-dataset=np.genfromtxt('dataset.csv', delimiter=',').astype(int)
+#dataset=np.genfromtxt('dataset.csv', delimiter=',').astype(int)
 # TODO Save this
 synthetic_dag_binarydata_experiment_1(dataset, use_dag=True)
 synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)
-
+"""
 
 @ex3.config
 def dermatology_config():
@@ -139,15 +141,25 @@ def micecortex_config():
     num_features=10
     
 #@ex4.automain
-def micecortex_experiment():
+def micecortex_experiment(num_features):
     # Anderson test
     # With and without CI relations
     # With 6 features and 10 features
     dataset = micecortex_data(num_features)
+    n,p=dataset.shape
 
-    cstree_object = CSTree(dataset)
 
-    cstree_object.visualize(all_trees=False, plot_limit=None, learn_limit=None)
+    val_dict = {i+1:[0,1] for i in range(p)}
+    val_dict[7]=[i for i in range(8)]
+
+    cstree_object = CSTree(dataset,val_dict)
+
+    
+
+    cstree_object.visualize(all_trees=False, use_dag=False,plot_limit=None, learn_limit=None, save_dir="mice6_nodag")
+
+
+micecortex_experiment(6)
 
 @ex5.config
 def susy_config():
@@ -159,8 +171,8 @@ def susy_config():
     
 
 #@ex5.automain
-def susy_experiment():
-    dataset = susy_data(False, ratio)
+def susy_experiment(ratio):
+    dataset = susy_data(True, ratio)
 
     n,p = dataset.shape
 
@@ -168,7 +180,7 @@ def susy_experiment():
 
     cstree_object = CSTree(dataset, val_dict) 
 
-    cstree_object.visualize(all_trees=True, save_dir=save_dir, use_dag=False, plot_limit=10, learn_limit=10)
+    cstree_object.visualize(all_trees=True, csi_test="epps",save_dir="susy", use_dag=False, plot_limit=5, learn_limit=5)
 
     
 
@@ -176,14 +188,19 @@ def susy_experiment():
 def coronary_experiment():
     # Load dataset
     dataset = coronary_data()
+    n,p = dataset.shape
+    val_dict = {i+1:[0,1] for i in range(p)}
     
     # Create CSTree object
-    cstree_object = CSTree(dataset)
+    cstree_object = CSTree(dataset, val_dict)
+    
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    cstree_object.visualize(all_trees=False, plot_limit=None, learn_limit=None)
+    cstree_object.visualize(csi_test="epps",all_trees=True, use_dag=False,plot_limit=None, learn_limit=None, save_dir="coronarywoutdag_epps")
 
+#susy_experiment(0.02)
+#coronary_experiment()
 #synthetic_dag_binarydata_experiment(9, 0.2, 350)
 #coronary_experiment()
 #dermatology_experiment(grouped=True)
