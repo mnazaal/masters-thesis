@@ -876,7 +876,7 @@ The results are as expected since there are no conditional independence stations
    #+end_export
 
    
-
+#+BEGIN_COMMENT
 We show a CSTree for a random DAG model with 8 binary variables below in a more compact visualization, alongside the recovered empty context DAG in Figures \ref{fig:dagtocstree_cstree8}\ref{fig:dagtocstree_dag8}.
 
 #+begin_export latex
@@ -907,8 +907,9 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
 
 
 #+end_export
+#+END_COMMENT
 
-   
+The following table summarizes the empirical space time complexity of generating a CSTree from certain random DAGs generated from the aforementioned procedure.
    
  #+CAPTION: Statistics from generating CSTrees for random DAGs, Space refers to the amount of RAM occuppied by the CSTree structure, and time refers to the amount of time taken to encode the CI relations in the DAG to the CSTree. 
  |------------+-----------+-------------+-----------|
@@ -943,16 +944,21 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
 \end{figure}
    #+end_export
 
+   
+
+
    In order to assess the influence of the CI relations from the DAG in the final CSTree, we tested the use of Algorithm \ref{alg:cstreepc} with the following experiment. First we generate a dataset from the above procedure, then we run Algorithm \ref{alg:cstreepc} on this dataset with and without using the CI relations from the CPDAG learnt in the first step. Below is an example where the DAG picks up a conditional independence relation which is not picked up by strictly running only the context specific independence tests.
+
+   
      #+begin_export latex
-\begin{figure}[!h]\label{fig:synthetic_exp2a}
+\begin{figure}[H]\label{fig:synthetic_exp2a}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/andersonwdag_subsample.pdf}}%
 \caption{CSTree learnt using the CI relations from the DAG, which encodes the relation $X_3 \indep X_2,X_1$}
         
    \end{floatrow}
 \end{figure}
-\begin{figure}[!h]\label{fig:synthetic_exp2b}
+\begin{figure}[H]\label{fig:synthetic_exp2b}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/andersonwoutdag_subsample.pdf}}%
 \caption{CSTree learnt without the CI relations from the DAG, which does not encode the relation $X_3 \indep X_2,X_1$ unlike when using the DAG on the same dataset}}
@@ -960,9 +966,10 @@ We show a CSTree for a random DAG model with 8 binary variables below in a more 
    \end{floatrow}
 \end{figure}
    #+end_export
-   
+
    
 ** Coronary disease data
+  
    This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men cite:reinis-1981-progn-signif. These features are detailed below.
    |------------------------------------------+---------------------|
    | Variable                                 | Outcome space       |
@@ -980,15 +987,19 @@ Applying Algorithm \ref{alg:cstreepc} yields 55 CSTrees which have the same numb
 
 This motivated the exploration of other CSTrees with a causal ordering consistent with the CPDAG. In total the coronary dataset gave rise to 288 trees, and although much of it resulted in very sparse CSTrees, i.e. those with very few stages close to the minimum stages, there were some models which were more complex than this, one of which we show below. The amount of context specific independence tests skipped due to no available data was at most around 25 per CSTree.
 We show one of these 55 CSTrees below.
-     #+begin_export latex
+
+
+
+#+begin_export latex
 \begin{figure}[!h]\label{fig:coronary1}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/coronary_nonindep.pdf}}%
-\caption{Example of CSTree learnt on the coronary dataset which was not the independence model, which has the ordering 125346}
+\caption{Example of CSTree learnt on the coronary dataset which was not the independence model which has the ordering 125346}
         
    \end{floatrow}
+\end{figure}
+#+end_export
 
-   #+end_export
 # TODO cite table number for above
 
 # TODO With or withot DAG encodings
@@ -997,7 +1008,7 @@ We show one of these 55 CSTrees below.
 
 
 ** Mice protein expression data
-   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want, which in this experiment we set as 6. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. With the predictor class, which takes 8 possible values, this is a system with 7 variables. We choose this number mainly because the amount of samples drastically reduce as we fix contexts when we go down each level.
+   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want, which in this experiment we set as 6. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. With the predictor class, which takes 8 possible values, this is a system with 7 variables. We choose this number mainly because the amount of samples drastically reduce as we fix contexts when we go down each level.
 
 
    Applying Algorithm \ref{alg:cstreepc} on this dataset resulted in 108 CSTrees with the minimum number of stages, which is 518. Excluding the singleton stages arising from the last level, this is 6 stages, which are once again extremely sparse.
@@ -1005,14 +1016,14 @@ We show one of these 55 CSTrees below.
    
    Running the algorithm without using the CI relations from the DAG however can result in a more complex CSTree model for example the one given below for the causal ordering 1275634.
 
-           #+begin_export latex
+ #+begin_export latex
 \begin{figure}[!h]\label{fig:mice1}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/mice6_nodag1_cstree.pdf}}%
 \caption{CSTree with ordering 1275634 learnt from the mice cortex data.}
         
    \end{floatrow}
-
+\end{figure}
    #+end_export
 
 
@@ -1028,6 +1039,7 @@ We show one of these 55 CSTrees below.
    
 
 ** Supersymmetry data
+
    This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features cite:baldi-2014-searc-exotic. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features, and after taking a random subsample of size 100000. Due to the high number of possible causal orderings, we show below the first CSTree learnt.
 
         #+begin_export latex
@@ -1037,13 +1049,14 @@ We show one of these 55 CSTrees below.
 \caption{First CSTree learnt from the supersymmetry dataset.}
         
    \end{floatrow}
-
+\end{figure}
    #+end_export
 
    It is expected that since the supersymmetry data involves many causal interactions, there will be few independence relations, which is what we see from the CSTree.
 
    # TODO With DAG, without DAG, number of samples changes
                                         
+
 
    # !!! TODO Cite table number above
 
@@ -1058,19 +1071,28 @@ We show one of these 55 CSTrees below.
 
    
 ** Discussion of empirical performance
-   Additional constraints for ordering, e.g. mice cortex last variable
-   Here we look at some more general empirical results which we observed throughout our experiments.
-   - A high ratio of tests are skipped in practice
-   - As we moving up the levels, the number of samples to run the independence tests decrease rapidly, in which case we assume they are dependent
-   - The staging can be highly sensitive to the independence testing being done. We use the Epps and Singleton test cite:epps-1986-omnib-test,goerg-2009-nonpar-testin and the  Anderson-Darling test cite:scholz-1987-k-sampl.
-   - Model selection in practice
+
+   In practice, the rapidly decreasing amount of samples as we go to the later levels of the CSTree results in skipped tests. This is in part due to the implementation of the statistical tests not taking samples less than 5, or not taking samples consisting of a single outcome. In terms of context specific conditional independence testing, we use the Epps and Singleton test cite:epps-1986-omnib-test and the Anderson-Darling test cite:scholz-1987-k-sampl, both of which are implementing in scipy cite:virtanen-2020-scipy. We observe that there are no significant differences between these tests. Due to the fact that many statistical tests are run on significantly imbalanced sample sizes, in the presence of small data it might be a good idea to perform the statistical test only if a certain criteria is met, for example, run the test only if both samples are atleast half of their mean. 
+
+
+   The instability of the CI testing from the PC algorithm step also plays a main role, for example in the synthetic DAG experiments, the order $123\cdots p$ must always be a valid order however there are instances where no DAG derived from the CPDAG contains this as a valid ordering. This may also present itself to be a problem if we have partial knowledge of the ordering, for example in the mice cortex data experiment, it is plausible to think of the predictor class to be a function of the gene expression levels, however the CPDAG contains no DAG with an ordering such that this variable comes at the very last.
+
+
+   One important aspect of this process is to choose the best CSTree from all possible causal ordering, which is a model selection problem. In Algorithm \ref{alg:cstreepc} we opt to choose the one with the fewest stages since it relates to choosing the model with the fewest parameters, i.e. the simplest model. This goes in hand with the principle of Occam's razor - in the face of many possible models, choose the simplest model. Here a simple model refers to one which has few parameters. In practice however we see that problems arising due to misleading conditional independence tests and small data samples might lead to the simplest model being too simple, compromising the fit to the data.
+
+
+   # TODO Something about orderings
+
 
 
 * Conclusions
 ** Summary
+   We start with DAGs as a means to encode CI relations, and how one can use the characterization of Markov Equivalence in DAGs to learn causal structure through CI testing. We then cover the limitations of CI relations in comparison to CSI relations, and go over CSTrees as a means to encode such CSI relations. We then show how one can learn these CSI relations from observational data and learn a CSTree, and how to compute minimal contexts which are important when it comes to visualizing higher dimensional CSTrees. We then apply these techniques to synthetic and real data.
 
    
 ** Future work
+   One of the more natural extensions of this work is to learn CSTrees from interventional data. This can already be done with DAGs cite:yang-2018-charac-learn. On the topic of model selection, it might be interesting to see the applicability of Bayesian model selection for CSTrees, whereby the model evidence is used as the basis for comparing models which automatically penalizes over-complex models whilst also penalizing models which do not agree with the observed data cite:mackay-1992-bayes-inter. Similar approaches have been applied to Gaussian DAG models cite:castelletti-2020-bayes-model. Generalization to missing data problems would also be an interesting avenue, considering that the PC algorithm has been recently extended for missing data instances in DAGs cite:tu-2019-causal-discov. But perhaps the most impactful extension would be formulating the problem of finding the best CSTree into a continuous optimization problem, which can lead to scalable score based methods. Recent work has formulate the problem of searching for the best DAG according to some metric by using a characterization of acyclicity that is smooth and exact, allowing the conversion of the combinatorial problem into a purely continuous problem cite:zheng-2018-dags-no-tears.  
+   
    
    
 
