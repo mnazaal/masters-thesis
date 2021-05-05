@@ -97,8 +97,9 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
             raise ValueError("The size of the given ordering and nodes in given DAG do not match")
         if ordering not in list(nx.all_topological_sorts(dag)):
             raise ValueError("The ordering given is not valid for the given DAG")
-    
+    print(ordering,val_dict)
     if set(ordering) != set(list(val_dict.keys())):
+        print("hahahah")
         raise ValueError("Variables in ordering and value dictionary do not match")
     
     # If DAG given but ordering is not, take some topological ordering
@@ -415,34 +416,34 @@ def color_cstree(c,
                 if len(data_n1)< 0.75*avg_data or len(data_n2)< 0.75*avg_data:
                     skewed_data=True
                     #same_distr=False
+                # Getting the counts
+                unique1, counts1 = np.unique(data_n1, return_counts=True)
+                unique2, counts2 = np.unique(data_n2, return_counts=True)
 
                 if test=="epps":
                     # If we have enough data, do the test
-                    if len(data_n1)<5 or len(data_n2)<5:
-                        less_data_counter +=1
-                        same_distr=False
-                    else:
+                    try:
                         t,p = epps_singleton_2samp(data_n1, data_n2)
                         if p>tol_p_val or p is float("NaN"):
                             same_distr=True
-                        else:
-                            same_distr=False
-                elif test=="anderson":
-                    if len(data_n1)<5 or len(data_n2)<5 or len(np.unique(data_n1))==1 or len(np.unique(data_n2))==1:
-                        less_data_counter +=1
-                        p=0
-                        same_distr=False
-                    else:
-                        statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
-                        if p>tol_p_val:
-                            same_distr=True
-                            unique1, counts1 = np.unique(data_n1, return_counts=True)
-                            unique2, counts2 = np.unique(data_n2, return_counts=True)
                             print("accepted, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
                         else:
                             same_distr=False
-                else:
-                    same_distr=False
+                    except:
+                        print("SVD did not converge")
+                        same_distr=False
+                        less_data_counter +=1
+                elif test=="anderson":
+                    try:
+                        statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
+                        if p>tol_p_val:
+                            same_distr=True
+                            print("accepted, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
+                        else:
+                            same_distr=False
+                    except:
+                        same_distr=False
+                        less_data_counter +=1
                     # TODO Think of why this had to be here,
                     # gave error on synthetic set otherwise
                         

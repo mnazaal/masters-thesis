@@ -1,4 +1,4 @@
-from utils.utils import cpdag_to_dags, generate_vals, parents,generate_state_space, generate_dag, generate_state_space, nodes_per_tree
+from utils.utils import cpdag_to_dags, generate_vals, parents,generate_state_space, generate_dag, generate_state_space, nodes_per_tree, shared_contexts
 from cstree import stages_to_csi_rels, dag_to_cstree, color_cstree
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
@@ -79,48 +79,77 @@ class CSTree(object):
         return dags_bn
 
 
-    def cstree_bic(self, tree, stages, color_scheme):
+    def cstree_bic(self, tree, stages, color_scheme, ordering):
+        print(stages)
         # Can vectorize this perhaps
-        nodes = len(self.val_dict)
+        n,p = self.dataset.shape
         sizes = list(self.val_dict.values())
-        u_shape = tuple(len(sizes[i]) for i in range(nodes))
+        u_shape = tuple(len(sizes[i]) for i in range(p))
         u = np.zeros(u_shape)
 
         for i in range(self.dataset.shape[0]):
             u[tuple(self.dataset[i,:])] +=1
+            
+        ordering=[o-1 for o in ordering]
 
         # -1 because index i corresponds to variable i+1
-        u_C = lambda C: np.sum(u, axis=tuple(set(ordering).difference(set(c-1 for c in C))))
-        indexer = lambda x: [list(range(len(x)))[i] for i in range]
-        u_x_C = lambda x, C: u_C(C)[tuple(np.argsort(list(x)))]
+        def u_C(C):
+            table=np.sum(u, axis=tuple(set(ordering).difference(set(c-1 for c in C))) )
+            #print("table is",table, table.shape)
+            return table
+        
+        
+        def u_x_C(x,C):
+            #print("attempting to extract", x,"under set C", C)
+            #assert len(x)==len(C)
+            counts =  u_C(C)[tuple(x)]
+            #print("counts",counts)
+            return counts
+
+        all_stages={}
 
         for i in range(1,len(ordering)+1):
             all_stages[i]=[]
         
-        for node in tree.nodes:
+        for node in list(tree.nodes)[1:]:
             level = len(node)
             color =  color_scheme.get(node, "singleton-stage")
             if color=="singleton-stage":
                 common_c_vars = [var for (var,val) in node]
-                all_stages[level].append(common_c_vars)
+                if common_c_vars not in all_stages[level]:
+                    all_stages[level].append(common_c_vars)
             else:
                 nodes = stages[color]
                 common_c = shared_contexts(nodes[0],nodes[1])
                 common_c_vars = [var for (var,val) in common_c]
-                all_stages[level].append(common_c_vars)
+                if common_c_vars not in all_stages[level]:
+                    all_stages[level].append(common_c_vars)
+        print(all_stages)
 
         # TODO Store stages by their common context and level rather than colors
-        def pr(x):
-            p=1
-            assert len(x)==node
-            for i in range(nodes):
-                for C in al_stages[i+1]:
-                    x=[i for i in x if i in C]
-                    numerator   = u_x_C(x,list(set(C).union(i+1)))
-                    denominator = u_x_C(x,list(C))
-                    p = p*numerator/denominator
+        def likelihood(x):
+            
+            pr=1
+            
+            for level in all_stages.keys():
+                context_var_sets = all_stages[level]
+                for context_vars in context_var_sets:
+                    vs1 = [x[i-1] for i in range(1,p+1) if i in list(set(context_vars).union({level}))]
+                    vs2 = [x[i-1] for i in range(1,p+1) if i in context_vars]
+                    numerator   = u_x_C(vs1,list(set(context_vars).union({level})))
+                    denominator = u_x_C(vs2,list(context_vars))
+                    pr = pr*numerator/denominator
+                    #print(x,context_vars,pr, numerator, denominator)
+            return pr
+
+                    
+                
+        log_mle = sum(list(map(lambda i: np.log(likelihood(self.dataset[i,:])), range(n))))
+        free_params = sum([len(all_stages[i])*(len(self.val_dict[i])-1) for i in range(1,p+1)])
         
-        mle = math.prod(list(map(lambda x:pr(x) , list(self.dataset))))
+        return log_mle-0.5*free_params*np.log(n)
+        
+        #mle = math.prod(list(map(lambda x:likelihood(x) , list(self.dataset))))
                 
                 
                 
@@ -362,7 +391,7 @@ class CSTree(object):
                 print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
 
                 if get_bic:
-                    dag_bic = cstree_bic(tree, stages.copy())
+                    dag_bic = self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)
 
                 # Learn CSI relations
                 print("Learning CSI relations")
@@ -381,7 +410,7 @@ class CSTree(object):
                 
                 # Compute BIC here
                 if get_bic:
-                    bic=self.cstree_bic(tree, stages.copy())                    
+                    bic=self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)                    
                     print("BIC after converting DAG to CSTree is {}, after CSI relations is {}".format(dag_bic,bic))
                 else:
                     bic=None
@@ -404,6 +433,8 @@ class CSTree(object):
                         
                 if learn_limit and len(trees)==learn_limit and all_trees:
                     break
+            if  learn_limit and len(trees)==learn_limit and all_trees:
+                break
 
         if not all_trees:
             print("{} CSTrees have the same number of minimum stages, which is {}".format(len(trees), min_stages))
