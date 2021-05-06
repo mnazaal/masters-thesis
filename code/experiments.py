@@ -191,7 +191,7 @@ def coronary_experiment():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    cstree_object.learn(get_bic=True, csi_test="kl",all_trees=True, use_dag=True, learn_limit=None)
+    cstree_object.learn(get_bic=True,csi_test="kl",all_trees=True, use_dag=True, learn_limit=None)
 
 
 def coronary_experiment_bic():

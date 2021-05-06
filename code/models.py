@@ -159,8 +159,9 @@ class CSTree(object):
                 context_vars = [var for (var,val) in context_of_stage_x_k]
 
                     
-                CjUk = list(set(context_vars).union({level}))
+                CjUk = list(set(context_vars).union({ordering[level]}))
                 Cj   = context_vars
+                assert len(CjUk)==len(Cj)+1
 
                 x_CjUk = [x[i-1] for i in range(1,p+1) if i in CjUk]
                 x_Cj   = [x[i-1] for i in range(1,p+1) if i in Cj]
@@ -178,9 +179,10 @@ class CSTree(object):
         #print("stages",stages)    
         #sprint("all-sttages",all_stages)
         #log_mle = sum(likelihood(self.dataset.T))
-        likelihood(self.dataset[0,:],debug=True)
+        #likelihood(self.dataset[0,:],debug=True)
         log_mle = sum(list(map(lambda i: np.log(likelihood(self.dataset[i,:])), range(n))))
-        free_params = sum([len(all_stages[i])*(len(self.val_dict[i])-1) for i in range(1,p+1)])
+        free_params = sum([len(all_stages[i])*(len(self.val_dict[i])-1) for i in range(1,p)])
+        #free_params=0
         
         return log_mle-0.5*free_params*np.log(n)
         
@@ -414,7 +416,7 @@ class CSTree(object):
                 print("MEC DAG number {} ordering number {} applying DAG CI relations".format(mec_dag_num+1, ordering_num+1))
                 tree, stages,color_scheme,stage_list,color_scheme_list = dag_to_cstree(self.val_dict, ordering, mec_dag)
 
-                print("Stages after Dag", stages)
+                #print("Stages after Dag", stages)
 
                 #print("aftre dag color scheme")
                 #for c,n in color_scheme.items():
@@ -438,17 +440,25 @@ class CSTree(object):
 
                 if get_bic:
                     dag_bic = self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)
-
+                    
+                    
+                    
+                dag_stages=stages.copy()
+                dag_color_scheme=color_scheme.copy()
+                
+                print("Dag stages and color scheme", dag_stages, dag_color_scheme, len(dag_stages), len(dag_color_scheme))
                 # Learn CSI relations
                 print("Learning CSI relations")
                 tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, self.val_dict, stage_list.copy(), color_scheme_list.copy(), test=csi_test)
+                
+                print("after csi stages and color scheme", stages, color_scheme, len(stages), len(color_scheme))
 
-                print("Stages after csi tests", stages)
+                #print("Stages after csi tests", stages)
 
                 print("after CSI tests, we have {} colored nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
                 stages_after_csitests = nodes_per_tree(self.val_dict, ordering)-len(color_scheme)+len(stages)
-                #print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
+                print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
 
                 #print("aftrer csi tests color scheme")
                 #for c,n in color_scheme.items():
