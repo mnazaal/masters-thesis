@@ -33,8 +33,6 @@ ex5 = Experiment("susy")
 
 
 
-
-
 @ex1.config
 def empty_context_dag_config():
     nodes=10
@@ -43,14 +41,13 @@ def empty_context_dag_config():
 def empty_context_dag_experiment(nodes):
     full_dag = generate_dag(nodes,p_edge=1)
     empty_dag = generate_dag(nodes, p_edge=0)
-
     
     # Implement function to assert recovered empty context
     # DAGs are same for fully connected case and empty case
     pass
 
 
-@ex2.config
+#@ex2.config
 def synthetic_dag_binarydata_config():
     nodes=6
     p_edge=1
@@ -65,10 +62,6 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
 
     n,p = dataset.shape
     val_dict = {i+1:[0,1] for i in range(p)}
-
-    exp_name = "synthetic-empirical"
-    exp_name = exp_name+"w_dag" if use_dag else exp_name+"wout_dag"
-    exp_name += "removed_skew_anderson"
 
 
     for i in range(3):
@@ -159,7 +152,7 @@ def micecortex_experiment(num_features):
     cstree_object.visualize(all_trees=False, use_dag=False,plot_limit=None, learn_limit=None, save_dir="mice6_nodag")
 
 
-micecortex_experiment(6)
+#micecortex_experiment(6)
 
 @ex5.config
 def susy_config():
@@ -197,7 +190,26 @@ def coronary_experiment():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    cstree_object.visualize(csi_test="epps",all_trees=True, use_dag=False,plot_limit=None, learn_limit=None, save_dir="coronarywoutdag_epps")
+    cstree_object.visualize(csi_test="epps",all_trees=False, use_dag=True,plot_limit=None, learn_limit=None, save_dir="coronarywoutdag_epps")
+
+
+def coronary_experiment_bic():
+    # Load dataset
+    dataset = coronary_data()
+    n,p=dataset.shape
+    val_dict = {i+1:[0,1] for i in range(p)}
+    
+    # Create CSTree object
+    cstree_object = CSTree(dataset, val_dict)
+    
+
+    # Visualize CSTrees with fewest stages
+    save_dir=None
+    trees = cstree_object.learn(get_bic=True,csi_test="epps",all_trees=True, use_dag=True)
+
+
+
+coronary_experiment_bic()
 
 #susy_experiment(0.02)
 #coronary_experiment()
@@ -206,4 +218,5 @@ def coronary_experiment():
 #dermatology_experiment(grouped=True)
 #micecortex_experiment()
 #susy_experiment()
+
 
