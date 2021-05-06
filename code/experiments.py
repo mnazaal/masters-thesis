@@ -105,9 +105,9 @@ def synthetic_dag_binarydata_experiment_4(nodes, p_edge, n):
 #print("True DAG edges",list(dag.edges))
 #dataset = synthetic_dag_binarydata(dag, 100000)
 #np.savetxt('bic_dataset.csv', dataset, fmt="%d", delimiter=",")
-dataset=np.genfromtxt('bic_dataset.csv', delimiter=',').astype(int)
+#dataset=np.genfromtxt('bic_dataset.csv', delimiter=',').astype(int)
 # TODO Save this
-synthetic_dag_binarydata_experiment_1(dataset, use_dag=True)
+#synthetic_dag_binarydata_experiment_1(dataset, use_dag=True)
 #synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)
 
 
@@ -191,7 +191,7 @@ def coronary_experiment():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    cstree_object.visualize(csi_test="epps",all_trees=False, use_dag=True,plot_limit=None, learn_limit=None, save_dir="coronarywoutdag_epps")
+    cstree_object.learn(get_bic=True, csi_test="kl",all_trees=True, use_dag=True, learn_limit=None)
 
 
 def coronary_experiment_bic():
@@ -210,10 +210,10 @@ def coronary_experiment_bic():
 
 
 
-coronary_experiment_bic()
+#coronary_experiment_bic()
 
 #susy_experiment(0.02)
-#coronary_experiment()
+coronary_experiment()
 #synthetic_dag_binarydata_experiment(9, 0.2, 350)
 #coronary_experiment()
 #dermatology_experiment(grouped=True)

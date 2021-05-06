@@ -439,6 +439,7 @@ def color_cstree(c,
                     kl = lambda d1,d2: sum([d1[i]*np.log(d1[i]/d2[i]) for i in range(len(d1))])
                     symmetric_kl = kl(distr_n1,distr_n2)+kl(distr_n2,distr_n1)
                 else:
+                    # If we have no samples for a given stage, we conclude not enough info
                     # One context has no samples, in which case we say they are differnt distributions
                     symmetric_kl = 10000000000
 
@@ -454,7 +455,7 @@ def color_cstree(c,
                 #print("symmetric KL is", symmetric_kl)
                 
                 if test=="kl":
-                    kl_threshold = 0.01
+                    kl_threshold = 0.0001
                     if symmetric_kl<kl_threshold:
                         same_distr=True
                     else:
@@ -468,16 +469,16 @@ def color_cstree(c,
                             same_distr=True
                             print("accepted, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
-                            print("rejected, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
+                            #print("rejected, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                             same_distr=False
                     except:
-                        print("test not done, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
+                        #print("test not done, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         same_distr=False
                         less_data_counter +=1
                 elif test=="anderson":
                     try:
                         statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
-                        if p>tol_p_val and not skewed_data:
+                        if p>tol_p_val:
                             same_distr=True
                             print("accepted, unique {}, {} with sym KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
