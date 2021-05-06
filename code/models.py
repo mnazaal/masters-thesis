@@ -1,4 +1,4 @@
-from utils.utils import cpdag_to_dags, generate_vals, parents,generate_state_space, generate_dag, generate_state_space, nodes_per_tree, shared_contexts
+from utils.utils import cpdag_to_dags, generate_vals, parents,generate_state_space, generate_dag, generate_state_space, nodes_per_tree, shared_contexts,remove_cycles
 from cstree import stages_to_csi_rels, dag_to_cstree, color_cstree
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
@@ -56,7 +56,6 @@ class CSTree(object):
         # Get the CPDAG
             cpdag = estimate_cpdag(skel_graph=g, sep_set=sep_set)
             cpdag = nx.relabel_nodes(cpdag, lambda x: x+1)
-
         
         return cpdag
 
@@ -65,10 +64,12 @@ class CSTree(object):
     def all_mec_dags(self, pc_method="pgmpy"):
         # Wrapper to get the DAG as a networkx DiGraph
         cpdag = self.cpdag_from_pc(pc_method)
+        
+        cpdag= remove_cycles(cpdag)
 
         print("CPDAG from PC has edges {}".format(list(cpdag.edges)))
-        
-        cpdag = pdag.PDAG(nodes=cpdag.nodes, edges=cpdag.edges)
+        """
+        cpdag = pdag.PDAG.from_nx(cpdag)
         dags_bn = []
         all_arcs = cpdag.all_dags()
         for dags in all_arcs:
@@ -76,11 +77,17 @@ class CSTree(object):
             temp_graph.add_edges_from(dags)
             temp_graph.add_nodes_from([i for i in range(1, self.dataset.shape[1]+1)])
             dags_bn.append(temp_graph)
+        """
+        #cpdag = pdag.PDAG(nodes=cpdag.nodes, edges=cpdag.edges)
+        mec_dags = cpdag_to_dags(cpdag)
+        dags_bn  = []
+        for g in mec_dags:
+            dags_bn.append(g)
+
         return dags_bn
 
 
     def cstree_bic(self, tree, stages, color_scheme, ordering):
-        print(stages)
         # Can vectorize this perhaps
         n,p = self.dataset.shape
         sizes = list(self.val_dict.values())
@@ -113,18 +120,24 @@ class CSTree(object):
         
         for node in list(tree.nodes)[1:]:
             level = len(node)
-            color =  color_scheme.get(node, "singleton-stage")
-            if color=="singleton-stage":
-                common_c_vars = [var for (var,val) in node]
-                if common_c_vars not in all_stages[level]:
-                    all_stages[level].append(common_c_vars)
+            color =  color_scheme.get(node, "#FFFFFF")
+            if color=="#FFFFFF":
+                common_c      = node
+                common_c_vars = [var for (var,val) in common_c]
+                #if common_c_vars not in all_stages[level]:
+                all_stages[level].append(common_c_vars)
             else:
                 nodes = stages[color]
+                #print("Nodes of {} are {}".format(level,nodes))
+                #print("color {} nodes {}".format(color,nodes))
                 common_c = shared_contexts(nodes[0],nodes[1])
+                for n1 in nodes:
+                    common_c = shared_contexts(common_c,n1)
                 common_c_vars = [var for (var,val) in common_c]
-                if common_c_vars not in all_stages[level]:
-                    all_stages[level].append(common_c_vars)
-        print(all_stages)
+                #if common_c_vars not in all_stages[level]:
+                all_stages[level].append(common_c_vars)
+            #print("Node {} has common context {} from color {}".format(node, common_c,color))
+        
 
         # TODO Store stages by their common context and level rather than colors
         def likelihood(x):
@@ -134,17 +147,22 @@ class CSTree(object):
             for level in all_stages.keys():
                 context_var_sets = all_stages[level]
                 for context_vars in context_var_sets:
-                    vs1 = [x[i-1] for i in range(1,p+1) if i in list(set(context_vars).union({level}))]
-                    vs2 = [x[i-1] for i in range(1,p+1) if i in context_vars]
-                    numerator   = u_x_C(vs1,list(set(context_vars).union({level})))
-                    denominator = u_x_C(vs2,list(context_vars))
+                    CjUk = list(set(context_vars).union({level}))
+                    Cj   = context_vars
+                    print("sets are", CjUk,Cj)
+                    
+                    x_CjUk = [x[i-1] for i in range(1,p+1) if i in CjUk]
+                    x_Cj   = [x[i-1] for i in range(1,p+1) if i in Cj]
+                    
+                    numerator   = u_x_C(x_CjUk, CjUk)
+                    denominator = u_x_C(x_Cj,Cj)
                     pr = pr*numerator/denominator
                     #print(x,context_vars,pr, numerator, denominator)
-            return pr
-
-                    
-                
-        log_mle = sum(list(map(lambda i: np.log(likelihood(self.dataset[i,:])), range(n))))
+            return np.log(pr)
+        #print("stages",stages)    
+        #sprint("all-sttages",all_stages)
+        log_mle = sum(likelihood(self.dataset.T))
+        #log_mle = sum(list(map(lambda i: np.log(likelihood(self.dataset[i,:])), range(n))))
         free_params = sum([len(all_stages[i])*(len(self.val_dict[i])-1) for i in range(1,p+1)])
         
         return log_mle-0.5*free_params*np.log(n)
@@ -288,6 +306,9 @@ class CSTree(object):
               get_bic=False):
         # Learn the CSTrees and return them as a list containing
         # the tree, its non-singleton stages, ordering and a dictionary with the color scheme
+        
+        if get_bic:
+            bic_list=[]
 
         # If user provides DAG
         if dag:
@@ -382,27 +403,31 @@ class CSTree(object):
                 if not use_dag:
                     # TODO Move this into algorithm itself
                     color_scheme, stages = {},{}
+                    
+                tree1, stages1, color_scheme1 = color_cstree(tree, ordering,self.dataset, self.val_dict,test=csi_test)
+                if get_bic:
+                    no_dag_bic = self.cstree_bic(tree1, stages1.copy(), color_scheme1.copy(),ordering)
 
                 print("after converting DAG to CSTree, we colored {} nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
 
                 stages_after_dag = nodes_per_tree(self.val_dict, ordering) -len(color_scheme)+len(stages)
-                    
-                print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
+                
+                #print("Stages after converting DAG to CSTree : {}, Non-singleton stages : {}".format(stages_after_dag, len(stages)))
 
                 if get_bic:
                     dag_bic = self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)
 
                 # Learn CSI relations
                 print("Learning CSI relations")
-                tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, stage_list.copy(), color_scheme_list.copy(), test=csi_test)
+                tree, stages, color_scheme = color_cstree(tree, ordering, self.dataset, self.val_dict, stage_list.copy(), color_scheme_list.copy(), test=csi_test)
 
                 #print("Stages after csi tests", stages)
 
                 print("after CSI tests, we have {} colored nodes and have {} nonsingle stages".format(len(color_scheme), len(stages)))
 
                 stages_after_csitests = (nodes_per_tree(self.val_dict, ordering))-len(color_scheme)+len(stages)
-                print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
+                #print("Stages after conducting CSI tests : {}, Non-singleton stages : {}".format(stages_after_csitests, len(stages)))
 
                 #print("aftrer csi tests color scheme")
                 #for c,n in color_scheme.items():
@@ -410,10 +435,19 @@ class CSTree(object):
                 
                 # Compute BIC here
                 if get_bic:
-                    bic=self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)                    
-                    print("BIC after converting DAG to CSTree is {}, after CSI relations is {}".format(dag_bic,bic))
+                    bic=self.cstree_bic(tree, stages.copy(), color_scheme.copy(),ordering)
+                    print("BIC after converting DAG to CSTree is {}, no DAG is {}, with DAG is {}".format(dag_bic,no_dag_bic,bic))
+                    if bic>dag_bic:
+                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                        print("DAG BIC is {}, after CSTree staging it is {}".format(dag_bic,bic))
+                        print("!!!!!!!!!!!!!v!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 else:
                     bic=None
+                    
+                bic_list.append((ordering, bic))
+                    
+                    
+                
                     
                     
 
@@ -439,6 +473,10 @@ class CSTree(object):
         if not all_trees:
             print("{} CSTrees have the same number of minimum stages, which is {}".format(len(trees), min_stages))
             self.best_cstrees = trees.copy()
+        #if get_bic:
+        #    with open("bic_dag.json", 'w') as f:
+            # indent=2 is not needed but makes the file human-readable
+        #    json.dump(score, f, indent=2) 
 
         return trees      
                 

@@ -99,7 +99,6 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
             raise ValueError("The ordering given is not valid for the given DAG")
     print(ordering,val_dict)
     if set(ordering) != set(list(val_dict.keys())):
-        print("hahahah")
         raise ValueError("Variables in ordering and value dictionary do not match")
     
     # If DAG given but ordering is not, take some topological ordering
@@ -262,6 +261,7 @@ def color_to_context_stages(color_stage_dict, nodes):
 def color_cstree(c, 
                   ordering, 
                   data_matrix, 
+                  val_dict=None,
                   stage_list    = None,
                   color_scheme_list   = None,
                   tol_p_val       = 0.05,
@@ -284,6 +284,10 @@ def color_cstree(c,
     new_stages  = 0
 
     levels = len(ordering)
+    
+    if val_dict is None:
+        val_dict = generate_state_space(data_matrix)
+        
     
     if stage_list is None or stage_list == []:
         stage_list = [{} for i in range(levels)]
@@ -337,7 +341,7 @@ def color_cstree(c,
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)
             newcolor_scheme_list.append(color_scheme_l)
-            print("added for level {} color {}".format(level,list(color_scheme_l.values())[0]))
+            print("DAG model gave whole level {} the same context {}".format(level,list(color_scheme_l.values())[0]))
             continue
         # v0, generate common contexts starting from the empty context to the full contexts
         
@@ -400,25 +404,61 @@ def color_cstree(c,
                 # Case (e)
                 else:
                     common_c = shared_contexts(n1[:],n2[:])
-                
-                    
 
                 #common_c = shared_contexts(n1[:-1],n2[:-1])
 
                 var = ordering[level]
-                                
-                data_n1 = data_to_contexts(data_matrix,n1,var)
-                data_n2 = data_to_contexts(data_matrix,n2,var)
+                outcomes=len(val_dict[var])
+                
+                if color_n1 is not None:
+                    data_n1 = data_to_contexts(data_matrix,color_n1,var)
+                else:
+                    data_n1 = data_to_contexts(data_matrix,n1,var)
+                    
+                if color_n2 is not None:
+                    data_n2 = data_to_contexts(data_matrix,color_n2,var)
+                else:
+                    data_n2 = data_to_contexts(data_matrix,n2,var)
+                    
+                # Dummy element to avoid division by zero
+                
+                # computing symmetric KL divergence
+                if len(data_n1)>0 and len(data_n2)>0:
+                    distr_n1 = [list(data_n1).count(i)/len(data_n1) for i in range(outcomes)]
+                    distr_n2 = [list(data_n2).count(i)/len(data_n2) for i in range(outcomes)]
+
+                    epsilon=1e-20
+                    for i in range(outcomes):
+                        if distr_n1[i]<epsilon:
+                            distr_n1[i]+=epsilon
+                        if distr_n2[i]<epsilon:
+                            distr_n2[i]+=epsilon
+
+                    #print(distr_n1,distr_n2)
+
+                    kl = lambda d1,d2: sum([d1[i]*np.log(d1[i]/d2[i]) for i in range(len(d1))])
+                    symmetric_kl = kl(distr_n1,distr_n2)+kl(distr_n2,distr_n1)
+                else:
+                    # One context has no samples, in which case we say they are differnt distributions
+                    symmetric_kl = 10000000000
 
                 # Possibly ignore the test if the samples are imbalanced
                 avg_data = 0.5*(len(data_n1)+len(data_n2))
                 skewed_data=False
-                if len(data_n1)< 0.75*avg_data or len(data_n2)< 0.75*avg_data:
+                if len(data_n1)< 0.25*avg_data or len(data_n2)< 0.25*avg_data:
                     skewed_data=True
                     #same_distr=False
                 # Getting the counts
                 unique1, counts1 = np.unique(data_n1, return_counts=True)
                 unique2, counts2 = np.unique(data_n2, return_counts=True)
+                #print("symmetric KL is", symmetric_kl)
+                
+                if test=="kl":
+                    kl_threshold = 0.01
+                    if symmetric_kl<kl_threshold:
+                        same_distr=True
+                    else:
+                        same_distr=False
 
                 if test=="epps":
                     # If we have enough data, do the test
@@ -426,22 +466,25 @@ def color_cstree(c,
                         t,p = epps_singleton_2samp(data_n1, data_n2)
                         if p>tol_p_val or p is float("NaN"):
                             same_distr=True
-                            print("accepted, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
+                            print("accepted, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
+                            print("rejected, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                             same_distr=False
                     except:
-                        print("SVD did not converge")
+                        print("test not done, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         same_distr=False
                         less_data_counter +=1
                 elif test=="anderson":
                     try:
                         statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
-                        if p>tol_p_val:
+                        if p>tol_p_val and not skewed_data:
                             same_distr=True
-                            print("accepted, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
+                            print("accepted, unique {}, {} with sym KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
+                            #print("rejected, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
                             same_distr=False
                     except:
+                        #print("test not done, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
                         same_distr=False
                         less_data_counter +=1
                     # TODO Think of why this had to be here,

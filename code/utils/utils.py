@@ -109,18 +109,32 @@ def directed(es):
     all_u_es = u_es+[(y,x) for (x,y) in u_es]
     return [d_e for d_e in es if d_e not in all_u_es]
 
+def remove_cycles(g):
+    cycles_removed=False
+    while not cycles_removed:
+        try:
+            cycles =list(nx.simple_cycles(g))
+            # undirected edges do not count as a cycle
+            cycles = [cycle for cycle in cycles if len(cycle)>2]
+            
+            for cycle in cycles:
+                edges_to_remove = [(cycles[i][-1],cycles[i][0]) for i in range(len(cycles))]
+                cycles.remove(cycle)
+            g.remove_edges_from(edges_to_remove)
+            if cycles==[]:
+                cycles_removed=True
+        except:
+            cycles_removed=True
+    return g
+
 
 def cpdag_to_dags(g):
     
     undirected_edges = undirected(g.edges)
-    directed_edges   = directed(g.edges)    
-
+    directed_edges   = directed(g.edges)
+    
     if undirected_edges == []:
-        try:
-            if nx.find_cycle(g):
-                raise ValueError("Found cycle, CPDAG might be incorrect")
-        except:
-            yield g
+        yield g
     else:
         
         u = undirected_edges.pop()

@@ -3,7 +3,6 @@ import itertools, functools
 from itertools import product
 
 # Third party library imports
-import jax
 import networkx as nx
 
 # Project imports

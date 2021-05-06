@@ -16,7 +16,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 from sacred import Experiment
 
 
-from utils.utils import contained, flatten, cpdag_to_dags, generate_vals, parents, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage,get_size, binary_dict
+from utils.utils import contained, flatten, cpdag_to_dags, generate_vals, parents, remove_cycles, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage,get_size, binary_dict
 from cstree import  cstree_pc, stages_to_csi_rels
 from datasets import synthetic_dag_binarydata, bnlearn_data,coronary_data, dermatology_data, micecortex_data, susy_data
 from utils.utils import generate_dag, binary_dict, generate_state_space
@@ -64,7 +64,7 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
     val_dict = {i+1:[0,1] for i in range(p)}
 
 
-    for i in range(3):
+    for i in range(1):
         #dataset_subsample_size = int(n/(10**(i)))
         #dataset_subsample_indices = random.sample(range(n), dataset_subsample_size)
         dataset_subsample_indices = tuple(j for j in range(int(n/(10**i))))
@@ -76,7 +76,8 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
         try:
             ordering_count = cstree_object.count_orderings()
             print("Current experiment has {} orderings".format(ordering_count))
-            cstree_object.visualize(plot_mcdags=True,csi_test="anderson",ordering=ordering, use_dag=use_dag, save_dir=exp_name+str(i))
+            #cstree_object.visualize(plot_mcdags=True,csi_test="anderson",ordering=ordering, use_dag=use_dag, save_dir=exp_name+str(i))
+            cstree_object.learn(ordering=[1, 2, 3, 4, 5, 6],get_bic=True,csi_test="anderson",all_trees=True, use_dag=True)
         except ValueError as e:
             exception_type, exception_object, exception_traceback = sys.exc_info()
             filename = exception_traceback.tb_frame.f_code.co_filename
@@ -99,16 +100,16 @@ def synthetic_dag_binarydata_experiment_4(nodes, p_edge, n):
     # Effect of not including imbalanced data
     pass
 
-"""
-#dag = generate_dag(4, 0.8)
-#print("DAG edges",list(dag.edges))
+
+#dag = generate_dag(6, 0.5)
+#print("True DAG edges",list(dag.edges))
 #dataset = synthetic_dag_binarydata(dag, 100000)
-#np.savetxt('dataset.csv', dataset, fmt="%d", delimiter=",")
-#dataset=np.genfromtxt('dataset.csv', delimiter=',').astype(int)
+#np.savetxt('bic_dataset.csv', dataset, fmt="%d", delimiter=",")
+dataset=np.genfromtxt('bic_dataset.csv', delimiter=',').astype(int)
 # TODO Save this
 synthetic_dag_binarydata_experiment_1(dataset, use_dag=True)
-synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)
-"""
+#synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)
+
 
 @ex3.config
 def dermatology_config():
@@ -205,7 +206,7 @@ def coronary_experiment_bic():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    trees = cstree_object.learn(get_bic=True,csi_test="epps",all_trees=True, use_dag=True)
+    trees = cstree_object.learn(get_bic=True,csi_test="anderson",all_trees=True, use_dag=True)
 
 
 
