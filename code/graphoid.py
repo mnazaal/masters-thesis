@@ -2,8 +2,6 @@ from itertools import combinations
 from utils.utils import generate_vals
 
 union        = lambda sets: set.union(*sets)
-intersection = lambda sets: set.intersection(*sets)
-empty_intersection = lambda sets: True if intersection(sets) == set() else False
 set_difference = lambda A,B: A.difference(B)
 
 def decomposition(csi_rel, pairwise=True):
@@ -125,7 +123,8 @@ def contraction(csi_rels, memo, pairwise=True):
     return new_rels, to_look           
 
 
-def graphoid_axioms(csi_rels, val_dict):
+def graphoid_axioms(csi_rels, val_dict, specialize=True):
+    # TODO Rewrite to take axioms as input
     # Applies graphoid axioms in a pairwise manner
     # TODO Removing the while condition
     #print("Started applying weak union and decomposition to {} relations".format(len(csi_rels)))
@@ -147,7 +146,8 @@ def graphoid_axioms(csi_rels, val_dict):
 
             weak_unioned  = weak_union(csi_rel)
             decomposed    = decomposition(csi_rel)
-            specialized   = specialization(csi_rel, val_dict)
+            if specialize:
+                specialized   = specialization(csi_rel, val_dict)
             intersected, intersec_memo  = intersection(csi_rels.copy()+J.copy(), intersec_memo)
             contracted, contrac_memo = contraction(csi_rels.copy()+J.copy(), contrac_memo)
             """
@@ -160,7 +160,8 @@ def graphoid_axioms(csi_rels, val_dict):
             """
             csi_rels += weak_unioned
             csi_rels += decomposed
-            csi_rels += specialized
+            if specialize:
+                csi_rels += specialized
             csi_rels += intersected
             csi_rels += contracted
 

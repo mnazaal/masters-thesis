@@ -28,14 +28,19 @@ def generate_dag(nodes, p_edge):
     return dag
 
 
-def nodes_per_tree(val_dict, ordering):
+def nodes_per_tree(val_dict, ordering, include_last=False):
     assert len(val_dict)==len(ordering)
 
     # nodes per each level
     nodes=[]
     nodes.append(len(val_dict[ordering[0]]))
     
-    for i in range(1,len(ordering)):
+    levels = len(ordering)
+    
+    if not include_last:
+        levels-=1
+    
+    for i in range(1,levels):
         nodes.append(nodes[i-1]*len(val_dict[ordering[i]]))
         
     return sum(nodes)

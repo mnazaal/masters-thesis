@@ -202,10 +202,12 @@ def synthetic_dag_binarydata(dag_received, n):
 
     for var in vars_w_no_parents:
         pr = np.random.rand()
-        cpds.append(TabularCPD(variable=var,
+        cpd=TabularCPD(variable=var,
                                variable_card=2,
                                values = [[pr],
-                                         [1-pr]]))
+                                         [1-pr]])
+        print(cpd)
+        cpds.append(cpd)
 
     vars_w_parents = [i for i in ordering if i not in vars_w_no_parents]
 
@@ -229,12 +231,13 @@ def synthetic_dag_binarydata(dag_received, n):
 
             p_table[0,row] = pr
             p_table[1,row] = 1-pr
-
-        cpds.append(TabularCPD(variable=var,
+        cpd = TabularCPD(variable=var,
                                variable_card=2,
                                values = p_table.tolist(),
                                evidence = parents_var,
-                               evidence_card = [2]*len(parents_var)))
+                               evidence_card = [2]*len(parents_var))
+        print(cpd)
+        cpds.append(cpd)
 
         
     df  = bnlearn.sampling(bnlearn.make_DAG(list(dag.edges), CPD=cpds), n)

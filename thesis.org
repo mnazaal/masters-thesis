@@ -829,7 +829,48 @@ Given variables $X_1,...,X_p$, assuming that the data generating distribution is
 
 
 ** Model selection for CSTrees
-   In Algorithm \ref{alg:cstreepc} we select the CSTree (or CSTrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the Bayesian Information Criterion (BIC) for CSTrees alongside a proof that it is loally consistant for CSTrees, meaning it can be applicable to greedy search methods for CSTrees.
+   In Algorithm \ref{alg:cstreepc} we select the CSTree (or CSTrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the *Bayesian Information Criterion (BIC)* for CSTrees alongside a proof that it is locally consistent for CSTrees, meaning it can be applicable to greedy search methods for CSTrees. The BIC depends on two terms, the likelihood of the data, which assesses the quality of the model to explain the observed data, and a complexity term that depends on the amount of observed data and the free parameters of the model, with the idea being that models with more parameters should be penalized. Importantly, this helps against overfitting since one can simply add more parameters to the model to maximize the likelihood.
+
+
+For a general model with random variables $X_1,...,X_p$ the likelihood of observing a sample $(x_1,...,x_p)$ can be described as below {{{footnote(Here we compactify the notation further - $X_{\{1\,...\,p\}}=x_{\{1\,...\,p\}}$ is the same as $X_{\{1\,...\,p\}}=x_1\cdots x_p$ which is $X_1=x_1\,...\,X_p=x_p$ )}}}
+.
+
+
+#+begin_export latex
+\begin{align*}
+\mathbb{P}(X_{\{1,...,p\}}=x_{\{1\cdots x_p\}}) =\mathbb{P}(X_i=x_i|X_{\{i-1,...,1\}}=x_{\{i-1,...,1 \}})\\\cdots\mathbb{P}(X_2=x_2|X_1=x_1)\mathbb{P}(X_1=x_1)
+\end{align*}
+#+end_export
+
+In the CSTree model, independence is implied from the staging of the tree, and each distribution in the product above depends on the fixed context of the node in the CSTree representing that distribution. Denoting $C_i$ to be the context variables of the context of the node $x_1\cdotsx_i$, this gives the following.
+
+#+begin_export latex
+\begin{align*}
+\mathbb{P}(X_{\{1,...,p\}}=x_{\{1,..., p\}}) =\prod_{i=1}^p \mathbb{P}(X_i=x_i|X_{C_i}=x_{C_i})
+\end{align*}
+#+end_export
+
+
+In order to get these values from the data, we denote $\mathbb{U}$ to be *contingency table* of the data, which a multi-dimensional array {{{footnote(This is the same as tensors in the context of computer science)}}}  with dimensions $d_1 \times \cdots \times d_p$, where $d_i$ is the number of possible outcomes for variable $X_i$, and given a sample $(x_1,...,x_p)$, the value in $\mathbb{U}[(x_1,...,x_p)]$ is the number of times we have this sample in the dataset. The marginalized contingency table $\mathbb{U}_C$ represents the table after summing over the axes which are not in $C$. An important case is when $C$ is the empty set, which results in the marginal table to be 1 dimensional scalar and is the total number of samples in the dataset - when having a stage with an empty context this reflects the conditional distribution for the corresponding variable to simply be the ratio of its outcomes in the dataset. This allows the following compact representation for the likelihood cite:duarte-2021-repres-learn for a tree with levels $(L_1,...,L_p) \sim (X_1,...,X_p)$.
+
+#+begin_export latex
+\begin{align*}
+\mathbb{P}(X_{\{1,...,p\}}=x_{\{1,..., p\}}) = \prod_{k=1}^p \frac{\mathbb{U}_{C \cup k}[x_{C \cup k}]}{\mathbb{U}_{C}[x_{C}]}
+\end{align*}
+#+end_export
+
+Given $n$ samples arranged into a $n \times p$ array $\mathbb{D}$, and under the assumption that they are independent, the total likelihood is simply the product over all samples in $\mathbb{D}$.
+
+
+The free parameters is $d=\sum_{k=1}^{p-1} (|\mathcal{X}_k| - 1)S_k$ where $S_k$ is the number of distinct stages in level $k$ cite:duarte-2021-repres-learn. The  BIC score for a CSTree $\mathbb{T}$ with observed data $\mathbb{D}$ is then
+
+#+begin_export latex
+\begin{align*}
+\textbf{BIC}(\mathbb{T},\mathbb{D}) = \log\mathbb{P}(\mathbb{D}\,|\,\mathbb{T}) - \frac{d}{2}\log(n)
+\end{align*}
+#+end_export
+
+
 
 # !!! TODO Write the likelihood, contingency tables, and BIC formula
 
@@ -945,7 +986,18 @@ The following table summarizes the empirical space time complexity of generating
 
 
     
-    We start by generating 100000 samples on 4 binary variables using the above procedure and learning the CSTree and recovering the minimal context DAGs. We show the results below.
+    We start by generating 1000 samples on 4 binary variables using the above procedure and learning the CSTree and recovering the minimal context DAGs. We choose 4 variables due to limitations of applying the context specific graphoid axioms.
+
+    The DAG and conditional probability table is as follows.
+
+    # TODO Put DAG
+
+
+   
+
+
+
+    
   #+begin_export latex
 \begin{figure}[!h]\label{fig:synthetic_exp1}
    \begin{floatrow}
@@ -955,6 +1007,8 @@ The following table summarizes the empirical space time complexity of generating
    \end{floatrow}
 \end{figure}
    #+end_export
+
+   
 
    
 
@@ -995,10 +1049,12 @@ The following table summarizes the empirical space time complexity of generating
    |                                          |                     |
 This data set does not require further pre-processing since the outcome space is already categorical, and there were no missing values.
 
-Applying Algorithm \ref{alg:cstreepc} yields 55 CSTrees which have the same number of stages, which is 69. If we exclude singleton stages corresponding to the last level this is 5 stages, which results in a full independence model.
 
-This motivated the exploration of other CSTrees with a causal ordering consistent with the CPDAG. In total the coronary dataset gave rise to 288 trees, and although much of it resulted in very sparse CSTrees, i.e. those with very few stages close to the minimum stages, there were some models which were more complex than this, one of which we show below. The amount of context specific independence tests skipped due to no available data was at most around 25 per CSTree.
-We show one of these 55 CSTrees below in Figure \ref{fig:coronary1}.
+
+
+# Applying Algorithm \ref{alg:cstreepc} yields 55 CSTrees which have the same number of stages, which is 69. If we exclude singleton stages corresponding to the last level this is 5 stages, which results in a full independence model.
+
+# This motivated the exploration of other CSTrees with a causal ordering consistent with the CPDAG. In total the coronary dataset gave rise to 288 trees, and although much of it resulted in very sparse CSTrees, i.e. those with very few stages close to the minimum stages, there were some models which were more complex than this, one of which we show below. The amount of context specific independence tests skipped due to no available data was at most around 25 per CSTree.
 
 
 

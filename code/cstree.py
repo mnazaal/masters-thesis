@@ -219,8 +219,7 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
 
 
     
-def stages_to_csi_rels(stages, ordering):
-    
+def stages_to_csi_rels(stages, ordering): 
     csi_rels     = []
     
     p = len(ordering)
@@ -261,13 +260,15 @@ def color_to_context_stages(color_stage_dict, nodes):
 def color_cstree(c, 
                   ordering, 
                   data_matrix, 
-                  val_dict=None,
-                  stage_list    = None,
-                  color_scheme_list   = None,
-                  tol_p_val       = 0.05,
-                  return_csi_rels = True,
-                  test            = "anderson",
-                  no_dag          = True):
+                  val_dict          = None,
+                  stage_list        = None,
+                  color_scheme_list = None,
+                  tol_p_val         = 0.05,
+                  return_csi_rels   = True,
+                  test              = "anderson",
+                  kl_threshold      = None,
+                  no_dag            = True):
+    
     # c is the Fal
     # levels is the number of levels in the cstree
     # ordering is the causal ordering being considered
@@ -307,7 +308,7 @@ def color_cstree(c,
         
     less_data_counter = 0
     num_empty_contexts = 0
-     
+    
     csi_stages = {}
 
     csi_stages = []
@@ -423,6 +424,7 @@ def color_cstree(c,
                 # Dummy element to avoid division by zero
                 
                 # computing symmetric KL divergence
+                # computing separately to print alongside andersson and epps test results to see howgood this is
                 if len(data_n1)>0 and len(data_n2)>0:
                     distr_n1 = [list(data_n1).count(i)/len(data_n1) for i in range(outcomes)]
                     distr_n2 = [list(data_n2).count(i)/len(data_n2) for i in range(outcomes)]
@@ -455,7 +457,8 @@ def color_cstree(c,
                 #print("symmetric KL is", symmetric_kl)
                 
                 if test=="kl":
-                    kl_threshold = 0.00001
+                    assert kl_threshold is not None
+                    kl_threshold = kl_threshold
                     if symmetric_kl<kl_threshold:
                         same_distr=True
                     else:
@@ -467,7 +470,7 @@ def color_cstree(c,
                         t,p = epps_singleton_2samp(data_n1, data_n2)
                         if p>tol_p_val or p is float("NaN"):
                             same_distr=True
-                            print("accepted, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
+                            #print("accepted, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
                             #print("rejected, unique {}, {} with KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                             same_distr=False
@@ -480,7 +483,7 @@ def color_cstree(c,
                         statistic, critical_vals, p = anderson_ksamp([data_n1, data_n2])
                         if p>tol_p_val:
                             same_distr=True
-                            print("accepted, unique {}, {} with sym KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
+                            #print("accepted, unique {}, {} with sym KL {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2)), symmetric_kl))
                         else:
                             #print("rejected, unique {}, {}".format(dict(zip(unique1, counts1))  ,  dict(zip(unique2, counts2))))
                             same_distr=False
