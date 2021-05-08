@@ -455,7 +455,7 @@ def color_cstree(c,
                 #print("symmetric KL is", symmetric_kl)
                 
                 if test=="kl":
-                    kl_threshold = 0.0001
+                    kl_threshold = 0.00001
                     if symmetric_kl<kl_threshold:
                         same_distr=True
                     else:
@@ -617,8 +617,6 @@ def cstree_pc(dataset,
             ax = plt.gca()
             ax.collections[0].set_edgecolor("#000000")
             plt.show()
-
-
 
 
     # Get all the DAGs in the MEC

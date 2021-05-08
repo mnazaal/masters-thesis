@@ -181,7 +181,7 @@ def susy_experiment(ratio):
     
 def coronary_experiment():
     # Load dataset
-    dataset = coronary_data()
+    dataset = coronary_data()[:,:-1]
     n,p = dataset.shape
     val_dict = {i+1:[0,1] for i in range(p)}
     
@@ -191,7 +191,7 @@ def coronary_experiment():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    cstree_object.learn(get_bic=True,csi_test="kl",all_trees=True, use_dag=True, learn_limit=None)
+    cstree_object.learn(cpdag_method="hill",get_bic=True,csi_test="kl",all_trees=True, use_dag=True, learn_limit=None)
 
 
 def coronary_experiment_bic():
@@ -206,7 +206,7 @@ def coronary_experiment_bic():
 
     # Visualize CSTrees with fewest stages
     save_dir=None
-    trees = cstree_object.learn(get_bic=True,csi_test="anderson",all_trees=True, use_dag=True)
+    trees = cstree_object.learn(cpdag_method="hill",get_bic=True,csi_test="anderson",all_trees=True, use_dag=True)
 
 
 

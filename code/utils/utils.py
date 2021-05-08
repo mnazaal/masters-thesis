@@ -1,7 +1,7 @@
 # Python imports
 import sys
 from functools import reduce
-from itertools import product
+from itertools import product, combinations
 
 # Third-party library imports
 import networkx as nx
@@ -76,7 +76,7 @@ and_ = lambda l:functools.reduce(lambda x,y:x and y, l, False)
 edge_opposite = lambda e1,e2:  e1[0]==e2[1] and e1[1]==e2[0]               
 
 def v_structure(e1, e2, g):
-    # Return true if two edges form a v-structure
+    # Return true if two edges form a v-structure in g
     # check if they are head to head, AND uncoupled
     heads_meet = e1[1]==e2[1]
     tails_dont = e1[0]!=e2[0]
@@ -126,6 +126,32 @@ def remove_cycles(g):
         except:
             cycles_removed=True
     return g
+
+
+
+def dag_to_cpdag(g):
+    fixed_edges=set()
+    # Gather all v-structures
+    for node in g.nodes:
+        in_edges=g.in_edges(node)
+        for (e1,e2) in combinations(in_edges,2):
+            u1,u2=e1[0],e2[0]
+            if (u1,u2) not in g.edges and (u2,u1) not in g.edges:
+                fixed_edges=fixed_edges.union({e1,e2})
+                
+    dag = nx.DiGraph()
+    dag.add_edges_from(fixed_edges)
+    for (u,v) in g.edges:
+        if (u,v) not in fixed_edges:
+            if not v_structure((u,v),(v,u),dag):
+                dag.add_edge(v,u)
+            try:
+                cycles =list(nx.simple_cycles(dag))
+                if len(cycles)>0:
+                    g.remove_edge(v,u)
+            except:
+                pass
+    return dag
 
 
 def cpdag_to_dags(g):
@@ -182,6 +208,9 @@ def cpdag_to_dags(g):
                     new_g2 = g.copy()
                     new_g2.remove_edge(u[0],u[1])
                     yield from cpdag_to_dags(new_g2)
+                    
+def mixdag_to_dags(g):
+    pass
                     
                     
 def parents(g,node):
