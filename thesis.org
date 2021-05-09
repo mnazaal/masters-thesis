@@ -1203,6 +1203,9 @@ In order to see the true discrepancy between the BIC score of DAGs and CSTrees, 
 
    # TODO Print all possible orderings
 
+   # TODO mention that encoding CI relations before hand helps with data sparsity
+   # TODO run coronary dataset again to consider ALL orderings
+
    
 
 ** Supersymmetry data

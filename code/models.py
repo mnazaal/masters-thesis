@@ -339,11 +339,11 @@ class CSTree(object):
 
             else:
                 # If we do not plot the minimal context DAGs
-                fig = plt.figure(figsize=(24,12))
+                fig = plt.figure(figsize=(24,24))
                 tree_ax = fig.add_subplot(111)
                 tree_node_colors = [color_scheme.get(n, "#FFFFFF") for n in tree.nodes]
 
-                if nodes < 11:
+                if nodes < 7:
                     except_last = [o for o in ordering[:-1]]
                     cstree_ylabel = "".join(["$X_{}$        ".format(o) for o in except_last[::-1]])
                     tree_pos = graphviz_layout(tree, prog="dot", args="")
@@ -435,12 +435,15 @@ class CSTree(object):
         # If we give some orderings, we only want DAGs
         # above which respect this ordering
         if orderings:
+            orderings_given = True
             consistent_dags=[]
             for o in orderings:
                 consistent_dags += [dag for dag in dags_bn if o in nx.all_topological_sorts(dag)]
             dags_bn = consistent_dags
             if dags_bn == [] and use_dag:
                 raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
+        else:
+            orderings_given=False
 
 
                 # If we have ordering and want a DAG to encode CI relations
@@ -468,7 +471,7 @@ class CSTree(object):
 
             #if ordering_given:
             #    orderings = [ordering]
-            if orderings is None:
+            if not orderings_given:
                 orderings = nx.all_topological_sorts(mec_dag)
                 # We need a separate generator to count ordering
                 # if we do not want to use it up in the counting process
@@ -549,6 +552,7 @@ class CSTree(object):
                     min_stages_current_ordering = min(dag_stages, no_dag_stages,pc_stages)
                     if min_stages_current_ordering<min_stages:
                         min_stages=min_stages_current_ordering
+                        best_ordering = ordering
                         if min_stages_current_ordering==dag_stages:
                             trees = [(tree, stages1, color_scheme1, ordering)]
                         if min_stages_current_ordering==no_dag_stages:
@@ -581,6 +585,7 @@ class CSTree(object):
                     max_bic_current_ordering  = max(dag_bic, no_dag_bic, pc_bic)
                     if max_bic_current_ordering>max_bic:
                         max_bic=max_bic_current_ordering
+                        best_ordering = ordering
                         if max_bic_current_ordering == dag_bic:
                             trees = [(tree,stages1,color_scheme1,ordering)]
                         if max_bic_current_ordering == no_dag_bic:
@@ -600,7 +605,7 @@ class CSTree(object):
 
         if return_type=="minstages":
             print("{} CSTree with same number of minimum stages which is {}".format(len(trees), min_stages))
-            print("Min stages: Just DAG {} w BIC {}, Without DAG CI relations {} w BIC {}, With DAG CI relations {} w BIC {}".format(min_dag_stages, min_dag_stages_bic, min_no_dag_stages, min_no_dag_stages_bic, min_pc_stages, min_pc_stages_bic))
+            print("Min stages: Just DAG {} w BIC {}, Without DAG CI relations {} w BIC {}, With DAG CI relations {} w BIC {}, Min stage ordering {}".format(min_dag_stages, min_dag_stages_bic, min_no_dag_stages, min_no_dag_stages_bic, min_pc_stages, min_pc_stages_bic, best_ordering))
 
             #self.best_cstrees = trees.copy()
         #if get_bic:
@@ -608,7 +613,7 @@ class CSTree(object):
             # indent=2 is not needed but makes the file human-readable
         #    json.dump(score, f, indent=2)
         elif return_type=="maxbic":
-            print("Max BIC Scores : Just DAG {} w stages {}, Without DAG CI relations {} w stages {}, With DAG CI relations {} w stages {}".format(max_dag_bic, max_dag_bic_stages, max_no_dag_bic, max_no_dag_bic_stages, max_pc_bic, max_pc_bic_stages))
+            print("Max BIC Scores : Just DAG {} w stages {}, Without DAG CI relations {} w stages {}, With DAG CI relations {} w stages {}, Max BIC ordering {}".format(max_dag_bic, max_dag_bic_stages, max_no_dag_bic, max_no_dag_bic_stages, max_pc_bic, max_pc_bic_stages, best_ordering))
         return trees      
                 
             

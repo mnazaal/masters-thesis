@@ -356,21 +356,40 @@ synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 
 
 # Mice cortex
-# 8 is the features to use, including the predictor it will have 9
-micecortex_experiment(8, "pc1", "anderson", "minstages")
-micecortex_experiment(8, "hill", "anderson", "minstages")
+# 7 is the features to use, including the predictor it will have 8
+mice_cortex_vars=7
+micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "minstages")
+micecortex_experiment(mice_cortex_vars, "hill", "anderson", "minstages")
 
-micecortex_experiment(8, "pc1", "epps", "minstages")
-micecortex_experiment(8, "hill", "epps", "minstages")
+micecortex_experiment(mice_cortex_vars, "pc1", "epps", "minstages")
+micecortex_experiment(mice_cortex_vars, "hill", "epps", "minstages")
 
-micecortex_experiment(8, "pc1", 5e-4, "minstages")
-micecortex_experiment(8, "hill", 5e-4, "minstages")
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "minstages")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "minstages")
 
-micecortex_experiment(8, "pc1", 5e-5, "minstages")
-micecortex_experiment(8, "hill", 5e-5, "minstages")
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "minstages")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "minstages")
 
-micecortex_experiment(8, "pc1", 5e-6, "minstages")
-micecortex_experiment(8, "hill", 5e-6, "minstages")
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "minstages")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "minstages")
+
+
+
+# Max BIC
+micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "maxbic")
+micecortex_experiment(mice_cortex_vars, "hill", "anderson", "maxbic")
+
+micecortex_experiment(mice_cortex_vars, "pc1", "epps", "maxbic")
+micecortex_experiment(mice_cortex_vars, "hill", "epps", "maxbic")
+
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "maxbic")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "maxbic")
+
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "maxbic")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "maxbic")
+
+micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "maxbic")
+micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "maxbic")
 
 
 #coronary_experiment_bic()
