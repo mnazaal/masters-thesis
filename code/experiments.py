@@ -200,22 +200,29 @@ def micecortex_config():
     num_features=10
     
 #@ex4.automain
-def micecortex_experiment(num_features):
+def micecortex_experiment(num_features, cpdag_method, csi_test, return_type):
     # Anderson test
     # With and without CI relations
     # With 6 features and 10 features
+    kl_threshold=None
+    if csi_test not in ["anderson", "epps"]:
+        assert isinstance(csi_test, float)
+        kl_threshold=csi_test
+        csi_test="kl"
+
     dataset = micecortex_data(num_features)
     n,p=dataset.shape
 
 
     val_dict = {i+1:[0,1] for i in range(p)}
-    val_dict[7]=[i for i in range(8)]
+    # Last variable, which is the predictor, has 8 possible classes
+    val_dict[p]=[i for i in range(8)]
 
     cstree_object = CSTree(dataset,val_dict)
 
     
 
-    cstree_object.visualize(all_trees=False, use_dag=False,plot_limit=None, learn_limit=None, save_dir="mice6_nodag")
+    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None, plot_limit=None)
 
 
 #micecortex_experiment(6)
@@ -244,7 +251,7 @@ def susy_experiment(ratio):
     
 
     
-def coronary_experiment_bic(cpdag_method, csi_test, remove_var=None):
+def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_var=None, plot_limit=None):
     # remove_var: Variable to remove
     # cpdag_method: 
     kl_threshold=None
@@ -260,6 +267,7 @@ def coronary_experiment_bic(cpdag_method, csi_test, remove_var=None):
     if cpdag_method=="all":
         # Can only try all DAGs on 5 variables efficiently
         assert remove_var is not None
+    if remove_var:
         dataset = dataset[:,tuple(i for i in range(dataset.shape[1]) if i+1!=remove_var)]
     
     n,p = dataset.shape
@@ -273,30 +281,14 @@ def coronary_experiment_bic(cpdag_method, csi_test, remove_var=None):
     # 1. Just the DAG converted to a CSTree
     # 2. CSTree learnt without any CI relations from DAG
     # 3. CSTree learnt using CI relations from DAG
-    cstree_object.visualize(cpdag_method=cpdag_method,get_bic=True,csi_test=csi_test, all_trees=True,kl_threshold=kl_threshold, use_dag=True, learn_limit=None,
-                           save_dir=cpdag_method+csi_test+"_coronary_bic")
-
-
-def coronary_experiment():
-    # Load dataset
-    dataset = coronary_data()
-    n,p=dataset.shape
-    val_dict = {i+1:[0,1] for i in range(p)}
-    
-    # Create CSTree object
-    cstree_object = CSTree(dataset, val_dict)
-    
-
-    # Visualize CSTrees with fewest stages
-    save_dir=None
-    trees = cstree_object.visualize(cpdag_method="hill",get_bic=True,csi_test="anderson",all_trees=True, use_dag=True)
-
+    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None, plot_limit=None)
+                        #save_dir=cpdag_method+csi_test+"_coronary_bic")
 
 
 #dag_to_cstree_experiment(5,1)
 #dag_to_cstree_experiment(5,0)
 #dag_to_cstree_experiment(5,0.5, mc_dag=True)
-
+"""
 nodes=4
 p_edge=0.7
 samples=10000
@@ -306,29 +298,80 @@ dataset = synthetic_dag_binarydata(dag, samples)
 synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 dataset = dataset[tuple(random.sample(range(dataset.shape[0]), int(samples/10))),:]
 synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
-
+"""
 
 # coronary experiments
+# Minimum stages
+# CPDAG method, staging method change
+#coronary_experiment_bic("pc1", "anderson", "minstages")
+#coronary_experiment_bic("hill", "anderson", "minstages")
+
+#coronary_experiment_bic("pc1", "epps", "minstages")
+#coronary_experiment_bic("hill", "epps", "minstages")
+
+#coronary_experiment_bic("pc1", 5e-4, "minstages")
+#coronary_experiment_bic("hill", 5e-4, "minstages")
+
+#coronary_experiment_bic("pc1", 5e-5, "minstages")
+#coronary_experiment_bic("hill", 5e-5, "minstages")
+
+#coronary_experiment_bic("pc1", 5e-6, "minstages")
+#coronary_experiment_bic("hill", 5e-6, "minstages")
+
+
 # BIC
-#coronary_experiment_bic("hill", "anderson")
-#coronary_experiment_bic("pc1",  "anderson")
-#coronary_experiment_bic("all",  "anderson")
+#coronary_experiment_bic("pc1",  "anderson", "maxbic")
+#coronary_experiment_bic("hill", "anderson", "maxbic")
 
-#coronary_experiment_bic("hill", "epps")
-#coronary_experiment_bic("pc1",  "epps")
-#coronary_experiment_bic("all",  "epps")
+#coronary_experiment_bic("pc1",  "epps", "maxbic")
+#coronary_experiment_bic("hill", "epps", "maxbic")
 
-#coronary_experiment_bic("hill", 1e-3)
-#coronary_experiment_bic("pc1",  1e-3)
-#coronary_experiment_bic("all",  1e-3)
+#coronary_experiment_bic("pc1",  5e-4, "maxbic")
+#coronary_experiment_bic("hill", 5e-4, "maxbic")
 
-#coronary_experiment_bic("hill", 5e-4)
-#coronary_experiment_bic("pc1",  5e-4)
-#coronary_experiment_bic("all",  5e-4)
+#coronary_experiment_bic("pc1",  5e-5, "maxbic")
+#coronary_experiment_bic("hill", 5e-5, "maxbic")
 
-#coronary_experiment_bic("hill", 1e-4)
-#coronary_experiment_bic("pc1",  1e-4)
-#coronary_experiment_bic("all",  1e-4)
+#coronary_experiment_bic("pc1",  5e-6, "maxbic")
+#coronary_experiment_bic("hill", 5e-6, "maxbic")
+
+
+#coronary_experiment_bic("pc1",  "anderson", "maxbic", remove_var=6)
+#coronary_experiment_bic("hill", "anderson", "maxbic")
+#coronary_experiment_bic("all", "anderson", "maxbic", remove_var=5)
+
+
+#coronary_experiment_bic("pc1",  "epps", "maxbic")
+#coronary_experiment_bic("hill", "epps", "maxbic")
+
+#coronary_experiment_bic("pc1",  5e-4, "maxbic")
+#coronary_experiment_bic("hill", 5e-4, "maxbic")
+
+#coronary_experiment_bic("pc1",  5e-5, "maxbic")
+#coronary_experiment_bic("hill", 5e-5, "maxbic")
+
+#coronary_experiment_bic("pc1",  5e-6, "maxbic")
+#coronary_experiment_bic("hill", 5e-6, "maxbic")
+
+
+
+# Mice cortex
+# 8 is the features to use, including the predictor it will have 9
+micecortex_experiment(8, "pc1", "anderson", "minstages")
+micecortex_experiment(8, "hill", "anderson", "minstages")
+
+micecortex_experiment(8, "pc1", "epps", "minstages")
+micecortex_experiment(8, "hill", "epps", "minstages")
+
+micecortex_experiment(8, "pc1", 5e-4, "minstages")
+micecortex_experiment(8, "hill", 5e-4, "minstages")
+
+micecortex_experiment(8, "pc1", 5e-5, "minstages")
+micecortex_experiment(8, "hill", 5e-5, "minstages")
+
+micecortex_experiment(8, "pc1", 5e-6, "minstages")
+micecortex_experiment(8, "hill", 5e-6, "minstages")
+
 
 #coronary_experiment_bic()
 

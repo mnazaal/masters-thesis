@@ -29,7 +29,7 @@ from graphoid import decomposition, weak_union, intersection, graphoid_axioms
 #logger.addHandler(file_handler)
 
 
-def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
+def dag_to_cstree(val_dict, ordering=None, dag=None, use_dag=True, construct_last=False):
     """
     =============================================================================
     description:
@@ -88,6 +88,9 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
     logger.debug(" ================ \n Start dag_to_cstree \n =====================")
     logger.debug("Converting DAG to CSTree, DAG: {}, ordering: {}".format("given" if dag else "None", 
                                                                              "given" if ordering else "None"))"""
+    if not use_dag:
+        # Just in case the user wants a tree with all singleton stages
+        dag=None
     
     if dag is None and ordering is None:
         raise ValueError("If no ordering is given a DAG must be provided")
@@ -203,6 +206,8 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, construct_last=False):
                         for node in stage_nodes:
                             color_scheme[node]=color
                             color_scheme_l[node]=tuple(sc)
+                print("DAG to CSTRree level {} added {} nodes for context {}".format(level, len(stage_nodes), sc))
+                
         stage_list.append(stages_l)
         color_scheme_list.append(color_scheme_l)
 
@@ -267,11 +272,12 @@ def color_cstree(c,
                   return_csi_rels   = True,
                   test              = "anderson",
                   kl_threshold      = None,
-                  no_dag            = True):
+                  use_dag            = True):
     
     # c is the Fal
     # levels is the number of levels in the cstree
     # ordering is the causal ordering being considered
+        
     
     level = 1 #0 is root
     # while level<number of variables -1
@@ -314,6 +320,7 @@ def color_cstree(c,
     csi_stages = []
     newcolor_scheme_list = []
 
+
     #print("COLORING CSTREE STARTED WITH STAGES ", stages)
     
     while level<levels:
@@ -329,20 +336,27 @@ def color_cstree(c,
         stages_l = stage_list[level-1]
         color_scheme_l = color_scheme_list[level-1]
         colored = list(color_scheme_l.keys())
+
+        #print("colouring, stages got")
+        #for s1,s2 in stages_l.items():
+        #    print("s1",s1,"s2",s2)
+        #print("colored nodes got")
+        #for c1,c2 in color_scheme_l.items():
+        #    print("c1",c1,"c2",c2)
         #print("coloring tree level {} already has {} colored and {} stages".format(level, len(colored), len(stages_l)))
 
         #print(stages_l, color_scheme_l)
 
         #print("level {} stages {}".format(level,stages_l))
         # If the DAG already coloured this level the same colour, move on
-        if len(stages_l) == 1 and len(color_scheme_l)==len(nodes_l):
+        if len(stages_l) == 1 and list(color_scheme_l.values())[0] == ():
             # If we have only one stage that contains all the nodes in this level
             # We go to the next level
-            level+=1
             skipped+=len(color_scheme_l)
             #csi_stages.append(stages_l)
-            newcolor_scheme_list.append(color_scheme_l)
-            print("DAG model gave whole level {} the same context {}".format(level,list(color_scheme_l.values())[0]))
+            newcolor_scheme_list.append(color_scheme_l.copy())
+            #print("DAG model gave whole level {} the same context {} length".format(level,list(color_scheme_l.values())[0]), len(color_scheme_l))
+            level+=1
             continue
         # v0, generate common contexts starting from the empty context to the full contexts
         
@@ -409,7 +423,10 @@ def color_cstree(c,
                 #common_c = shared_contexts(n1[:-1],n2[:-1])
 
                 var = ordering[level]
-                outcomes=len(val_dict[var])
+
+                # sorted to make sure the distribution is
+                # (P(x=0), P(x=1),...,P(x=p))
+                outcomes=sorted(val_dict[var])
                 
                 if color_n1 is not None:
                     data_n1 = data_to_contexts(data_matrix,color_n1,var)
@@ -426,11 +443,11 @@ def color_cstree(c,
                 # computing symmetric KL divergence
                 # computing separately to print alongside andersson and epps test results to see howgood this is
                 if len(data_n1)>0 and len(data_n2)>0:
-                    distr_n1 = [list(data_n1).count(i)/len(data_n1) for i in range(outcomes)]
-                    distr_n2 = [list(data_n2).count(i)/len(data_n2) for i in range(outcomes)]
+                    distr_n1 = [list(data_n1).count(i)/len(data_n1) for i in outcomes]
+                    distr_n2 = [list(data_n2).count(i)/len(data_n2) for i in outcomes]
 
-                    epsilon=1e-20
-                    for i in range(outcomes):
+                    epsilon=1e-50
+                    for i in outcomes:
                         if distr_n1[i]<epsilon:
                             distr_n1[i]+=epsilon
                         if distr_n2[i]<epsilon:
@@ -497,6 +514,7 @@ def color_cstree(c,
 
                 if same_distr:
                     stages_added_l+=1
+                    #print("pairing nodes {}{}".format(n1,n2))
                     print("level {}, staging {}".format(level, common_c))
                     #print("level ",level, "added 1")
                     #print("adding at level ", level, "commonc", common_c)
@@ -534,8 +552,8 @@ def color_cstree(c,
                 csi_stages1[color] = nodes_w_this_context
                 for node in nodes_w_this_context:
                     color_scheme1[node] = color
-    if use_dag:
-        pass
+    #if use_dag:
+    #    pass
         #assert len(csi_stages1)<=len(stages)
 
     print("Skipped {} tests because of few data".format(less_data_counter))

@@ -6,6 +6,10 @@
 #+LATEX: \setlength\parindent{0pt}
 #+LATEX: \setcounter{secnumdepth}{2}
 #+LATEX: \newcommand{\indep}{\perp \!\!\! \perp}
+#+LATEX: \usepackage{rotating}
+#+LATEX: \usepackage{multirow}
+#+LATEX: \usepackage{caption}
+#+LATEX: \captionsetup[table]{position=bottom}
 
 
 # Plain HTML
@@ -881,6 +885,7 @@ The free parameters is $d=\sum_{k=1}^{p-1} (|\mathcal{X}_k| - 1)S_k$ where $S_k$
 
 * Experiments
 The aim of this section is to run test the theory presented so far in both synthetic and real world data. Namely, for all the datasets we use, we ask ourselves the following.
+
 1. Given a DAG and a causal ordering, is there a difference between learning the context specific independence relations after encoding the CI relations from the DAG into CSTree, or without encoding any of these CI relations?
 3. Is the CSTree property assumption reasonable in practice?
 4. How sensitive are the results on the method used to determine whether nodes belong to the same stage?
@@ -1050,7 +1055,109 @@ The following table summarizes the empirical space time complexity of generating
 This data set does not require further pre-processing since the outcome space is already categorical, and there were no missing values.
 
 
+We first perform the following experiment: Learn a DAG model from both the PC algorithm and the Hill climbing search algorithm. Now for each topological ordering of all the DAGs which are Markov equivalent, we store the following CSTrees:
+1. The CSTree generated from the DAG itself
+2. The CSTree learnt only from context specific information without encoding the CI relations from the DAG
+3. The CSTree learnt from encoding the CI relations from the DAG and then learning further context specific information
 
+For each of the cases above we create/merge stages using the Anderson-Darling test, the Epps-Singleton test, and the symmetric KL divergence with different threshold values. The use of the symmetric KL divergence is motivated by the unreliability of conditional independence testing in practice. Given 2 distributions $\mathbb{P}, \mathbb{Q}$ over the same discret state space $\mathcal{X}$, the symmetric KL divergence is as follows. 
+
+
+#+begin_export latex
+\begin{align*}
+D_{SKL}(\mathbb{P} \, , \, \mathbb{Q}) = \sum_{x \in \mathcal{X}} \mathbb{P}(X=x)\log \frac{\mathbb{P}(X = x)}{\mathbb{Q}(X=x)} + \mathbb{Q}(X=x)\log \frac{\mathbb{Q}(X = x)}{\mathbb{P}(X=x)}
+\end{align*}
+#+end_export
+
+
+We apply Algorithm \ref{alg:cstreepc} to the setup above, and record the CSTrees with the minimum number of stages over all possible causal orderings, alongside their BIC scores. If we have CSTrees with the same number of minimum stages, we record the highest BIC score among them. We call this *experimental setup 1*, and the result are summarized in the Table \ref{table:coronary1}.
+
+
+    Here we see that the minimum number of stages over all the configurations is 6, and the result CSTree is shown in Figure \ref{fig:coronary1}. The causal ordering is 346125, and we get this CSTree by learning the original DAG using the PC algorithm, followed by the Anderson-Darling test to learn context specific information without encoding the CI relations from the original DAG. However it can be seen that the BIC score is lower compared to the CSTree generated from the DAG itself and the CSTree learnt using the CI relations in the DAG before learning the context specific information. The latter CSTree also has more stages than the CSTree learnt without using the CI relations, which can be explained by the possibility that the DAG encoded CI relation(s) which put nodes in the same stage, which otherwise may have been put in the same stage from the context specific testing procedure. Among the trees with the lowest stages, the CSTree with the highest BIC score is generated with the ordering 534126, using the symmetric KL divergence with a threshold of $5e^{-5}$ for the staging procedure, from the DAG learnt from the Hill Climbing algorithm and without encoding the CI relations from it. It shown in Figure \ref{fig:coronary2} We see that this CSTree has 27 stages, which motivates us to define the *experimental setup 2*, where we aim to find the CSTree with the highest BIC score instead of the minimum number of stages as in the experimental setup 1. We show the results of this in Table \ref{table:coronary2}.
+
+
+We see that the results are nearly identical, other than for 2 entries corresponding to the Epps-Singleton test and symmetric KL divergence with threshold $5^{-5}$ which have an improved BIC score for the CSTree learnt without the CI relations from the DAG. This could be due to the dataset allowing for few consistent causal orderings.
+
+
+#+begin_export latex
+
+% Please add the following required packages to your document preamble:
+% \usepackage{multirow}
+\begin{table*}[]\label{table:coronary1}
+\begin{tabular}{cccccccccccccccc}
+\cline{3-12}
+                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Min stages\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-4$}                            & \multicolumn{2}{c|}{SKL $5e-5$}                                     & \multicolumn{2}{c|}{SKL $5e-6$}                            &  &  &  &  \\ \cline{3-12}
+                        & \multicolumn{1}{c|}{}                                                                            & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     &  &  &  &  \\ \cline{3-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6780.2} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6808.5} & \multicolumn{1}{c|}{8}      & \multicolumn{1}{c|}{-7046.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6717.4}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-7029.4} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6767.8} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6776.9} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6772.0} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6782.8} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6833.6} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6798.7} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{\textbf{-6712.2}} & \multicolumn{1}{c|}{46}     & \multicolumn{1}{c|}{-6748.4} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6785.2} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6806.2} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6801.1} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{-6714.6}          & \multicolumn{1}{c|}{29}     & \multicolumn{1}{c|}{-6722.1} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &
+\caption{Experimental setup 1 on the coronary dataset. Each cell under the column "Stages" is the minimum number of stages amongst all causal orderings generated from the either the PC or Hill Climbing algorithm, for different staging criteria. Many orderings produce CSTrees with the same number of stages, the BIC score in the table above is the maximum such BIC score.}
+\end{tabular}
+\end{table*}
+
+#+end_export
+
+#+begin_export latex
+\begin{figure}[]\label{fig:coronary1}
+   \begin{floatrow}
+\ffigbox{\includegraphics[width=1.1\linewidth]{temp/coronaryminstages1.pdf}}%
+\caption{CSTree for the coronary dataset with the lowest number of stages, which has ordering 346125.}
+        
+   \end{floatrow}
+\end{figure}
+
+\begin{figure}[]\label{fig:coronary2}
+   \begin{floatrow}
+\ffigbox{\includegraphics[width=1.1\linewidth]{temp/coronaryminstages1topbic.pdf}}%
+\caption{CSTree with the highest BIC score among all CSTrees with the minimum number of stages in experimental setup 1, which has ordering 534126.}
+        
+   \end{floatrow}
+\end{figure}
+#+end_export
+
+
+
+#+begin_export latex
+% Please add the following required packages to your document preamble:
+% \usepackage{multirow}
+\begin{table*}[]\label{table:coronary2}
+\begin{tabular}{cccccccccccccccc}
+\cline{3-12}
+                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Max BIC\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-4$}                            & \multicolumn{2}{c|}{SKL $5e-5$}                                     & \multicolumn{2}{c|}{SKL $5e-6$}                            &  &  &  &  \\ \cline{3-12}
+                        & \multicolumn{1}{c|}{}                                                                         & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     &  &  &  &  \\ \cline{3-12}
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6780.2} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6808.5} & \multicolumn{1}{c|}{8}      & \multicolumn{1}{c|}{-6790.9} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6717.4}          & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6749.6} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6767.8} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6776.9} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6772.0} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6782.8} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6833.6} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6798.7} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{\textbf{-6712.2}} & \multicolumn{1}{c|}{46}     & \multicolumn{1}{c|}{-6748.4} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6785.2} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6806.2} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6801.1} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{-6714.6}          & \multicolumn{1}{c|}{29}     & \multicolumn{1}{c|}{-6722.1} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
+                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  & 
+\caption{Experimental setup 2 on the coronary dataset, the only difference to experimental setup 1 is that we now maximize the BIC score over all possible causal orderings.}
+			\end{tabular}
+\end{table*}
+#+end_export
+
+
+
+In order to see the true discrepancy between the BIC score of DAGs and CSTrees, we consider another method to get a starting DAG. This is to do an exhaustive search over the space of DAGs, and choose the DAG with the highest BIC score, and take the DAGs in its MEC to generate the possible causal orderings. We call this *experimental setup 3*. This task is intractable for variables more than 5, thus we have to remove 1 variable. To decide on which variable to choose, we generate all possible DAGs after removing each variable separately, and remove the variable which results in the highest BIC score. For this dataset, this happens to be the systolic blood pressure.
 
 # Applying Algorithm \ref{alg:cstreepc} yields 55 CSTrees which have the same number of stages, which is 69. If we exclude singleton stages corresponding to the last level this is 5 stages, which results in a full independence model.
 
@@ -1058,25 +1165,17 @@ This data set does not require further pre-processing since the outcome space is
 
 
 
-#+begin_export latex
-\begin{figure}[!h]\label{fig:coronary1}
-   \begin{floatrow}
-\ffigbox{\includegraphics[width=1.1\linewidth]{temp/coronary_nonindep.pdf}}%
-\caption{Example of CSTree learnt on the coronary dataset which was not the independence model which has the ordering 125346}
-        
-   \end{floatrow}
-\end{figure}
-#+end_export
+
 
 # TODO cite table number for above
 
 # TODO With or withot DAG encodings
 
 # TODO Print all possible orderings
-
+{{{NEWPAGE}}}
 
 ** Mice protein expression data
-   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want, which in this experiment we set as 6. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. With the predictor class, which takes 8 possible values, this is a system with 7 variables. We choose this number mainly because the amount of samples drastically reduce as we fix contexts when we go down each level.
+   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median. 
 
 
    Applying Algorithm \ref{alg:cstreepc} on this dataset resulted in 108 CSTrees with the minimum number of stages, which is 518. Excluding the singleton stages arising from the last level, this is 6 stages, which are once again extremely sparse.
