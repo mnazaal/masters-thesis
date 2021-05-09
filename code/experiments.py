@@ -237,8 +237,16 @@ def susy_config():
     
 
 #@ex5.automain
-def susy_experiment(ratio):
-    dataset = susy_data(True, ratio)
+def susy_experiment(cpdag_method, csi_test, return_type, ratio):
+    # remove_var: Variable to remove
+    # cpdag_method: 
+    kl_threshold=None
+    if csi_test not in ["anderson", "epps"]:
+        assert isinstance(csi_test, float)
+        kl_threshold=csi_test
+        csi_test="kl"
+
+    dataset = susy_data(False, ratio)
 
     n,p = dataset.shape
 
@@ -246,7 +254,7 @@ def susy_experiment(ratio):
 
     cstree_object = CSTree(dataset, val_dict) 
 
-    cstree_object.visualize(all_trees=True, csi_test="epps",save_dir="susy", use_dag=False, plot_limit=5, learn_limit=5)
+    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=5, plot_limit=5)
 
     
 
@@ -358,43 +366,43 @@ synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 # Mice cortex
 # 7 is the features to use, including the predictor it will have 8
 mice_cortex_vars=7
-micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "minstages")
-micecortex_experiment(mice_cortex_vars, "hill", "anderson", "minstages")
+#micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "minstages")
+#micecortex_experiment(mice_cortex_vars, "hill", "anderson", "minstages")
 
-micecortex_experiment(mice_cortex_vars, "pc1", "epps", "minstages")
-micecortex_experiment(mice_cortex_vars, "hill", "epps", "minstages")
+#micecortex_experiment(mice_cortex_vars, "pc1", "epps", "minstages")
+#micecortex_experiment(mice_cortex_vars, "hill", "epps", "minstages")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "minstages")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "minstages")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "minstages")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "minstages")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "minstages")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "minstages")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "minstages")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "minstages")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "minstages")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "minstages")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "minstages")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "minstages")
 
 
 
 # Max BIC
-micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "maxbic")
-micecortex_experiment(mice_cortex_vars, "hill", "anderson", "maxbic")
+#micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "maxbic")#RUN THIS to get stages
+#micecortex_experiment(mice_cortex_vars, "hill", "anderson", "maxbic")
 
-micecortex_experiment(mice_cortex_vars, "pc1", "epps", "maxbic")
-micecortex_experiment(mice_cortex_vars, "hill", "epps", "maxbic")
+#micecortex_experiment(mice_cortex_vars, "pc1", "epps", "maxbic")
+#micecortex_experiment(mice_cortex_vars, "hill", "epps", "maxbic")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "maxbic")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "maxbic")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "maxbic")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "maxbic")
 
-micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "maxbic")
-micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "pc1", 5e-7, "maxbic")
+#micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "maxbic")
 
 
 #coronary_experiment_bic()
 
-#susy_experiment(0.02)
+susy_experiment("hill", 5e-5, "maxbic",0.05)
 
 #synthetic_dag_binarydata_experiment(9, 0.2, 350)
 #coronary_experiment()
