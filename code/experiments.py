@@ -18,7 +18,7 @@ from sacred import Experiment
 
 from utils.utils import contained, flatten, cpdag_to_dags, generate_vals, parents, remove_cycles, dag_topo_sort,generate_state_space,shared_contexts,data_to_contexts,context_per_stage,get_size, binary_dict
 from cstree import  cstree_pc, stages_to_csi_rels,  dag_to_cstree
-from datasets import synthetic_dag_binarydata, bnlearn_data,coronary_data, dermatology_data, micecortex_data, susy_data
+from datasets import synthetic_dag_binarydata, bnlearn_data,coronary_data, dermatology_data, micecortex_data, susy_data, vitd_data
 from utils.utils import generate_dag, binary_dict, generate_state_space
 from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
@@ -256,7 +256,39 @@ def susy_experiment(cpdag_method, csi_test, return_type, ratio):
 
     cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=1)
 
+
     
+def vitd_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
+    # remove_var: Variable to remove
+    # cpdag_method: 
+    kl_threshold=None
+    if csi_test not in ["anderson", "epps"]:
+        assert isinstance(csi_test, float)
+        kl_threshold=csi_test
+        csi_test="kl"
+        
+    # Load dataset
+    dataset = vitd_data()
+    
+    
+    n,p = dataset.shape
+
+        
+    val_dict = {}
+    val_dict[1]=[0,1,2,3]
+    val_dict[2]=[0,1]
+    val_dict[3]=[0,1,2,3]
+    val_dict[4]=[0,1]
+    val_dict[5]=[0,1]
+    
+    # Create CSTree object
+    cstree_object = CSTree(dataset, val_dict)
+    
+    # Learn the cstree and output the best BIC values of the following cases:
+    # 1. Just the DAG converted to a CSTree
+    # 2. CSTree learnt without any CI relations from DAG
+    # 3. CSTree learnt using CI relations from DAG
+    cstree_object.learn(orderings=[[1,2,3,4,5]],cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
 
     
 def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
@@ -274,7 +306,7 @@ def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=Non
     
     if cpdag_method=="all":
         # Can only try all DAGs on 5 variables efficiently
-        assert remove_var is not None
+        assert remove_vars is not None
     if remove_vars:
         dataset = dataset[:,tuple(i for i in range(dataset.shape[1]) if i+1 not in remove_vars)]
     
@@ -465,4 +497,64 @@ mice_cortex_vars=7
 #micecortex_experiment()
 #susy_experiment()
 
+"""
+vitd_experiment_bic("pc1", "anderson", "minstages")
+print("========================================\nAbove is for pc1, and, mins")
+vitd_experiment_bic("hill", "anderson", "minstages")
+print("========================================\nAbove is for hill, and, mins")
 
+
+vitd_experiment_bic("pc1", "epps", "minstages")
+print("========================================\nAbove is for pc1, epps, mins")
+vitd_experiment_bic("hill", "epps", "minstages")
+print("========================================\nAbove is for hill, epps, mins")
+
+
+vitd_experiment_bic("pc1", 5e-1, "minstages")
+print("========================================\nAbove is for pc1, 5e-1, mins")
+vitd_experiment_bic("hill", 5e-1, "minstages")
+print("========================================\nAbove is for hill, 5e-1, mins")
+
+vitd_experiment_bic("pc1", 5e-2, "minstages")
+print("========================================\nAbove is for pc1, 5e-2, mins")
+vitd_experiment_bic("hill", 5e-2, "minstages")
+print("========================================\nAbove is for hill, 5e-2, mins")
+
+vitd_experiment_bic("pc1", 5e-4, "minstages")
+print("========================================\nAbove is for pc1, 5e-4, mins")
+vitd_experiment_bic("hill", 5e-4, "minstages")
+print("========================================\nAbove is for hill, 5e-4, mins")
+
+
+# BIC
+vitd_experiment_bic("pc1",  "anderson", "maxbic")
+print("========================================\nAbove is for pc1, and, bic")
+vitd_experiment_bic("hill", "anderson", "maxbic")
+print("========================================\nAbove is for hill, and, bic")
+
+vitd_experiment_bic("pc1",  "epps", "maxbic")
+print("========================================\nAbove is for pc1, epps, bic")
+vitd_experiment_bic("hill", "epps", "maxbic")
+print("========================================\nAbove is for hill, epps, bic")
+
+
+
+vitd_experiment_bic("pc1",  5e-1, "maxbic")
+print("========================================\nAbove is for pc1, 5e-1, bic")
+vitd_experiment_bic("hill", 5e-1, "maxbic")
+print("========================================\nAbove is for hill, 5e-1, bic")
+
+
+vitd_experiment_bic("pc1",  5e-2, "maxbic")
+print("========================================\nAbove is for pc1, 5e-2, bic")
+vitd_experiment_bic("hill", 5e-2, "maxbic")
+print("========================================\nAbove is for hill, 5e-2, bic")
+
+
+vitd_experiment_bic("pc1",  5e-4, "maxbic")
+print("========================================\nAbove is for pc1, 5e-4, bic")
+vitd_experiment_bic("hill", 5e-4, "maxbic")
+print("========================================\nAbove is for hill, 5e-4, bic")
+"""
+
+vitd_experiment_bic("hill",  5e-4, "maxbic")

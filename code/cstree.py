@@ -100,7 +100,6 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, use_dag=True, construct_las
             raise ValueError("The size of the given ordering and nodes in given DAG do not match")
         if ordering not in list(nx.all_topological_sorts(dag)):
             raise ValueError("The ordering given is not valid for the given DAG")
-    print(ordering,val_dict)
     if set(ordering) != set(list(val_dict.keys())):
         raise ValueError("Variables in ordering and value dictionary do not match")
     
@@ -556,7 +555,7 @@ def color_cstree(c,
     #    pass
         #assert len(csi_stages1)<=len(stages)
 
-    print("Skipped {} tests because of few data".format(less_data_counter))
+    #print("Skipped {} tests because of few data".format(less_data_counter))
     
     return c, csi_stages1, color_scheme1
 

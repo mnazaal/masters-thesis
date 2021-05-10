@@ -21,7 +21,6 @@ def vitd_data():
     vitd_np = vitd_pd.values.astype('int')[:,1:]
     n,p=vitd_np.shape
 
-    print(np.percentile(vitd_np[:,2], [0,  25, 50, 75, 100]))
     def mapper(x, qs):
         bins = len(qs)-1
         val=None

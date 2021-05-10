@@ -96,7 +96,7 @@ class CSTree(object):
 
         cpdag= remove_cycles(cpdag)
         cpdag.add_nodes_from([i+1 for i in range(self.dataset.shape[1])])
-        print("CPDAG from PC has edges {}".format(list(cpdag.edges)))
+        print("CPDAG from has edges {}".format(list(cpdag.edges)))
         mec_dags = cpdag_to_dags(cpdag)
         dags_bn  = []
         for g in mec_dags:
@@ -442,7 +442,8 @@ class CSTree(object):
                 consistent_dags += [dag for dag in dags_bn if o in nx.all_topological_sorts(dag)]
             dags_bn = consistent_dags
             if dags_bn == [] and use_dag:
-                raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
+                dags_bn=[None]
+                #raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
         else:
             orderings_given=False
 
@@ -467,12 +468,12 @@ class CSTree(object):
 
         # For each DAG in the MEC
         for mec_dag_num, mec_dag in enumerate(dags_bn):
-            if use_dag:
+            if use_dag and mec_dag is not None:
                 assert len(mec_dag.edges) == mec_dag_edges
 
             #if ordering_given:
             #    orderings = [ordering]
-            if not orderings_given:
+            if not orderings_given and mec_dag is not None:
                 orderings = nx.all_topological_sorts(mec_dag)
                 # We need a separate generator to count ordering
                 # if we do not want to use it up in the counting process
@@ -483,14 +484,14 @@ class CSTree(object):
                     # make it work for non-generators
                 #    orderings = [next(orderings)]
 
-            print("MEC DAG {} with {} edges which are {} has {} orderings".format(mec_dag_num+1, len(list(mec_dag.edges)), list(mec_dag.edges), "not printed"))
+            #("MEC DAG {} with {} edges which are {} has {} orderings".format(mec_dag_num+1, len(list(mec_dag.edges)), list(mec_dag.edges), "not printed"))
 
 
             # For each valid causal ordering
             # Remember orderings is a generator so copy it when you use it
             # since any use of it will empty its elements
             
-            for ordering_num, ordering in enumerate(orderings):
+            for _, ordering in enumerate(orderings):
                 # If the user knows the last variable, we skip orderings
                 # where the last variable does not match
                 if last_var:
@@ -500,24 +501,24 @@ class CSTree(object):
 
                 
                 # Generate CSTree from DAG
-                print("="*40)
-                print("MEC DAG number {} is {} ordering number {} applying DAG CI relations".format(mec_dag_num+1,mec_dag.edges, ordering_num+1))
+                #print("="*40)
+                #print("MEC DAG number {} is {} ordering number {} applying DAG CI relations".format(mec_dag_num+1,mec_dag.edges, ordering_num+1))
                 
 
                 # Tree straight from DAG
-                print("DAG to CSTree start")
+                #print("DAG to CSTree start")
                 tree, stages1 ,color_scheme1,stage_list1,color_scheme_list1 = dag_to_cstree(self.val_dict, ordering, mec_dag, use_dag=True)
-                print("DAG to CSTree end")
+                #print("DAG to CSTree end")
 
                 # Tree without DAG CI relations
-                print("CSI alone start")
+                #print("CSI alone start")
                 tree, stages2, color_scheme2 = color_cstree(tree, ordering,self.dataset, self.val_dict,test=csi_test, kl_threshold=kl_threshold)
-                print("CSI alone end")
+                #print("CSI alone end")
 
                 # Tree using DAG CI relations
-                print("CSI w DAG start")
+                #print("CSI w DAG start")
                 tree, stages3, color_scheme3 = color_cstree(tree, ordering, self.dataset, self.val_dict, stage_list1.copy(), color_scheme_list1.copy(), test=csi_test, kl_threshold=kl_threshold)
-                print("CSI w DAG end")
+                #print("CSI w DAG end")
 
                 total_tree_nodes = nodes_per_tree(self.val_dict, ordering)
                 dag_stages    = total_tree_nodes-len(color_scheme1)+len(stages1)
@@ -528,9 +529,9 @@ class CSTree(object):
                 pc_bic     = self.cstree_bic(tree, stages3.copy(), color_scheme3.copy(),ordering)
 
                 
-                print("CSTree from DAG has {} stages, {} non-singleton stages".format(dag_stages, len(stages1)))
-                print("CSTree without DAG CI relations has {} stages, {} non-singleton stages".format(no_dag_stages, len(stages2)))
-                print("CSTree with DAG CI relations has {} stages, {} non-singleton stages".format(pc_stages, len(stages3)))
+                #print("CSTree from DAG has {} stages, {} non-singleton stages".format(dag_stages, len(stages1)))
+                #print("CSTree without DAG CI relations has {} stages, {} non-singleton stages".format(no_dag_stages, len(stages2)))
+                #print("CSTree with DAG CI relations has {} stages, {} non-singleton stages".format(pc_stages, len(stages3)))
 
                 if return_type=="minstages":
                     if dag_stages <= min_dag_stages:
@@ -571,8 +572,8 @@ class CSTree(object):
 
 
 
-                    print("BIC Scores for ordering {} are".format(ordering))
-                    print("Just DAG {}, Without DAG CI relations {}, With DAG CI relations {}".format(dag_bic, no_dag_bic, pc_bic))
+                    #print("BIC Scores for ordering {} are".format(ordering))
+                    #print("Just DAG {}, Without DAG CI relations {}, With DAG CI relations {}".format(dag_bic, no_dag_bic, pc_bic))
                     
                     if dag_bic>max_dag_bic:
                         max_dag_bic           = dag_bic
