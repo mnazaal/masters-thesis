@@ -16,6 +16,31 @@ import seaborn as sns
 
 
 # Remember to cite scikit-learn
+def vitd_data():
+    vitd_pd = pd.read_csv("../datasets/vitd.csv")
+    vitd_np = vitd_pd.values.astype('int')[:,1:]
+    n,p=vitd_np.shape
+
+    print(np.percentile(vitd_np[:,2], [0,  25, 50, 75, 100]))
+    def mapper(x, qs):
+        bins = len(qs)-1
+        val=None
+        for k in range(bins):
+            lb,ub =qs[k],qs[k+1]
+            if k==bins-1:
+                ub = 2*ub
+            if x>=lb and x<ub:
+                val=k
+        if val is None:
+            raise ValueError("problem with binning")
+        return val
+    for i in range(n):
+        vitd_np[i,0] = mapper(vitd_np[i,0],[40,47,57,67,80])
+        vitd_np[i,2] = mapper(vitd_np[i,2], np.percentile(vitd_np[:,2], [0,  25, 50, 75, 100]))
+        vitd_np[i,3] = mapper(vitd_np[i,3], np.percentile(vitd_np[:,3], [0,   50,  100]))
+    #vitd_np[:,0] = np.array(list(map(lambda x: mapper(x, [40,47,57,67,80]), vitd_np[:,0])))
+    return vitd_np
+
 
 
 def dermatology_data(grouped=True):
