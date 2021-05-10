@@ -254,12 +254,12 @@ def susy_experiment(cpdag_method, csi_test, return_type, ratio):
 
     cstree_object = CSTree(dataset, val_dict) 
 
-    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=5, plot_limit=5)
+    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=1)
 
     
 
     
-def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_var=None, plot_limit=None):
+def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
     # remove_var: Variable to remove
     # cpdag_method: 
     kl_threshold=None
@@ -275,8 +275,8 @@ def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_var=None
     if cpdag_method=="all":
         # Can only try all DAGs on 5 variables efficiently
         assert remove_var is not None
-    if remove_var:
-        dataset = dataset[:,tuple(i for i in range(dataset.shape[1]) if i+1!=remove_var)]
+    if remove_vars:
+        dataset = dataset[:,tuple(i for i in range(dataset.shape[1]) if i+1 not in remove_vars)]
     
     n,p = dataset.shape
         
@@ -289,10 +289,28 @@ def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_var=None
     # 1. Just the DAG converted to a CSTree
     # 2. CSTree learnt without any CI relations from DAG
     # 3. CSTree learnt using CI relations from DAG
-    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None, plot_limit=None)
+    cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
                         #save_dir=cpdag_method+csi_test+"_coronary_bic")
 
+def coronary_experiment_mcdag():
+    # remove_var: Variable to remove
+    # cpdag_method: 
 
+    for i in [1]:
+        removing_vars = []
+        dataset = coronary_data()
+        dataset = dataset[:, tuple(i for i in range(dataset.shape[1]) if i+1 not in removing_vars)]
+        n,p=dataset.shape
+        val_dict = {i+1:[0,1] for i in range(p)}
+        cstree_object=CSTree(dataset,val_dict)
+        cstree_object.visualize(plot_mcdags=True,cpdag_method="hill",return_type="maxbic",csi_test="kl", kl_threshold=5e-7,learn_limit=None)
+
+    
+    # Learn the cstree and output the best BIC values of the following cases:
+    # 1. Just the DAG converted to a CSTree
+    # 2. CSTree learnt without any CI relations from DAG
+    # 3. CSTree learnt using CI relations from DAG
+    # cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
 #dag_to_cstree_experiment(5,1)
 #dag_to_cstree_experiment(5,0)
 #dag_to_cstree_experiment(5,0.5, mc_dag=True)
@@ -307,62 +325,99 @@ synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 dataset = dataset[tuple(random.sample(range(dataset.shape[0]), int(samples/10))),:]
 synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 """
-
 # coronary experiments
 # Minimum stages
 # CPDAG method, staging method change
-#coronary_experiment_bic("pc1", "anderson", "minstages")
-#coronary_experiment_bic("hill", "anderson", "minstages")
+"""
+coronary_experiment_bic("pc1", "anderson", "minstages")
+print("========================================\nAbove is for pc1, and, mins")
+coronary_experiment_bic("hill", "anderson", "minstages")
+print("========================================\nAbove is for hill, and, mins")
 
-#coronary_experiment_bic("pc1", "epps", "minstages")
-#coronary_experiment_bic("hill", "epps", "minstages")
+
+coronary_experiment_bic("pc1", "epps", "minstages")
+print("========================================\nAbove is for pc1, epps, mins")
+coronary_experiment_bic("hill", "epps", "minstages")
+print("========================================\nAbove is for hill, epps, mins")
+
 
 #coronary_experiment_bic("pc1", 5e-4, "minstages")
 #coronary_experiment_bic("hill", 5e-4, "minstages")
 
-#coronary_experiment_bic("pc1", 5e-5, "minstages")
-#coronary_experiment_bic("hill", 5e-5, "minstages")
+coronary_experiment_bic("pc1", 5e-5, "minstages")
+print("========================================\nAbove is for pc1, 5e-5, mins")
+coronary_experiment_bic("hill", 5e-5, "minstages")
+print("========================================\nAbove is for hill, 5e-5, mins")
 
-#coronary_experiment_bic("pc1", 5e-6, "minstages")
-#coronary_experiment_bic("hill", 5e-6, "minstages")
+coronary_experiment_bic("pc1", 5e-6, "minstages")
+print("========================================\nAbove is for pc1, 5e-6, mins")
+coronary_experiment_bic("hill", 5e-6, "minstages")
+print("========================================\nAbove is for hill, 5e-6, mins")
+
+coronary_experiment_bic("pc1", 5e-7, "minstages")
+print("========================================\nAbove is for pc1, 5e-7, mins")
+coronary_experiment_bic("hill", 5e-7, "minstages")
+print("========================================\nAbove is for hill, 5e-7, mins")
 
 
 # BIC
-#coronary_experiment_bic("pc1",  "anderson", "maxbic")
-#coronary_experiment_bic("hill", "anderson", "maxbic")
+coronary_experiment_bic("pc1",  "anderson", "maxbic")
+print("========================================\nAbove is for pc1, and, bic")
+coronary_experiment_bic("hill", "anderson", "maxbic")
+print("========================================\nAbove is for hill, and, bic")
 
-#coronary_experiment_bic("pc1",  "epps", "maxbic")
-#coronary_experiment_bic("hill", "epps", "maxbic")
-
-#coronary_experiment_bic("pc1",  5e-4, "maxbic")
-#coronary_experiment_bic("hill", 5e-4, "maxbic")
-
-#coronary_experiment_bic("pc1",  5e-5, "maxbic")
-#coronary_experiment_bic("hill", 5e-5, "maxbic")
-
-#coronary_experiment_bic("pc1",  5e-6, "maxbic")
-#coronary_experiment_bic("hill", 5e-6, "maxbic")
-
-
-#coronary_experiment_bic("pc1",  "anderson", "maxbic", remove_var=6)
-#coronary_experiment_bic("hill", "anderson", "maxbic")
-#coronary_experiment_bic("all", "anderson", "maxbic", remove_var=5)
-
-
-#coronary_experiment_bic("pc1",  "epps", "maxbic")
-#coronary_experiment_bic("hill", "epps", "maxbic")
+coronary_experiment_bic("pc1",  "epps", "maxbic")
+print("========================================\nAbove is for pc1, epps, bic")
+coronary_experiment_bic("hill", "epps", "maxbic")
+print("========================================\nAbove is for hill, epps, bic")
 
 #coronary_experiment_bic("pc1",  5e-4, "maxbic")
 #coronary_experiment_bic("hill", 5e-4, "maxbic")
 
-#coronary_experiment_bic("pc1",  5e-5, "maxbic")
-#coronary_experiment_bic("hill", 5e-5, "maxbic")
-
-#coronary_experiment_bic("pc1",  5e-6, "maxbic")
-#coronary_experiment_bic("hill", 5e-6, "maxbic")
-
+coronary_experiment_bic("pc1",  5e-5, "maxbic")
+print("========================================\nAbove is for pc1, 5e-5, bic")
+coronary_experiment_bic("hill", 5e-5, "maxbic")
+print("========================================\nAbove is for hill, 5e-5, bic")
 
 
+coronary_experiment_bic("pc1",  5e-6, "maxbic")
+print("========================================\nAbove is for pc1, 5e-6, bic")
+coronary_experiment_bic("hill", 5e-6, "maxbic")
+print("========================================\nAbove is for hill, 5e-6, bic")
+
+
+coronary_experiment_bic("pc1",  5e-7, "maxbic")
+print("========================================\nAbove is for pc1, 5e-7, bic")
+coronary_experiment_bic("hill", 5e-7, "maxbic")
+print("========================================\nAbove is for hill, 5e-7, bic")
+
+# All
+print("!!!!!!!!!!!!!!!!!!!!!!! ANDERSON  !!!!!!!!!!!!!!!!!!!")
+coronary_experiment_bic("pc1",  "anderson", "maxbic", remove_var=4)
+coronary_experiment_bic("hill", "anderson", "maxbic", remove_var=4)
+coronary_experiment_bic("all", "anderson", "maxbic", remove_var=4)
+
+print("!!!!!!!!!!!!!!!!!!!!!!! EPPS  !!!!!!!!!!!!!!!!!!!")
+coronary_experiment_bic("pc1",  "epps", "maxbic", remove_var=4)
+coronary_experiment_bic("hill", "epps", "maxbic", remove_var=4)
+coronary_experiment_bic("all", "epps", "maxbic", remove_var=4)
+
+print("!!!!!!!!!!!!!!!!!!!!!!! KL 1  !!!!!!!!!!!!!!!!!!!")
+coronary_experiment_bic("pc1",  5e-5, "maxbic", remove_var=4)
+coronary_experiment_bic("hill", 5e-5, "maxbic", remove_var=4)
+coronary_experiment_bic("all", 5e-5, "maxbic", remove_var=4)
+
+print("!!!!!!!!!!!!!!!!!!!!!!! KL 2  !!!!!!!!!!!!!!!!!!!")
+coronary_experiment_bic("pc1",  5e-6, "maxbic", remove_var=4)
+coronary_experiment_bic("hill", 5e-6, "maxbic", remove_var=4)
+coronary_experiment_bic("all",  5e-6, "maxbic", remove_var=4)
+
+print("!!!!!!!!!!!!!!!!!!!!!!! KL 3  !!!!!!!!!!!!!!!!!!!")
+coronary_experiment_bic("pc1",  5e-7, "maxbic", remove_var=4)
+coronary_experiment_bic("hill", 5e-7, "maxbic", remove_var=4)
+coronary_experiment_bic("all", 5e-7, "maxbic", remove_var=4)
+"""
+#coronary_experiment_mcdag()
 # Mice cortex
 # 7 is the features to use, including the predictor it will have 8
 mice_cortex_vars=7
@@ -402,7 +457,7 @@ mice_cortex_vars=7
 
 #coronary_experiment_bic()
 
-susy_experiment("hill", 5e-5, "maxbic",0.05)
+#susy_experiment("hill", 5e-7, "all",0.5)
 
 #synthetic_dag_binarydata_experiment(9, 0.2, 350)
 #coronary_experiment()

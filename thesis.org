@@ -6,10 +6,6 @@
 #+LATEX: \setlength\parindent{0pt}
 #+LATEX: \setcounter{secnumdepth}{2}
 #+LATEX: \newcommand{\indep}{\perp \!\!\! \perp}
-#+LATEX: \usepackage{rotating}
-#+LATEX: \usepackage{multirow}
-#+LATEX: \usepackage{caption}
-#+LATEX: \captionsetup[table]{position=bottom}
 
 
 # Plain HTML
@@ -121,7 +117,10 @@ We now cover some important definitions and concepts related to Directed Acyclic
     A Directed Acyclic Graphic (DAG) is a directed graph $\mathbb{G} = (\mathbb{V},\mathbb{E})$ which has no cycles.
 \end{definition}
 
-Let $\mathbb{G} = (\mathbb{V},\mathbb{E})$ be a graph. We then have the following definitions. A node $u \in \matbb{V}$ is a \textbf{parent} of another node $u \in \mathbb{V}$ if $(u,v) \in \mathbb{E}$, in this case we also say $v$ is a \textbf{descendant} of $u$. A \textbf{path} between 
+Let $\mathbb{G} = (\mathbb{V},\mathbb{E})$ be a graph. We then have the following definitions. A node $u \in \matbb{V}$ is a \textbf{parent} of another node $u \in \mathbb{V}$ if $(u,v) \in \mathbb{E}$, in this case we also say $v$ is a \textbf{child} of $u$. If there is an edge $(u,v) \in \mathbb{E}$ or $(v,u)\in \mathbb{E}$ we say the nodes $u$,$v$ are \textbf{adjacent}. A set of nodes $(u_1,...,u_k)$ , $k\geq 2$ such that $(u_i,u_{i+1}) \in \mathbb{E}$ is called a path between $u_1$ and $u_k$. This in case, we say $u_1$ is an \textbf{ancestor} of $u_k$ and $u_k$ is a \textbf{descendant} of $u_1$. If we have a node $v$ that is not a descendant of a node $u$ we say $v$ is a \textbf{non-descendant} of $u$.
+
+
+For any node $u \in \mathbb{V}$ we denote $PA_{\mathbb{G}}(u)$, $CH_{\mathbb{G}}(u)$, $DS_{\mathbb{G}}(u)$, $ND_{\mathbb{G}}(u)$ to be set of parents, children, descendants and non-descendants of $u$ respectively.
 
 \end{definition}
 
@@ -129,7 +128,7 @@ Let $\mathbb{G} = (\mathbb{V},\mathbb{E})$ be a graph. We then have the followin
 
 #+END_EXPORT
 
-{{{marginfigure( width=\linewidth, ./figures/dageg, Example of a DAG $\mathbb{G}=(\mathbb{V}\,\mathbb{E})$ with $\mathbb{V} = \{1\,2\,3\,4\,5 \}$ and $\mathbb{E} = \{(1\,2)\,(1\,3)\,(1\,5)\,(2\,4)  \}$ )}}}
+{{{marginfigure( width=\linewidth, ./figures/dageg, Example of a DAG $\mathbb{G}=(\mathbb{V}\,\mathbb{E})$ with $\mathbb{V} = \{1\,2\,3\,4\,5 \}$ and $\mathbb{E} = \{(1\,2)\,(1\,3)\,(1\,5)\,(2\,4)  \}$. Here $PA_{\mathbb{G}}(2)=\{1\}$\, $DS_{\mathbb{G}}(2)=CH_{\mathbb{G}}(2)=\{1\}$\, $ND_{\mathbb{G}}(2)=\{3\,5\}$ )}}}
 # TODO !!! Throughout this paper we will use $\mathbb{V} = \{1,...,p\} =[p]$ where $p$ is the number of variables in the system of interest, thereby mapping the possibly qualitative variables of the system into numbers for notational ease.
 {{{marginfigure( width=\linewidth, ./figures/dagneg, This graph is not a DAG since there is a cycle)}}}
 
@@ -138,7 +137,7 @@ Since we a working with discrete probability distributions, we introduce the (op
 
 #+begin_export latex
 \begin{definition}[Probability simplex]\label{probsimplex}
-Given a finite set $\mathcal{X}$, The probability simplex on this set is \\ $\Delta_{|\mathcal{X}|-1} = \{ (f_x \, : x \in \mathcal{X}) \in \mathbb{R}^{|\mathcal{X}|} \, : \, \forall x \in \mathcal{X} \; f_x > 0, \, \sum_{x\in \mathcal{X}}f_x =1\} $
+Given a finite set $\mathcal{X}$, The probability simplex on this set is \\ $\Delta_{|\mathcal{X}|-1} = \{ (f_x \, : x \in \mathcal{X}) \in \mathbb{R}^{|\mathcal{X}|} \, : \, \forall x \in \mathcal{X} \; f_x > 0, \, \sum_{x\in \mathcal{X}}f_x =1\}.$
 \end{definition}
 #+end_export
 
@@ -148,21 +147,22 @@ Each point in the probability simplex corresponds to a joint distribution over $
 An important concept when relating DAGs to distributions is that of conditional independence, which we define below.
 #+begin_export latex
 \begin{definition}[Conditional Independence]\label{def:cirel}
-Let  $\mathbb{P}$ be a distribution with variables $X_1,...,X_p$. Given non-empty subsets $A,B \subset [p]$ and a (possibly empty) subset $S \subset [p]$ such that $\mathbb{P}(X_B, X_S)>0$ and $A \cap B \cap S = \{\}$, we say the variables $X_A$ and $X_B$ are conditional independent given $S$, (denoted $(X_A\indep_{\mathbb{P}} X_B \,|\, X_S)$) if $\mathbb{P}(X_A, \,|\,X_B, X_S) = \mathbb{P}(X_A \, |\, X_S)$ holds for all possible outcomes of $X_A,X_B,X_S$.
+Let  $\mathbb{P}$ be a distribution with variables $X_1,...,X_p$. Given non-empty subsets $A,B \subset [p]$ and a (possibly empty) subset $S \subset [p]$ such that $\mathbb{P}(X_B, X_S)>0$ and $A \cap B \cap S = \{\}$, we say the variables $X_A$ and $X_B$ are conditionally independent given $S$, (denoted $(X_A\indep_{\mathbb{P}} X_B \,|\, X_S)$) if $\mathbb{P}(X_A, \,|\,X_B, X_S) = \mathbb{P}(X_A \, |\, X_S)$ holds for all possible outcomes of $X_A,X_B,X_S$.
 \end{definition}
 #+end_export
 
-The conditional independence statement $(X_A \indep_{\mathbb{P}} X_B \,|\,X_S)$ can be viewed as a ternary relation on $X_A,X_B,X_S$, and is called a Conditional Independence (CI) relation. This relation formalizes the concept of $X_B$ and $X_A$ not providing any information when we have obsered $X_S$, which is to say, if we already know $X_S$, knowing $X_B$ does not change the probabilities for $X_A$, and vice versa.
+The conditional independence statement $(X_A \indep_{\mathbb{P}} X_B \,|\,X_S)$ can be viewed as a ternary relation on $X_A,X_B,X_S$, and is called a Conditional Independence (CI) relation. This relation formalizes the concept of $X_B$ and $X_A$ not providing any information when we have observed $X_S$, which is to say, if we already know $X_S$, knowing $X_B$ does not change the probabilities for $X_A$, and vice versa.
 
 # !!! TODO Example of CI relationmodel, the graphoid maybe
 
 
-Using this we can now define the local Markov property which relates d-separations in DAGs to CI relations in distributions.
+Using this we can now define the local Markov property which relates distributions to DAGs based on the CI relations encoded by them. As the CI relations have a natural causal interpretation, the local Markov property provides a foundation to relate data generating distributions to DAG representations of a causal system.
+
 
 #+begin_export latex
-\begin{theorem}[Local Markov property]\label{thm:localmarkovdag}
+\begin{Definition}[Local Markov property]\label{thm:localmarkovdag}
 Let $\mathcal{G}$ be a DAG with nodes $[p]$. A probability distribution $\mathbb{P}$ satisfies the local Markov property with respect to $\mathbb{G}$ if for each node $i \in [p]$, the variable representing that node, $X_i$ is independent of its non-descendants when conditioned on its parents, formally, $(X_i \indep X_{ND_{\mathbb{G}}(i)}\,|\,X_{PA_{\mathbb{G}}(i)})$
-\end{theorem}
+\end{definition}
 #+end_export
 
 This formalizes the fact that in order to computationally generate data from a DAG $\mathbb{G}$, the value of each variable $X_i \in \mathcal{X}_i$ depends only on the values of the outcomes of its parents in $\mathbb{G}$. This means that for a (discrete) distribution $\mathbb{P}$ with $p$ variables satisfying the Local Markov property, the distribution can be encoded with $p$ probability tables which give the probabilities for each $X_i$ taking a value when conditioned on all possible outcomes of its parents. From a storage perspective, this means we have to store $\sum_{i=1}^p |\mathcal{X}_i| |\prod_{j \in PA_{\mathbb{G}}(i)}\mathcal{X}_j |$ which is significantly smaller than having to store all possible probability values which would require one table with $|\prod_{i=1}^p |\mathcal{X}_i|$ values. For binary variables assuming $d$ parents for each variable, this is the difference between $p2^{d+1}$ and $p2^p$.
@@ -171,10 +171,14 @@ This formalizes the fact that in order to computationally generate data from a D
 For the purposes of this thesis, it is worth introducing the Ordered Markov property which uses the concept of a linear ordering. {{{footnote(For a DAG \mathbb{G} with $p$ nodes a linear ordering is an ordering of the nodes that respects the directions in $\mathbb{G}$ that is each node $i$ always comes after each $j \in PA_{\mathbb{G}}(i)$. It is a  also called a topological ordering, and later on we will use this ordering as a causal ordering for events.)}}}
 
 #+begin_export latex
-\begin{theorem}[Ordered Markov Property]\label{orderedmarkov}
+\begin{definition}[Ordered Markov Property]\label{orderedmarkov}
 Let $\mathbb{G}$ be a DAG and $\pi = \pi_1 \cdots \pi_p$ a causal ordering of $\mmathbb{G}$. A probability distribution $\mathbb{P}$ satisfies the Ordered Markov property with respect to $\mathbb{G}$ if we have $(X_i \indep X_{\{1,...,i-1 \} \textbackslash PA_{\mathbb{G}}(i)}\,|\, X_{PA_{\mathbb{G}}(i)})$ 
-\end{theorem}
+\end{definition}
 #+end_export
+
+A distribution $\mathbb{P}$ satisfying the local Markov property with respect to a DAG $\mathbb{G}$ is equivalent to that distribution also satisfying the ordered Markov property with respect to $\mathbb{G}$ and a linear ordering of $\mathbb{G}$.
+
+# TODO name everything linear ordering
 
     # TODO Think about this The Ordered Markov property is a way to restate the local Markov property under the assumption that we know a causal ordering of the variables.
 
@@ -221,18 +225,18 @@ Given a DAG $\mathbb{G}$,  two (non-empty) sets of nodes $X,Y$ are \textbf{d-sep
 
 The notion of d-separation relates DAGs to probability distributions from the following theorem.
 #+begin_export latex
-\begin{theorem}[Global Markov property]\label{thm:dagci}
+\begin{definition}[Global Markov property]\label{thm:dagci}
 
 Given a distribution $\mathbb{P}$ that satisfies the local Markov property with a DAG $\mathbb{G}$, we have that for any (non-empty) sets $A,B$ and (possibly empty) set $S$, $(X_A \indep_{\mathbb{G}} X_B \,|\,X_S) \implies (X_A \indep_{\mathbb{P}} X_B \,|\, X_S)$
 
 
-\end{theorem}
+\end{definition}
 #+end_export
 
 An important result is the following that the above notions are indeed equivalent cite:duarte-2020-algeb.
 
 #+begin_export latex
-\begin{theorem}[Markov theorems for DAGs]
+\begin{theorem}[Markov theorems for DAGs]\label{thm:markovdag}
 Given a distribution $\mathbb{P}$ over $X_1,...,X_p$ and a DAG $\mathbb{G}$ over $p$ nodes, the following are equivalent
 
 \begin{itemize}
@@ -246,8 +250,7 @@ Given a distribution $\mathbb{P}$ over $X_1,...,X_p$ and a DAG $\mathbb{G}$ over
 #+end_export
 
 
-If $\mathbb{P}$ satisfies the local Markov property with $\mathbb{G}$ and has a probability density with respect to a product measure, we say $\mathbb{P}$ is Markov with respect to $\mathbb{G}$, or equivalently, $\mathbb{G}$ is an Independence map (I-MAP) of $\mathbb{P}$ cite:lauritzen-1996-graph. An important result is that 
-
+If $\mathbb{P}$ satisfies the local Markov property with respect to $\mathbb{G}$ and has a probability density with respect to a product measure, we say $\mathbb{P}$ is Markov with respect to $\mathbb{G}$, or equivalently, $\mathbb{G}$ is an Independence map (I-MAP) of $\mathbb{P}$ cite:lauritzen-1996-graph.
 
 Thus DAGs can be used to store Conditional Independence (CI) relations. More importantly, d-separation encodes the complete set of CI relations satisfied by all distributions Markov to a DAG, i.e. distributions that are Markov to a DAG $\mathbb{G}$ *and* satisfy *exactly* the CI relations encoded by d-separation exist cite:meek-2013-stron-compl,geiger1990identifying.
 
@@ -265,7 +268,7 @@ For example, the Chain and Fork graphs from the previous page belong to the same
 
 ** Causal Discovery Algorithms for DAGs
 
-   Theorem \ref{thm:dagci} suggests that we can make use of CI testing on a distribution $\mathbb{P}$ to learn a DAG \mathbb{G}. However, the distribution $\mathbb{P}$ may contain CI relations not encoded in the DAG, thus we make the following assumption.
+   Theorem \ref{thm:markovdag} suggests that we can make use of CI testing on a distribution $\mathbb{P}$ to learn a DAG \mathbb{G}. However, the distribution $\mathbb{P}$ may contain CI relations not encoded in the DAG, thus we make the following assumption.
 
 #+begin_export latex
 \begin{definition}[Faithfulness]\label{def:faithfulness}
@@ -275,12 +278,11 @@ A probability distribution $\mathbb{P}$ is faithful to a DAG $\mathbb{G}$ if it 
 \end{definition}
 #+end_export
 
-Under the faithfulness assumption, Theorem \ref{thm:dagci} holds both ways. It should be noted that faithful distributions exist cite:meek-2013-stron-compl, and the set of distributions that are not faithful to a dag $\mathbb{G}$ have measure 0 cite:uhler-2013-geomet-faith, which suggets that in theory this is not a very restrictive assumption.
+Under the faithfulness assumption, the global Markov property holds both ways. It should be noted that faithful distributions exist cite:meek-2013-stron-compl, and the set of distributions that are not faithful to a dag $\mathbb{G}$ have measure $0$ cite:uhler-2013-geomet-faith, which suggets that in theory this is not a very restrictive assumption.
 
 
 
-
-The PC algorithm cite:spirtes-2000-causation-prediction-search,kalisch-2007-estim-high is a constraint based causal discovery algorithm which relies of the characterization of DAGs in Theorem \ref{thm:vermapearl} and the faithfulness assumption to find a DAG in the MEC of the true causal DAG. The algorithm starts from a complete graph and runs conditional independence tests to first find the DAG skeleton and then proceeds to direct the edges whenever possible. The output of the PC algorithm is a Completed Partially Directed Acyclic Graph (CPDAG) cite:meek-2013-causal-infer  {{{footnote(The CPDAG is also sometimes referred to as the Essential Graph or the DAG pattern)}}}, which acts as a representation for the Markov Equivalence class. A Partially Directed Acylic Graph (PDAG) is a graph where some edges are directed and some are undirected and there is no cycle in the direction of the directed edges and any direction of the undirected edges. A PDAG a is Complete PDAG (CPDAG) if every directed edge exists also in every DAG in the Markov Equivalence class of the DAG and for every undirected edge between nodes $i,j$ there exists a DAG with the edge $i \rightarrow j$ and a DAG with $j \rightarrow i$ in the equivalence class.
+One of the first practical algorithms which make use of the theory above is the PC algorithm, cite:spirtes-2000-causation-prediction-search,kalisch-2007-estim-high which is a constraint based causal discovery algorithm that relies of the characterization of DAGs in Theorem \ref{thm:vermapearl} and the faithfulness assumption to find a DAG in the MEC of the true causal DAG. The algorithm starts from a complete graph and runs conditional independence tests to first find the DAG skeleton and then proceeds to direct the edges whenever possible. The output of the PC algorithm is a Completed Partially Directed Acyclic Graph (CPDAG) cite:meek-2013-causal-infer, which acts as a representation for the Markov Equivalence class. A Partially Directed Acylic Graph (PDAG) is a graph where some edges are directed and some are undirected and there is no cycle in the direction of the directed edges and any direction of the undirected edges. A PDAG a is Complete PDAG (CPDAG) if every directed edge exists also in every DAG in the Markov Equivalence class of the DAG and for every undirected edge between nodes $i,j$ there exists a DAG with the edge $i \rightarrow j$ and a DAG with $j \rightarrow i$ in the equivalence class. CPDAGs are also sometimes called essential graphs cite:andersson-1997-charac-markov.
 
 
 
@@ -311,10 +313,10 @@ Let  $\mathbb{P}$ be a distribution with variables $X_1,...,X_p$ with a state sp
 {{{NEWPAGE}}}
 
 * Causal Discovery with Context Specific Trees
-One intuition is that to capture context specific relations one needs to make use of a structure that explicitly represents separate outcomes of a distribution. Typically in high school some might have encountered the use of trees to model small probabilistic systems, and they fully include all possible outcomes involved, and serve as an important tool to compute probabilities for relevant events. As we will see in this chapter, this is a correct way to approach the problem of encoding context information as well.
+One intuition is that to capture context specific relations one needs to make use of a structure that explicitly represents separate outcomes of a distribution. Typically in high school some might have encountered the use of trees to model small probabilistic systems, and they fully include all possible outcomes involved, and serve as an important tool to compute probabilities for relevant events. As we will see in this chapter, this is a good way to approach the problem of encoding context information as well.
 
 ** Context Specific Trees (CStrees)
-   Before defining CStrees we start by defining staged trees, which contain CStrees as a subset. Both of these are rooted trees. {{{footnote($CH_{\mathbb{G}}$($v$) refers to the set of children of node $v$ in $\mathbb{G}$. A rooted tree $\mathbb{T} = (\mathbb{V}\,\mathbb{E})$ is a directed graph whose skeleton is a tree and there exists a unique node $r$ such that $PA_{\mathbb{T}}(r) = \{\}$ which is called the root.)}}}
+   Before defining CStrees we start by defining staged trees, which contain CStrees as a subset. Both of these are rooted trees. {{{footnote(A rooted tree $\mathbb{T} = (\mathbb{V}\,\mathbb{E})$ is a directed graph whose skeleton is a tree and there exists a unique node $r$ such that $PA_{\mathbb{T}}(r) = \{\}$ which is called the root.)}}}
    #+begin_export latex
    \begin{definition}[Staged trees]
    Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a rooted tree, $\mathbb{L}$ a finite set of labels for the edges, and $\theta : \mathbb{E} \rightarrow \mathbb{L}$ a labelling of the edges. Let $E_{\mathbb{T}}(v) = \{v \rightarrow w \in \mathbb{E} \,:\, w \in CH_{\mathbb{T}}(v) \}$,   i.e. the set of edges coming out of $v$ in $\mathbb{T}$. The pair $(\mathbb{T}, \theta)$ is a staged tree if 
@@ -328,19 +330,19 @@ One intuition is that to capture context specific relations one needs to make us
 This can be thought of as a probability tree where each edge represents a probability value, and the probabilities coming out of all edges from any given node sum to 1. More formally, first define the space of canonical parameters of the staged tree $(\mathbb{T},\theta)$ as
 
 #+begin_export latex
-$\Theta_{\mathbb{T}} = \{  x\in \mathbb{R}^{|\mathbb{L}|} \, : \, \forall e \in \mathbb{E}, x_{\theta(e)}\in (0,1), \forall v \in \mathbb{V} \sum_{e \in E_{\mathbb{T}}(v)} x_{\theta(e)}=1 \}$.
+$\Theta_{\mathbb{T}} = \{  x\in \mathbb{R}^{|\mathbb{L}|} \, : \, \forall e \in \mathbb{E}, x_{\theta(e)}\in (0,1), \forall v \in \mathbb{V}, \, \sum_{e \in E_{\mathbb{T}}(v)} x_{\theta(e)}=1 \}$.
 #+end_export
 
-Given the probability simplex $\Delta_{\mathcal{X}-1}$ and letting $\mathbf{i}_{\mathbb{T}}$ be the set of all leaves of the staged tree $\mathbb{T}$  the staged tree model is defined as below.
+Given the probability simplex $\Delta_{|\mathcal{X}|-1}$ and letting $\mathbf{i}_{\mathbb{T}}$ be the set of all leaves of the staged tree $\mathbb{T}$  the staged tree model is defined as below.
 
 
 #+begin_export latex
 \begin{definition}[Staged tree models]\label{def:stagedtreemodel}
-The staged tree model $\mathbb{M}_{(\mathbb{T},\theta)}$ is the image of the map $\varphi_\mathbb{T} \, : \, x \rightarrow f_v := (\prod_{e \in E_{\mathbb{T}(\lambda(v))} x_{\theta(e)})_{v \in \mathbf{i}_{\mathbb{T}}}$
+The staged tree model $\mathbb{M}_{(\mathbb{T},\theta)}$ is the image of the map $\varphi_\mathbb{T} \, : \, x \rightarrow f_v := $ $\Big($ $\prod_{e \in E_{\mathbb{T}(\lambda(v))} x_{\theta(e)}$ $\Big)_{v \in \mathbf{i}_{\mathbb{T}}}$
 \end{definition}
 #+end_export
 
-Thus given variables $X_1,...,X_p$, a causal ordering $\pi$, the staged tree for this with levels {{{footnote(The $k^{th}$ level of a rooted tree\, $L_k$\, is the set of nodes such that the unique path from each node in $L_k$ to the root consists of $k$ edges.}}} $L_1,...,L_p \sim X_{\pi_1},...,X_{\pi_p}$, each path from the root to the leaf defines a sequence of events $x_1, x_1x_2, ...,x_1\cdotsx_p$ where $x_i \in \mathcal{X}_{\pi_i}$. Since for the edge  $e = \\$ $((x_1\cdots x_k), (x_1\cdots x_kx_{k+1}))$ we have $x_{\theta(e)} = \mathbb{P}(x_{k+1}\,|\, x_1\cdots x_k)$, the product in Definition \ref{def:stagedtreemodel} does indeed result in $\mathbb{P}(v_1,...,v_p)$ for each $v \in \textbf{i}_{\mathbb{T}}$ by the chain rule in probability. {{{footnote(The chain rule in probability states $\mathbb{P}(X_1 \,...\,X_p) = \mathbb{P}(X_p \; |\; X_{p-1}\,...\,X_1)\mathbb{P}(X_{p-1} \; | \; X_{p-2}\,...\,X_1 )\\ \cdots \mathbb{P}(X_2|X_1)\mathbb{P}(X_1)   )}}}
+Thus given variables $X_1,...,X_p$, a causal ordering $\pi$, the staged tree for this with levels {{{footnote(The $k^{th}$ level of a rooted tree\, $L_k$\, is the set of nodes such that the unique path from each node in $L_k$ to the root consists of $k$ edges.)}}} $L_1,...,L_p \sim X_{\pi_1},...,X_{\pi_p}$, each path from the root to the leaf defines a sequence of events $x_1, x_1x_2, ...,x_1\cdotsx_p$ where $x_i \in \mathcal{X}_{\pi_i}$. Since for the edge  $e = \\$ $((x_1\cdots x_k), (x_1\cdots x_kx_{k+1}))$ we have $x_{\theta(e)} = \mathbb{P}(x_{k+1}\,|\, x_1\cdots x_k)$, the product in Definition \ref{def:stagedtreemodel} does indeed result in $\mathbb{P}(v_1,...,v_p)$ for each $v \in \textbf{i}_{\mathbb{T}}$ by the chain rule in probability. {{{footnote(The chain rule in probability states $\mathbb{P}(X_1 \,...\,X_p) = \mathbb{P}(X_p \; |\; X_{p-1}\,...\,X_1)\mathbb{P}(X_{p-1} \; | \; X_{p-2}\,...\,X_1 )\\ \cdots \mathbb{P}(X_2|X_1)\mathbb{P}(X_1)   )}}}
 
 # !!! TODO Dont fully understand the above x_theta thing
 
@@ -355,14 +357,14 @@ Given a staged tree $(\mathbb{T},\theta)$, we say two nodes $v,w$ are in the sam
 #+end_export
 
 
-Stages are represented by colours, and when a stage contains a single node, it is coloured white. Staged tree models generalize DAG models, i.e. distributions represented by DAGs, however they do not take into account the CI relations encoded in them, which arise from the ordered Markov property. Thus we need a structure that generalize DAG models *and* takes these CI relations into account. A subclass of staged trees, known as CStrees allow for this, and more importantly, enable us to generalize to the context specific scenario.
+Stages are represented by colours, and when a stage contains a single node, it is coloured white. Staged tree models generalize DAG models, i.e. distributions represented by DAGs, however they are perhaps too general, in the sense that despite allowing for the representation of context specific information, they do not admit a intuitive representation of the causal structure. This creates the need for a structure that generalizes DAG models *and* admits an intuitive representation. The recently proposed subclass of staged trees, known as CStrees allow for this.
 
 #+begin_export latex
 \begin{definition}[CStrees]\label{def:cstree}
 Let $\mathcal{X}_i$ denote the state space of some variable $X_i$ with $\mathcal{X} = \Pi_{i=1}^p \mathcal{X}_i$, and $(\mathbb{T},\theta)$ be a staged tree with levels $L_1,...,L_p$ corresponding to variables $X_{\pi_1},...,X_{\pi_p}$ where $\pi = \pi_1...\pi_p$ is the causal ordering of the variables.  
 A CStree is a staged tree $(\mathbb{T}, \theta)$ where each level of the tree corresponds to some variable and  such that 
 \begin{itemize}
-\item It is compatibly labelled, i.e. $\forall x_{\pi_k} \in \mathcal{X}_i$ we have $\theta(x_{\pi_k}...x_{\pi_{k-1}}\rightarrow x_{\pi_{k-1}}x_{\pi_k}) = \theta(y_{\pi_k}...y_{\pi_{k-1}}\rightarrow y_{\pi_{k-1}}x_{\pi_k})$ whenever $x_{\pi_1}...x_{\pi_{k-1}}$ and $y_{\pi_1}...y_{\pi_{k-1}}$ are in the same stage
+\item It is compatibly labelled, i.e. $\forall x_{\pi_k} \in \mathcal{X}_i$ we have $\theta(x_{\pi_1}...x_{\pi_{k-1}}\rightarrow x_{\pi_{k-1}}x_{\pi_k}) = \theta(y_{\pi_1}...y_{\pi_{k-1}}\rightarrow y_{\pi_{k-1}}x_{\pi_k})$ whenever $x_{\pi_1}...x_{\pi_{k-1}}$ and $y_{\pi_1}...y_{\pi_{k-1}}$ are in the same stage
 \item (\textbf{CStree property}) Each stage $S_i \subset L_k$ of the tree has a fixed context, i.e. $\exists C_i \subset [k]$ and the fixed outcome context $x_{C_i} \in \mathcal{X}_{C_i}$, where the stages are the union over the variables beside those in $C_i$, i.e. if $Y_i = [k] \textbackslash C_i$ then $S_i = \bigcup_{x_{Y_i} \in \mathcal{X}_{Y_i}} \{x_{C_i}x_{Y_i} \}$  
 \end{itemize}
 \end{definition}
@@ -372,7 +374,7 @@ A CStree is a staged tree $(\mathbb{T}, \theta)$ where each level of the tree co
 
 
 
-Given a CStree $\mathbb{T}$ and a causal ordering $\pi$, each node in level $L_k$ corresponds to an outcome of the sequence of variables $X_{\pi_1},...,X_{\pi_k}$. Each edge coming into each node in $L_k$ is of the form $(x_1\cdots x_{k-1},x_1\cdots x_k)$ represents $P(x_{k}|x_1 \cdots x_{k-1})$. Suppose we fix a node $n = a_1\cdots a_k \in L_k$. Each edge coming out of $n$ gives the probabilities for the variable in the next level $L_{k+1}$, conditioned on the context $(X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$. Thus, we can view this node $n$ as containing the distribution $\mathbb{P}(X_{\pi_{k+1}}\,|\, X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$ This is an important view which we will make use of when testing for context specific independence in the algorithms throughout this paper. We show an example of a CStree and a staged tree that is not a CStree below.
+Given a CStree $\mathbb{T}$ and a causal ordering $\pi$, each node in level $L_k$ corresponds to an outcome of the sequence of variables $X_{\pi_1},...,X_{\pi_k}$. Each edge coming into each node in $L_k$ is of the form $(x_1\cdots x_{k-1},x_1\cdots x_k)$ represents $P(x_{k}|x_1 \cdots x_{k-1})$, which is also the value of the parameter associated to this edge. Suppose we fix a node $n = a_1\cdots a_k \in L_k$. Each edge coming out of $n$ gives the probabilities for the variable in the next level $L_{k+1}$, conditioned on the context $(X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$. Thus, we can view this node $n$ as containing the distribution $\mathbb{P}(X_{\pi_{k+1}}\,|\, X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$ This is an important view which we will make use of when testing for context specific independence in the algorithms throughout this paper. We show an example of a CStree and a staged tree that is not a CStree below.
 
 {{{NEWPAGE}}}
 
@@ -386,10 +388,10 @@ Given a CStree $\mathbb{T}$ and a causal ordering $\pi$, each node in level $L_k
 \end{figure}
    #+end_export
 
-Both staged trees is Figure \ref{fig:cstreestagedtree} represent 4 binary variables $X_1,X_2,X_3,X_4$ taking values in $\{0,1\}$ in that causal order. Suppose each edge to the left corresponds to the outcome 0 and the other corresponds to one. In this case, the left edge coming out of the root represents $\mathbb{P}(X_1 = 0)$ and the right edge coming out the root represents $\mathbb{P}(X_1 = 1)$. The nodes represent distributions conditioned on the context unique to them. For example, the left most red node in both trees represent $\mathbb{P}(X_3 \,|\, X_2=0, X_1=0)$. The tree on the right is a CStree because each of the nodes in the non-singleton stages, which are represented by a non-white colour, share exactly one fixed context. For example, the stage corresponding to the blue nodes in the tree on the right (the CStree) corresponds to the contexts $(X_1=1, X_2=0, X_3=0), (X_1=1, X_2=1, X_3=1), (X_1=1, X_2=1, X_3=0), (X_1=1, X_2=1, X_3=1)$. The common context for this stage is  $(X_1=1)$. Meanwhile, for the tree on the left, the stage corresponding to the blue nodes only share the empty context, meaning all nodes in level 3 must correspond to the stage with the empty context for it to be a CStree.
+Both staged trees in Figure \ref{fig:cstreestagedtree} represent 4 binary variables $X_1,X_2,X_3,X_4$ taking values in $\{0,1\}$ in that causal order. Suppose each edge to the left corresponds to the outcome $0$ and the other corresponds to one. In this case, the left edge coming out of the root represents $\mathbb{P}(X_1 = 0)$ and the right edge coming out the root represents $\mathbb{P}(X_1 = 1)$. The nodes represent distributions conditioned on the context unique to them. For example, the left most red node in both trees represent $\mathbb{P}(X_3 \,|\, X_2=0, X_1=0)$. The tree on the right is a CStree because each of the nodes in the non-singleton stages, which are represented by a non-white colour, share exactly one fixed context. For example, the stage corresponding to the blue nodes in the tree on the right (the CStree) corresponds to the contexts $(X_1=1, X_2=0, X_3=0), (X_1=1, X_2=1, X_3=1), (X_1=1, X_2=1, X_3=0), (X_1=1, X_2=1, X_3=1)$. The common context for this stage is  $(X_1=1)$. Meanwhile, for the tree on the left, the stage corresponding to the blue nodes only share the empty context, meaning all nodes in level 3 must correspond to the stage with the empty context for it to be a CStree - this is however not the case since there are nodes in level 3 which correspond to the yellow and green stages, thus not part of the blue stage. 
 
 
-A CStree encodes Context Specific Independence (CSI) relations from the following lemma cite:duarte-2021-repres-learn
+A CStree encodes Context Specific Independence (CSI) relations according to the following lemma cite:duarte-2021-repres-learn
 
 
 #+begin_export latex
@@ -400,6 +402,7 @@ Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a CStree with levels $X_1,...,X_p 
 \end{lemma}
 #+end_export
 
+The CSI relations from the CStrees look similar to the CI relations from the ordered Markov property. The difference is that the CStree encodes independence of $X_k$ with all the variables preceding it in the causal ordering when conditioned on a context, compared to the ordered Markov property which contains the variables which represent the parents of $k$ in the conditioning set. Thus, CStrees can be thought of as a relaxation of DAG models via a relaxation of the ordered Markov property, where we condition on the more general scenario of contexts, rather than variables. 
 
 
 
@@ -407,7 +410,7 @@ Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a CStree with levels $X_1,...,X_p 
    Given a system of variables $X_1,...,X_p$, we would first need a causal ordering $\pi_1 \cdots \pi_p$ in order to construct a CStree for these variables. Since CStrees encode CSI relations, they can also encode CI relations, which means we can generate a CStree from a DAG. The following proposition formalizes this notion cite:duarte-2020-algeb.
 
    #+begin_export latex
-\begin{proposition}[Equivalent DAGs and CStrees]\label{prop:dagandcstree}
+\begin{proposition}[CStrees corresponding to DAGs]\label{prop:dagandcstree}
 A compatibly labelled staged tree $\mathbb{T}$ with causal ordering $\pi_1 \cdots\pi_p$, levels $L_1,...,L_p$ corresponding to variables $X_{\pi_1},...,X_{\pi_p}$ encodes the same CI relations as some DAG $\mathbb{G}$ if and only if for any topological ordering of $\mathbb{G}$, $\forall k \in [p-1]$, the level $L_k$ has its nodes partitioned into stages where the context for each stage is an element of the Cartesian product of the parents of $X_{\pi_{k+1}}$ in $\mathbb{G}$.
 \end{proposition}
    #+end_export
@@ -440,7 +443,7 @@ A compatibly labelled staged tree $\mathbb{T}$ with causal ordering $\pi_1 \cdot
       \end{algorithm}
 #+END_EXPORT
 
-Algorithm \ref{alg:dagtocstree} above does not necessarily need a causal ordering since given a DAG we can perform a topological sort on it to get one.
+Algorithm \ref{alg:dagtocstree} above does not necessarily need a causal ordering. This is because given a DAG we can perform a topological sort on it to get one, for which efficient algorithms exist cite:tarjan-1976-edge-disjoin.
 
 #+begin_export latex
 \begin{theorem}\label{thm:dagtocstreecorrectness}
@@ -448,14 +451,25 @@ Given variables $X_1,...,X_p$ taking values in $\mathcal{X}=\prod_{i=1}^p \mathc
 \end{theorem}
 
 \textit{Proof:
-	For correctness, at each level $L_k$, the non-singleton stages are created for the contexts fixed by the outcomes of the parents of $X_{\pi_{k+1}}$ thus by Proposition \ref{prop:dagandcstree} the tree is still a CStree. Since the staging process at each level only creates non-singleton of nodes within that level, and we go over each level except the last level which always contains singleton stages, the stages $S$ lead to $T$ being a CStree. For time complexity, the worst case scenario is for the fully connected DAG, assuming the ordering $(1,2,...,p)$, node $i$ has $i-1$ parents. This however results in a CStree with no non-singleton stages. Thus we look at the scenario where node $i$ has $i-2$ parents. At the level for the variable representing node $i$, the variable b in Algorithm \ref{alg:dagtocstree} which is all the elements of the the Cartesian product of values the parents take, has $|\prod_{j=1}^{i-2} \mathcal{X}_j|$ elements. For each element in this Cartesian product which fixes the context for the stage, we have to loop over all nodes in level $i$ and to store the nodes for that stage, and level $i$ has $|\prod_{j=1}^i \mathcal{X}_j|$ nodes. Thus the loop for level $i$ takes $|\prod_{j=3}^{i-2} \mathcal{X}_j ||\prod_{j=1}^i \mathcal{X}_j| $ where the indexing starts at 3 for the first term since the parent sets are non-empty starting from node 3. Since we have $p$ levels, ignoring the first 2 since their variables have no parents, we have $\sum_{i=3}^p |\prod_{j=3}^{i-2} \mathcal{X}_j ||\prod_{k=1}^i \mathcal{X}_k| < \sum_{i=1}^p |\prod_{j=1}^i |\mathcal{X}_j||\prod_{k=1}^i |\mathcal{X}_k|< \sum_{i=1}^p \prod_{j=1}^i d \prod_{k=1}^i d $ where $d = \max_{i \in [p]} |\mathcal{X}_i|$. This sum then becomes $\sum_{i=1}^p d^{2i}  = \frac{d^2 (d^{2p}-1)}{d^2-1} = \mathcal{O}(d^{2p})$. For space complexity, in the worst case DAG mentioned, level $i$ which has $\prod_{j=1}^i |\mathcal{X}_j| < d^i$ nodes and the same amount of edges coming in. For storing the stages, the extra information we need to store is the fixed contexts for each stage, and  there are $\prod_{j=3}^i |\mathcal{X}_j| < d^i$ stages in level $i$, thus the nodes, edges and stages for level $i$ are atmost $3d^i$, summing for each level gives $\sum_{i=1}^p 3d^i= \frac{3d (3d^{p}-1)}{3d-1} = \mathcal{O}(d^{p})$
+	For correctness, at each level $L_k$, the non-singleton stages are created for the contexts fixed by the outcomes of the parents of $X_{\pi_{k+1}}$ thus by Proposition \ref{prop:dagandcstree} the tree is still a CStree. Since the staging process at each level only creates non-singleton stages of nodes within that level, and we go over each level except the last level which always contain singleton stages (one for each outcome of $\mathcal{X}$), the stages $S$ lead to $T$ being a CStree. For time complexity, the worst case scenario is for the fully connected DAG, assuming the ordering $12\cdots p$, node $i$ has $i-1$ parents. This however results in a CStree with no non-singleton stages. Thus we look at the scenario where node $i$ has $i-2$ parents. At the level for the variable representing node $i$, the variable b in Algorithm \ref{alg:dagtocstree} which is all the elements of the the Cartesian product of values the parents take, has $|\prod_{j=1}^{i-2} \mathcal{X}_j|$ elements. For each element in this Cartesian product which fixes the context for the stage, we have to loop over all nodes in level $i$ and to store the nodes for that stage, and level $i$ has $|\prod_{j=1}^i \mathcal{X}_j|$ nodes. Thus the loop for level $i$ takes $|\prod_{j=3}^{i-2} \mathcal{X}_j ||\prod_{j=1}^i \mathcal{X}_j| $ where the indexing starts at 3 for the first term since the parent sets are non-empty starting from node 3. Since we have $p$ levels, ignoring the first 2 since their variables have no parents, we have}
+
+	\begin{align*}\sum_{i=3}^p |\prod_{j=3}^{i-2} \mathcal{X}_j ||\prod_{k=1}^i \mathcal{X}_k| < \sum_{i=1}^p |\prod_{j=1}^i |\mathcal{X}_j||\prod_{k=1}^i |\mathcal{X}_k|< \sum_{i=1}^p \prod_{j=1}^i d \prod_{k=1}^i d 
+	\end{align*}
+
+\textit{where $d = \max_{i \in [p]} |\mathcal{X}_i|$. This sum then becomes }
+\begin{align*}
+\sum_{i=1}^p d^{2i}  = \frac{d^2 (d^{2p}-1)}{d^2-1} = \mathcal{O}(d^{2p})
+\end{align*}
+
+\textit{For space complexity, in the worst case DAG mentioned, level $i$ which has $\prod_{j=1}^i |\mathcal{X}_j| < d^i$ nodes and the same amount of edges coming in. For storing the stages, the extra information we need to store is the fixed contexts for each stage, and  there are $\prod_{j=3}^i |\mathcal{X}_j| < d^i$ stages in level $i$. Thus the nodes, edges and stages for level $i$ are at most $3d^i$, summing for each level gives}
+\begin{align*}\sum_{i=1}^p 3d^i= \frac{3d (3d^{p}-1)}{3d-1} = \mathcal{O}(d^{p})\end{align*}
 }
 #+end_export
 
 We mention the space complexity here to emphasize that it grows exponentially, which is one limitation of this approach. For $p$ binary variables this means a CStree takes $\mathcal{O}(2^p)$ space. This is in comparison to DAGs which in the worst case assuming full connectivity require $\mathcal{O}(p^2)$ space, independent of the state space of the variables. 
 
 
-In order to learn CSI relations, one can now take a CStree from a DAG and perform statistical CSI testing. Recall that each node in level $k$ represents a probability density of the variable in level $k+1$ under the context fixed by that node. Thus for each level, we can compare all possible pairs of nodes by taking the samples fixed by each pair, and testing whether they are from the same distribution. If so, we assign the same colour to both of them. Then by the CStree property from Definition \ref{def:cstree} we must have that all nodes in level $k$ which share the same context as that of these 2 nodes must also have the same colour. For example with binary variables we have 2 nodes representing the outcomes $X_{\{1,2,3,4\}}=0110, X_{\{1,2,3,4\}}=0011$ {{{footnote($X_{\{1\,2\,3\,4\}}=0110$ is shorthand for $(X_1=0\, X_2=1\, X_3=1\,X_4=0)$)}}}  and we know they are in the same stage $S_i$, then the common context for that stage is $X_{\{1,4\}}=01$, and by the CStree property all nodes in that level with this subcontext belong to the same stage. 
+In order to learn CSI relations, one can now take a CStree from a DAG and perform a statistical test to determine context specific independence relations. Recall that each node in level $k$ represents a probability density of the variable in level $k+1$ under the context fixed by that node. Thus for each level, we can compare all possible pairs of nodes by taking the samples fixed by the contexts of the pair, and testing whether they are from the same distribution. If so, we assign the same colour to both of them. Then by the CStree property from Definition \ref{def:cstree} we must have that all nodes in level $k$ which share the same context as that of these 2 nodes must also have the same colour. For example with binary variables if we have 2 nodes representing the outcomes $X_{\{1,2,3,4\}}=0110, X_{\{1,2,3,4\}}=0011$ {{{footnote($X_{\{1\,2\,3\,4\}}=0110$ is shorthand for $(X_1=0\, X_2=1\, X_3=1\,X_4=0)$)}}}  and we know they are in the same stage $S_i$, then the common context for that stage is $X_{\{1,4\}}=01$, and by the CStree property all nodes in that level with this subcontext belong to the same stage. 
 
 
 # !!! TODO More on the Cstree property as an assumption
@@ -597,7 +611,7 @@ Unlike DAGs, as the number of variables increase it gets progessively harder to 
 \begin{theorem}\label{thm:gencsirelscorrectness}
 Given a CStree $\mathbb{T}$, Algorithm \ref{alg:gencsirels} is correct and returns the CSI relations encoded in $\mathbb{T}$ in $\mathcal{O}(pd^{2p})$ time.
 \end{theorem}
-\textit{Correctness follows directly from Lemma \ref{lem:cstreecsi} since at each loop we add exactly the CSI relations mentioned inthe lemma, and we do this for all levels thus include all stages of the CStree. For time complexity, for each level we first get the stages associated with it, which can be done in constant time if we store this information. We know from the Proof of Theorem \ref{thm:dagtocstreecorrectness} that the number of stages in level $i$ is bounded above by $d^i$, and for each stage in that level we get the context of the stage, which can be done as a constant lookup operation, and we get relevant variables in Lines 8,9 which is bounded above by $2p$. Thus adding this for all the levels give $\sum_{i=1}^p 2pd^i = \mathcal{O}(pd^{2p})$
+\textit{Proof: Correctness follows directly from Lemma \ref{lem:cstreecsi} since at each loop we add exactly the CSI relations mentioned inthe lemma, and we do this for all levels thus include all stages of the CStree. For time complexity, for each level we first get the stages associated with it, which can be done in constant time if we store this information. We know from the Proof of Theorem \ref{thm:dagtocstreecorrectness} that the number of stages in level $i$ is bounded above by $d^i$, and for each stage in that level we get the context of the stage, which can be done as a constant lookup operation, and we get relevant variables in Lines 8,9 which is bounded above by $2p$. Thus adding this for all the levels give $\sum_{i=1}^p 2pd^i = \mathcal{O}(pd^{2p})$.
 }
    #+end_export
  
@@ -605,10 +619,10 @@ Given a CStree $\mathbb{T}$, Algorithm \ref{alg:gencsirels} is correct and retur
    In practice a slightly modified version of Algorithm \ref{alg:gencsirels} can be placed a subroutine in the previous algorithms right before moving onto the next level.
 
 
-   From Lemma \ref{lem:cstreecsi} we know any distribution in the CStree model $\mathbb{M}_{(\mathbb{T},\theta)}$ encodes the CSI relations of the given form, there could be more CSI relations satisfied by every distribution in $\mathbb{M}_{(\mathbb{T},\theta)}$, which is similar to how a DAG model encodes the CI relations $\mathbb{J}_1$ implied by the local Markov property, on top of the CI relations $\mathbb{J}_2$ from the global Markov property (i.e. rom the d-separations), and $\mathbb{J}_1 \subset \mathbb{J}_2$.
+   From Lemma \ref{lem:cstreecsi} we know any distribution in the CStree model $\mathbb{M}_{(\mathbb{T},\theta)}$ encodes the CSI relations of the given form, there could be more CSI relations satisfied by every distribution in $\mathbb{M}_{(\mathbb{T},\theta)}$, which is similar to how a DAG model encodes the CI relations $\mathbb{J}_1$ implied by the local Markov property, which are captured by the CI relations $\mathbb{J}_2$ from the global Markov property (i.e. from the d-separations), and $\mathbb{J}_1 \subset \mathbb{J}_2$.
 
 
-     We call a collection of CSI relations a Context Specific Conditional Independence model $\mathbb{J}$. The complete of set of all CSI relations satisfied by each distribution $\mathbb{P} \in \mathbb{M}_{(\mathbb{T},\theta)}$ includes the CSI relations recovered from Algorithm \ref{alg:gencsirels}, and also include those implied by the succesive application of the Context Specific Conditional Independence axioms to generate further CSI relations. The axioms are as follows
+ The complete of set of all CSI relations satisfied by each distribution $\mathbb{P} \in \mathbb{M}_{(\mathbb{T},\theta)}$ includes the CSI relations recovered from Algorithm \ref{alg:gencsirels}, and also include those implied by the succesive application of the Context Specific Conditional Independence axioms to generate further CSI relations. The axioms are as follows
 
    
    1. Symmetry, If $(X_A \indep X_B \,|\, X_C=x_c) \in \mathbb{J}$ then $(X_B \indep X_A \,|\, X_c=x_c) \in \mathbb{J}$ 
@@ -620,7 +634,7 @@ Given a CStree $\mathbb{T}$, Algorithm \ref{alg:gencsirels} is correct and retur
    7. Absorption, If $(X_A \indep X_B \,|\, X_S, X_C=x_c) \in \mathbb{J}$ and $\exists T \subset C$ such that $\forall x_T \in \mathcal{X}_T$ we have $(X_A \indep X_B \,|\, X_S, X_{C\textbackslash T}=x_{C \textbackslash T}, X_T=x_T) \in \mathbb{J}$ then $(X_A \indep X_B \,|\, X_{S \cup T}, X_{C \textbackslash T}=x_{C \textbackslash T}) \in \mathbb{J}$
 
 
-   Given a Context Specific Conditional Independence model $\mathbb{J}$, the successive application of the axioms above results in the Context Specific closure  of the model, denoted $\mathbb{\overline{J}}$
+   Given a Context Specific Conditional Independence model $\mathbb{J}$, the successive application of the axioms above results in the Context Specific closure  of the model, denoted $\mathbb{\overline{J}}$.
 
 
    The Absorption axiom helps us to get a representation of the CStree as a sequence of DAGs. For this we need the definition of minimal contexts cite:duarte-2021-repres-learn.
@@ -631,11 +645,16 @@ Given a set Context Specific Independence model $\mathbb{J}$, we say that ${X_C=
    
    #+end_export
    
-Intuitively, the minimal contexts are the smallest contexts that get left behind after repeated application of the Absorption axiom. By the Specialization axiom, given a minimal context $(X_C=x_C)$ we can recover all the CI relations implied by the CStree. We give some examples of minimal contexts below.
+Intuitively, the minimal contexts are the smallest contexts that get left behind after repeated application of the Absorption axiom. By the Specialization axiom, given a minimal context $(X_C=x_C)$ we can recover all the CI relations implied by the CStree.
+
+Minimal contexts and the application of the graphoid axioms are key to represent the CStree as a sequence of DAGs. For now, we denote $\mathbb{C}(\mathbb{T})$ as the set of all minimal contexts of a CStree $\mathbb{T}$, for each minimal context $(X_C=x_C)_i \in \mathbb{C}(\mathbb{T})$, there exists a DAG that encodes the CI relations that hold under this context.  We denote $\mathbb{G}(\mathbb{T}) := \{ \mathbb{G}_{X_C=x_C} \}_{X_C=x_C \in \mathbb{C}(\mathbb{T})}$ as the set of all minimal context DAGs of $\mathbb{T}$, and define the procedure to generate them later on.
+
+
+We give some examples of minimal contexts below.
 
 #+begin_export latex
 \begin{example}\label{eg:mc1}
-Let $X_1,X_2,X_3,X_4,X_5$ be binary variables taking values in $\{0,1\}$. If we have just the CSI relations $(X_5 \indep X_4 \,|\, X_{\{1,2,3\}}=000)$ and $(X_5 \indep X_4 \,|\, X_{\{1,2,3\}}=100)$ they get absorbed into $(X_5 \indep X_4 | X_{\{1\}}, X_{\{2,3\}}=00)$ leaving the minimal context $X_{\{2,3\}}=00$, or simply $(X_2 = 0, X_3=0)$  
+Let $X_1,X_2,X_3,X_4,X_5$ be binary variables taking values in $\{0,1\}$. If we have just the CSI relations $(X_5 \indep X_4 \,|\, X_{\{1,2,3\}}=000)$ and $(X_5 \indep X_4 \,|\, X_{\{1,2,3\}}=100)$ they get absorbed into $(X_5 \indep X_4 | X_{\{1\}}, X_{\{2,3\}}=00)$ leaving the minimal context $X_{\{2,3\}}=00$, or simply $(X_2 = 0, X_3=0)$.
 \end{example}
 
 \begin{example}\label{eg:mc2}
@@ -643,11 +662,12 @@ Let $X_1,X_2,X_3,X_4$ be binary variables taking values in $\{0,1\}$. If we have
 \end{example}
 
 #+end_export
+# TODO add cstree of example eg:mc2 as margin figure
 
 Example \ref{eg:mc1} shows that we can get absorption from CSI relations we get from different levels, while \ref{eg:mc2} shows that we have to check at least all possible pairs of CSI relations to get the minimal contexts. It is also possible to get the empty context as the minimal context, which happens when the all CSI relations $(X_A \indep X_B \,|\, X_S, X_C=x_C)$ hold for all outcomes $x_C \in \mathcal{X}_C$ in which case the absorption axiom gives the CI relation $(X_A \indep X_A\,|\,X_S,X_C)$.
 
 
-From a computational perspective, given all CSI relations involving sets of variables $X_A,X_B$ i.e. those of the form $(X_A \indep X_B \,|\, X_S, X_C=x_C)$, we want to find the largest set $T \subset C$ such $(X_A \indep X_B \,|\, X_S, X_T=x_T, x_{C \textbackslash T} = x_{C \textbackslash T})$ is also in the CSI relations. {{{footnote(If we are to use the CSI relations extracted from Algorithm \ref{alg:gencsirels} before getting their Context Specific closure they would be of the form $(X_i \indep X_B | X_C=x_C)$ where $i \in [p]$ and $B \,C \subset [p-1]$)}}} This can be thought of as decomposing $C$ into sets $C \textbackslash T$ and $T$ such that Definition \ref{def:mcs} holds. To find the largest such $T$, we can perform a binary search on the size of $T$, which can range from 0 to $|C|$.
+From a computational perspective, given all CSI relations involving sets of variables $X_A,X_B$ i.e. those of the form $(X_A \indep X_B \,|\, X_S, X_C=x_C)$, we want to find the largest set $T \subset C$ such $(X_A \indep X_B \,|\, X_S, X_T=x_T, x_{C \textbackslash T} = x_{C \textbackslash T})$ is also in the CSI relations. {{{footnote(If we are to use the CSI relations extracted from Algorithm \ref{alg:gencsirels} before getting their Context Specific closure they would be of the form $(X_i \indep X_B | X_C=x_C)$ where $i \in [p]$ and $B \,C \subset [p-1]$)}}} This can be thought of as decomposing $C$ into sets $C \textbackslash T$ and $T$ such that Definition \ref{def:mcs} holds. To find the largest such $T$, we can perform a binary search on the size of $T$, which can range from $0$ to $|C|$.
 We describe this method below. {{{footnote(Each break statement leaves the first loop it meets.)}}}
 #+begin_export latex
 \begin{algorithm}\label{alg:genmcs}
@@ -718,7 +738,7 @@ Given a set of Context Specific Independence relations $\mathbb{J}$, Algorithm \
 
 [!!! Describe subprocedures in minimal context generator algorithm]
 
-In theory, the number of possible pairs of sets $A,B$ is ${2^p}\choose{2}$, though in practice it can be reduced, for example by the Symmetry axiom allows us to half the number of pairs we need to check. This motivates us to the pairwise case, where we focus on Context Specific Independence relations of the form between 2 variables $X_i,X_j$ rather than two sets of variables $X_A,X_B$. This drops the number of possible pairs to $p \choose 2$. This leads us to the definition of pairwise minimal contexts.
+In theory, the number of possible pairs of sets $A,B$ is ${2^p}\choose{2}$, though in practice it can be reduced. For example by the Symmetry axiom allows us to half the number of pairs we need to check. This motivates us to the pairwise case, where we focus on Context Specific Independence relations of the form between 2 variables $X_i,X_j$ rather than two sets of variables $X_A,X_B$. This drops the number of possible pairs to $p \choose 2$. This leads us to the definition of pairwise minimal contexts.
 
 {{{NEWPAGE}}}
    #+begin_export latex
@@ -740,15 +760,14 @@ The composition axiom allows us to go from pairwise relations between variables 
 Pairwise minimal contexts are always minimal contexts however but we could have minimal contexts that are not pairwise minimal contexts. If all CStrees have an associated compositional context specific independence model, the pairwise relations may indeed be all that we need to get the set of complete set of minimal contexts. We leave this as an open question and use pairwise minimal contexts to offer a visualization of CSI relations in the CStree which may potentially be incomplete.
 
 
- Denote $\mathbb{C}(\mathbb{T})$ as the set of all minimal contexts of a CStree $\mathbb{T}$, and denote $\mathbb{G}(\mathbb{T}) := \{ \mathbb{G}_{X_C=x_C} \}_{X_C=x_C \in \mathbb{C}(\mathbb{T})}$ as the set of all minimal context DAGs of $\mathbb{T}$.
 
-We now have the machinery to visualize higher dimensional CStrees.We start by generating the CSI relations from the trees. Then get the Context Specific closure, and then get the minimal contexts. Once we have the minimal contexts, the CI relations for each minimal context define a graphoid. This is called a Minimal Context DAG. Thus, the CStree can be represented as a sequence of DAGs for each minimal context. This representation is a consequence of the following theorem cite:duarte-2021-repres-learn.
+We now have the machinery to visualize higher dimensional CStrees. We start by generating the CSI relations from the trees. Then get the Context Specific closure, followed by the minimal contexts. Once we have the minimal contexts, the CI relations for each minimal context define a graphoid. This is called a Minimal Context DAG. Thus, the CStree can be represented as a sequence of DAGs for each minimal context. This representation is a consequence of the following theorem cite:duarte-2021-repres-learn.
 
 {{{NEWPAGE}}}
 
 #+begin_export latex
 \begin{theorem}[Markov theorem for CStrees]\label{thm:markovtheoremcstrees}
-Given a CStree $\mathbb{T}$, with levels $L_1,...,L_p \sim X_1,...,X_p$, minimal contexts $\mathbb{C}(\mathbb{T})$ and $\mathbb{P} \in \Delta_{\mathcal{X}-1}$. The following are equivalent.
+Given a CStree $\mathbb{T}$, with levels $L_1,...,L_p \sim X_1,...,X_p$, minimal contexts $\mathbb{C}(\mathbb{T})$ and $\mathbb{P} \in \Delta_{|\mathcal{X}|-1}$. The following are equivalent.
 \begin{itemize}
 \item $\mathbb{P}$ factorizes according to $\mathbb{T}$.
 \item $\mathbb{P}$ is Markov to $\mathbb{G}(\mathbb{T})$.
@@ -844,7 +863,7 @@ Given variables $X_1,...,X_p$, assuming that the data generating distribution is
 
 
 ** Model selection for CStrees
-   In Algorithm \ref{alg:cstreepc} we select the CStree (or CStrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the *Bayesian Information Criterion (BIC)* for CStrees alongside a proof that it is locally consistent for CStrees, meaning it can be applicable to greedy search methods for CStrees. The BIC depends on two terms, the likelihood of the data, which assesses the quality of the model to explain the observed data, and a complexity term that depends on the amount of observed data and the free parameters of the model, with the idea being that models with more parameters should be penalized. Importantly, this helps against overfitting since one can simply add more parameters to the model to maximize the likelihood.
+   In Algorithm \ref{alg:cstreepc} we select the CStree (or CStrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor cite:pearl-2009-causal since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the *Bayesian Information Criterion (BIC)* for CStrees alongside a proof that it is locally consistent for CStrees, meaning it can be applicable to greedy search methods for CStrees. The BIC depends on two terms, the likelihood of the data, which assesses the quality of the model to explain the observed data, and a complexity term that depends on the amount of observed data and the free parameters of the model, with the idea being that models with more parameters should be penalized. Importantly, this helps against overfitting since one can simply add more parameters to the model to maximize the likelihood.
 
 
 For a general model with random variables $X_1,...,X_p$ the likelihood of observing a sample $(x_1,...,x_p)$ can be described as below {{{footnote(Here we compactify the notation further - $X_{\{1\,...\,p\}}=x_{\{1\,...\,p\}}$ is the same as $X_{\{1\,...\,p\}}=x_1\cdots x_p$ which is $X_1=x_1\,...\,X_p=x_p$ )}}}
@@ -857,7 +876,7 @@ For a general model with random variables $X_1,...,X_p$ the likelihood of observ
 \end{align*}
 #+end_export
 
-In the CStree model, independence is implied from the staging of the tree, and each distribution in the product above depends on the fixed context of the node in the CStree representing that distribution. Denoting $C_i$ to be the context variables of the context of the node $x_1\cdotsx_i$, this gives the following.
+In the CStree model, independence is implied from the staging of the tree, and each distribution in the product above depends on the fixed context of the node in the CStree representing that distribution. Denoting $C_i$ to be the context variables of the context of the node $x_{1\cdots i}$, this gives the following.
 
 #+begin_export latex
 \begin{align*}
@@ -886,9 +905,6 @@ The free parameters is $d=\sum_{k=1}^{p-1} (|\mathcal{X}_k| - 1)S_k$ where $S_k$
 #+end_export
 
 
-
-# !!! TODO Write the likelihood, contingency tables, and BIC formula
-
    
 # !!! TODO Example on how pairwise independence does not imply triplewise independence
 
@@ -901,6 +917,7 @@ The aim of this section is to run test the theory presented so far in both synth
 3. Is the CStree property assumption reasonable in practice?
 4. How sensitive are the results on the method used to determine whether nodes belong to the same stage?
 5. How are the results in comparison to CStrees generated from DAGs learnt using other causal discovery algorithms?
+6. How well do our learnt CStrees compared to staged tree models learnt using different algorithms?
 
    
 Throughout this section we omit the final layer of nodes for all the CStrees since they always belong to the singleton stage.
@@ -929,10 +946,10 @@ Throughout this section we omit the final layer of nodes for all the CStrees sin
 \end{figure}
    #+end_export
 
-The results are as expected since there are no conditional independence stations encoded in the fully connected, and no context specific independence statements since they are unable to encode them, meaning no 2 nodes share a fixed context and all stages have a single element. For the DAG with no edges, each variable is independent of each other, and each node has no parents thus by Proposition \ref{prop:dagandcstrees}
+The results are as expected since there are no conditional independence relations encoded in the fully connected model, and no context specific independence statements since they are unable to encode them, meaning no 2 nodes share a fixed context and all stages have a single element. For the DAG with no edges, each variable is independent of all others, and each node has no parents. Thus by Proposition \ref{prop:dagsandcstrees} all levels share the empty context as the common context. 
   
 ** Recovering the empty context DAG
-   We start by generating random DAGs and generating the CStrees as per Algorithm \ref{alg:dagtocstree}. This is done by first choosing the number of variables (nodes in the DAG) $p$, and then choosing an edge with probability $p_{edge} \in (0,1)$, and then keeping edge $(u,v)$ if and only if $u<v$. We show the generated CStree below, and recover the original DAG as a minimal context DAG with the empty context with Algorithm \ref{alg:mcdags}.
+   We start by generating random DAGs and generating the CStrees as per Algorithm \ref{alg:dagtocstree}. This is done by first choosing the number of variables (nodes in the DAG) $p$, and then choosing an edge with probability $p_{edge} \in (0,1)$, and then keeping edge $(u,v)$ if and only if $u<v$. The causal ordering is chosen as $12\cdots p$. We show the generated CStree below, and recover the original DAG as a minimal context DAG with the empty context with Algorithm \ref{alg:mcdags}. 
 
   #+begin_export latex
 \begin{figure}[!h]\label{fig:dagtocstree_cstree}
@@ -998,20 +1015,15 @@ The following table summarizes the empirical space time complexity of generating
  # !!! TODO Get the average of above for some number of runs
 
 ** Synthetic data
-    Next we generate a random DAG $\mathbb{G}$ using the procedure above, and then generate samples from this DAG, where each variable is binary valued. We then discard the DAG and apply Algorithm \ref{alg:cstreepc} on the generated samples. For nodes with edges, we sample the data by constructing a conditional probability distribution table by taking the parents of the nodes, and creating one row for each possible outcome of the parents. In this binary case, if a variable $X_i$ has $d$ parents $X_{PA_{X_1}},...,X_{PA_{X_d}}$, the corresponding table has $2^d$ rows. The 2 columns represent the outcome 0 and 1 respectively. The probability values are filled by taking a row corresponding to some outcome of the parents, and assigining the probability of $X_i=0$ under this outcome to be distributed uniformly between $[0.01,0.2]$ or $[0.8,0.99]$ each with a probability 0.5. The probability for $X_i=1$ under this outcome is then simply computed such that the probabilities sum to 1. For the variables corresponding to nodes with no edges, we give them a Bernoulli distribution with a parameter chosen uniformly between $[0,1]$ for each such variable.
+    Next we generate a random DAG $\mathbb{G}$ using the procedure above, and then generate samples from this DAG, where each variable is binary valued. We then discard the DAG and apply Algorithm \ref{alg:cstreepc} on the generated samples. For nodes which are adjacent to another node, we sample the data by constructing a conditional probability distribution table by taking the parents of the nodes, and creating one row for each possible outcome of the parents. In this binary case, if a variable $X_i$ has $d$ parents $X_{PA_{X_1}},...,X_{PA_{X_d}}$, the corresponding table has $2^d$ rows. The 2 columns represent the outcome 0 and 1 respectively. The probability values are filled by taking a row corresponding to some outcome of the parents, and assigning the probability of $X_i=0$ under this outcome to be distributed uniformly between $[0.01,0.2]$ or $[0.8,0.99]$ each with a probability 0.5. The probability for $X_i=1$ under this outcome is then simply computed such that the probabilities sum to 1. For the variables corresponding to nodes with no edges, we give them a Bernoulli distribution with a parameter chosen uniformly between $[0,1]$ for each such variable.
 
 
     
-    We start by generating 1000 samples on 4 binary variables using the above procedure and learning the CStree and recovering the minimal context DAGs. We choose 4 variables due to limitations of applying the context specific graphoid axioms.
+    We start by generating 1000 samples on 4 binary variables using the above procedure. We then learn the CStree and recover the minimal context DAGs. We choose 4 variables due to limitations of applying the context specific graphoid axioms.
 
     The DAG and conditional probability table is as follows.
 
-    # TODO Put DAG
-
-
-   
-
-
+    # TODO Put DAG of this example
 
     
   #+begin_export latex
@@ -1023,6 +1035,9 @@ The following table summarizes the empirical space time complexity of generating
    \end{floatrow}
 \end{figure}
    #+end_export
+
+
+   The above procedure could produce non empty minimal contexts for several reasons, for example due to small sample sizes, or errors in the context specific independence testing procedure.
 
    
 
@@ -1097,22 +1112,23 @@ We see that the results are nearly identical, other than for 2 entries correspon
 \begin{table*}[]\label{table:coronary1}
 \begin{tabular}{cccccccccccccccc}
 \cline{3-12}
-                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Min stages\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-4$}                            & \multicolumn{2}{c|}{SKL $5e-5$}                                     & \multicolumn{2}{c|}{SKL $5e-6$}                            &  &  &  &  \\ \cline{3-12}
-                        & \multicolumn{1}{c|}{}                                                                            & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     &  &  &  &  \\ \cline{3-12}
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6780.2} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6808.5} & \multicolumn{1}{c|}{8}      & \multicolumn{1}{c|}{-7046.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6717.4}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-7029.4} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6767.8} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6776.9} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6772.0} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6782.8} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6833.6} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6798.7} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{\textbf{-6712.2}} & \multicolumn{1}{c|}{46}     & \multicolumn{1}{c|}{-6748.4} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6785.2} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6806.2} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6801.1} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{-6714.6}          & \multicolumn{1}{c|}{29}     & \multicolumn{1}{c|}{-6722.1} &  &  &  &  \\ \cline{2-12}
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &
+                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Min stages\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-5$}                            & \multicolumn{2}{c|}{SKL $5e-6$}                            & \multicolumn{2}{c|}{SKL $5e-7$}                                     &  &  &  &  \\ \cline{3-12}
+                        & \multicolumn{1}{c|}{}                                                                            & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              &  &  &  &  \\ \cline{3-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6783.7} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6812.1} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6757.1} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-7032.3} & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6753.4}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6771.3} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6780.4} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6775.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6786.5} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6837.3} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6799.0} & \multicolumn{1}{c|}{39}     & \multicolumn{1}{c|}{-6828.0} & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-6755.9}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6788.7} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6809.7} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6801.4} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6805.4} & \multicolumn{1}{c|}{30}     & \multicolumn{1}{c|}{\textbf{-6729.5}} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  & 
+
 \caption{Experimental setup 1 on the coronary dataset. Each cell under the column "Stages" is the minimum number of stages amongst all causal orderings generated from the either the PC or Hill Climbing algorithm, for different staging criteria. Many orderings produce CStrees with the same number of stages, the BIC score in the table above is the maximum such BIC score.}
 \end{tabular}
 \end{table*}
@@ -1145,30 +1161,31 @@ We see that the results are nearly identical, other than for 2 entries correspon
 \begin{table*}[]\label{table:coronary2}
 \begin{tabular}{cccccccccccccccc}
 \cline{3-12}
-                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Max BIC\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-4$}                            & \multicolumn{2}{c|}{SKL $5e-5$}                                     & \multicolumn{2}{c|}{SKL $5e-6$}                            &  &  &  &  \\ \cline{3-12}
-                        & \multicolumn{1}{c|}{}                                                                         & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     &  &  &  &  \\ \cline{3-12}
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6780.2} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6808.5} & \multicolumn{1}{c|}{8}      & \multicolumn{1}{c|}{-6790.9} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6717.4}          & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6749.6} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6767.8} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6776.9} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6772.0} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7}          & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6735.7} &  &  &  &  \\ \cline{2-12}
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6}          & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6729.6} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6782.8} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6833.6} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6798.7} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{\textbf{-6712.2}} & \multicolumn{1}{c|}{46}     & \multicolumn{1}{c|}{-6748.4} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6785.2} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6806.2} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6801.1} & \multicolumn{1}{c|}{27}     & \multicolumn{1}{c|}{-6714.6}          & \multicolumn{1}{c|}{29}     & \multicolumn{1}{c|}{-6722.1} &  &  &  &  \\ \cline{2-12}
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  &  \\
-                        &                                                                                               &                                 &                              &                             &                              &                             &                              &                             &                                       &                             &                              &  &  &  & 
+                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Min stages\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-5$}                            & \multicolumn{2}{c|}{SKL $5e-6$}                            & \multicolumn{2}{c|}{SKL $5e-7$}                                     &  &  &  &  \\ \cline{3-12}
+                        & \multicolumn{1}{c|}{}                                                                            & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              &  &  &  &  \\ \cline{3-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{7}} & \multicolumn{1}{c|}{-6783.7} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6812.1} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6757.1} & \multicolumn{1}{c|}{43}     & \multicolumn{1}{c|}{-6749.6} & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6753.4}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6771.3} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6780.4} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6775.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6786.5} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6837.3} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6799.0} & \multicolumn{1}{c|}{39}     & \multicolumn{1}{c|}{-6828.0} & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-6755.9}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6788.7} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6809.7} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6801.4} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6805.4} & \multicolumn{1}{c|}{30}     & \multicolumn{1}{c|}{\textbf{-6729.5}} &  &  &  &  \\ \cline{2-12}
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
+                        &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  & 
+
 \caption{Experimental setup 2 on the coronary dataset, the only difference to experimental setup 1 is that we now maximize the BIC score over all possible causal orderings.}
 			\end{tabular}
 \end{table*}
 #+end_export
 
+    In order to generate the sequence of DAGs that capture the context specific causal information from this dataset, we require 4 variables for computational feasibility. We do this by first removing the variable that gives us the the best score after its removal, which in this case is the variable corresponding to systolic blood pressure. We then generate the 5 BIC optimal CSTrees arising after removing each of the remaining 5 variables.
 
-
-In order to see the true discrepancy between the BIC score of DAGs and CStrees, we consider another method to get a starting DAG. This is to do an exhaustive search over the space of DAGs, and choose the DAG with the highest BIC score, and take the DAGs in its MEC to generate the possible causal orderings. We call this *experimental setup 3*. This task is intractable for variables more than 5, thus we have to remove 1 variable. To decide on which variable to choose, we generate all possible DAGs after removing each variable separately, and remove the variable which results in the highest BIC score. For this dataset, this happens to be the systolic blood pressure.
+ # TODO In order to see the true discrepancy between the BIC score of DAGs and CStrees, we consider another method to get a starting DAG. This is to do an exhaustive search over the space of DAGs, and choose the DAG with the highest BIC score, and take the DAGs in its MEC to generate the possible causal orderings. We call this *experimental setup 3*. This task is intractable for variables more than 5, thus we have to remove 1 variable. To decide on which variable to choose, we generate all possible DAGs after removing each variable separately, and remove the variable which results in the highest BIC score. For this dataset, this happens to be the systolic blood pressure.
 
 # Applying Algorithm \ref{alg:cstreepc} yields 55 CStrees which have the same number of stages, which is 69. If we exclude singleton stages corresponding to the last level this is 5 stages, which results in a full independence model.
 
@@ -1186,7 +1203,7 @@ In order to see the true discrepancy between the BIC score of DAGs and CStrees, 
 {{{NEWPAGE}}}
 
 ** Mice protein expression data
-   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median.
+   This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice cite:higuera-2015-self-organ. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had 180 or more missing values. This removes the expression data corresponding to the columns $BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N$. This still leaves 72 features, which we further reduce by recursive feature elimination cite:guyon-2002 where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median.
 
 
 
@@ -1221,7 +1238,44 @@ In order to see the true discrepancy between the BIC score of DAGs and CStrees, 
    #+end_export
 
 
-   The results from Table \ref{table:mice1} show once again that the Anderson-Darling test tends to merge stages more often thus resulting in a CStree with the minimum number of stages at the expense of a worse fit to the data, as indicated by the BIC score.# TODO mention many skipped tests for this dataset
+   The results from Table \ref{table:mice1} show once again that the Anderson-Darling test tends to merge stages more often thus resulting in a CStree with the minimum number of stages at the expense of a worse fit to the data, as indicated by the BIC score. We show the result of experimental setup 2 on this dataset in Table \ref{table:mice2}
+
+
+
+   #+begin_export latex
+% Please add the following required packages to your document preamble:
+% \usepackage{multirow}
+
+
+\begin{table*}[]\label{table:mice2}
+\begin{tabular}{cccccccccccccccc}
+\cline{3-12}
+                        & \multicolumn{1}{c|}{\multirow{\begin{tabular}[c]{@{}c@{}}Goal:\\ Max BIC\end{tabular}}} & \multicolumn{2}{c|}{Anderson}                                  & \multicolumn{2}{c|}{Epps}                                  & \multicolumn{2}{c|}{SKL $5e-4$}                            & \multicolumn{2}{c|}{SKL $5e-5$}                            & \multicolumn{2}{c|}{SKL $5e-6$}                            &  &  &  &  \\ \cline{3-12}
+
+
+                        & \multicolumn{1}{c|}{}                                                                         & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              &  &  &  &  \\ \cline{3-12}
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9}          & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9}          & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9}          & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9}          & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6542.4}          & \multicolumn{1}{c|}{45}     & \multicolumn{1}{c|}{-5804.4}          & \multicolumn{1}{c|}{113}    & \multicolumn{1}{c|}{-5474.4}          & \multicolumn{1}{c|}{115}    & \multicolumn{1}{c|}{-5513.2}          & \multicolumn{1}{c|}{133}    & \multicolumn{1}{c|}{\textbf{-5433.0}} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6591.4}          & \multicolumn{1}{c|}{36}     & \multicolumn{1}{c|}{-5906.2}          & \multicolumn{1}{c|}{75}     & \multicolumn{1}{c|}{-5598.9}          & \multicolumn{1}{c|}{76}     & \multicolumn{1}{c|}{-5602.4}          & \multicolumn{1}{c|}{79}     & \multicolumn{1}{c|}{-5589.1}          &  &  &  &  \\ \cline{2-12}
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                      & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                  & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6373.8}          & \multicolumn{1}{c|}{85}     & \multicolumn{1}{c|}{-6019.9}          & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5857.2}          & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5857.2}          & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5857.2}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6387.2}          & \multicolumn{1}{c|}{21}     & \multicolumn{1}{c|}{-6149.2}          & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5852.3}          & \multicolumn{1}{c|}{49}     & \multicolumn{1}{c|}{-5815.0}          & \multicolumn{1}{c|}{59}     & \multicolumn{1}{c|}{-5837.1}          &  &  &  &  \\ \cline{2-12}
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  &  \\
+                        &                                                                                               &                             &                                       &                             &                                       &                             &                                       &                             &                                       &                             &                                       &  &  &  & 
+\caption{Experimental setup 2 on the mice protein expression dataset.}
+			\end{tabular}
+\end{table*}
+   #+end_export
+
+
+
+   # TODO mention many skipped tests for this dataset
 
    # TODO detail tableThe 6 features we use are detailed below.
 
@@ -1234,14 +1288,14 @@ In order to see the true discrepancy between the BIC score of DAGs and CStrees, 
    # TODO mention that encoding CI relations before hand helps with data sparsity
    # TODO run coronary dataset again to consider ALL orderings
 
-   
+ {{{NEWPAGE}}}
 
 ** Supersymmetry data
 
    This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features cite:baldi-2014-searc-exotic. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features, and after taking a random subsample of size 100000. 
 
         #+begin_export latex
-\begin{figure}[!h]\label{fig:susy1}
+\begin{figure}[H]\label{fig:susy1}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/susy1_cstree.pdf}}%
 \caption{First CStree learnt from the supersymmetry dataset.}
@@ -1283,7 +1337,6 @@ In order to see the true discrepancy between the BIC score of DAGs and CStrees, 
 
 
    # TODO Something about orderings
-
 
 
 * Conclusions

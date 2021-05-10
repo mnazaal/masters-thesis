@@ -161,7 +161,7 @@ def coronary_data():
     coronary_pd      = coronary_pd.replace(coronary_dict)
     # Convert into numpy array, 1st row is column names
     # and first column had id so we ignore these
-    coronary_np      = coronary_pd.values[1:,1:].astype(np.int)
+    coronary_np      = coronary_pd.values[:,1:].astype(np.int)
     return coronary_np
 
 def bnlearn_data(dataset_name,n):

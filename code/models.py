@@ -4,7 +4,7 @@ from graphoid import graphoid_axioms
 from mincontexts import minimal_context_dags, binary_minimal_contexts
 import networkx as nx
 import numpy as np
-from pgmpy.estimators import PC, ExhaustiveSearch, HillClimbSearch, BicScore
+from pgmpy.estimators import PC, ExhaustiveSearch, HillClimbSearch, BicScore, K2Score
 from causaldag import pdag
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -81,7 +81,7 @@ class CSTree(object):
                 raise ValueError("Too many nodes, max 5")
             # get the dags in the MEC of the DAG with the best score
             data_pd = pd.DataFrame(self.dataset, columns=[str(i+1) for i in range(self.dataset.shape[1])])
-            searcher = ExhaustiveSearch(data_pd, scoring_method=BicScore(data_pd))
+            searcher = ExhaustiveSearch(data_pd, scoring_method=K2Score(data_pd))
             max_score=-100000000000
             for score, model in searcher.all_scores():
                 if score>max_score:
@@ -293,6 +293,7 @@ class CSTree(object):
                 # Apply weak union, decomposition, specialization iteratively
                 # Intersection and contraction afterwards
                 print("Applying graphoid axioms")
+                csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
                 csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
 
                 # Get all minimal context DAGs of this CSTree
@@ -598,9 +599,11 @@ class CSTree(object):
                     trees.append((tree, stages3, color_scheme3, ordering))
 
                 
-                if learn_limit and len(trees)==learn_limit and return_type=="all":
+                if learn_limit and len(trees)==learn_limit:
+                    #and return_type=="all":
                     break
-            if  learn_limit and len(trees)==learn_limit and return_type=="all":
+            if  learn_limit and len(trees)==learn_limit:
+                # and return_type=="all":
                 break
 
         if return_type=="minstages":

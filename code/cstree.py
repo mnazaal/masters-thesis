@@ -206,7 +206,7 @@ def dag_to_cstree(val_dict, ordering=None, dag=None, use_dag=True, construct_las
                         for node in stage_nodes:
                             color_scheme[node]=color
                             color_scheme_l[node]=tuple(sc)
-                print("DAG to CSTRree level {} added {} nodes for context {}".format(level, len(stage_nodes), sc))
+                #print("DAG to CSTRree level {} added {} nodes for context {}".format(level, len(stage_nodes), sc))
                 
         stage_list.append(stages_l)
         color_scheme_list.append(color_scheme_l)
@@ -515,7 +515,7 @@ def color_cstree(c,
                 if same_distr:
                     stages_added_l+=1
                     #print("pairing nodes {}{}".format(n1,n2))
-                    print("level {}, staging {}".format(level, common_c))
+                    #print("level {}, staging {}".format(level, common_c))
                     #print("level ",level, "added 1")
                     #print("adding at level ", level, "commonc", common_c)
 
