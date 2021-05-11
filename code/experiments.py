@@ -288,7 +288,14 @@ def vitd_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, p
     # 1. Just the DAG converted to a CSTree
     # 2. CSTree learnt without any CI relations from DAG
     # 3. CSTree learnt using CI relations from DAG
-    cstree_object.learn(orderings=[[1,2,3,4,5]],cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+
+    # our fixed orderings, rm
+    orderings = list(itertools.permutations([1, 2, 3]))
+    orderings = [list(o)+[4,5] for o in orderings]
+
+    # to visualize mcdags which is somehow tractable here
+    cstree_object.visualize(plot_mcdags=True,orderings=orderings,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    #cstree_object.learn(orderings=orderings,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
 
     
 def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
@@ -315,6 +322,7 @@ def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=Non
     val_dict = {i+1:[0,1] for i in range(p)}
     
     # Create CSTree object
+    
     cstree_object = CSTree(dataset, val_dict)
     
     # Learn the cstree and output the best BIC values of the following cases:
@@ -557,4 +565,4 @@ vitd_experiment_bic("hill", 5e-4, "maxbic")
 print("========================================\nAbove is for hill, 5e-4, bic")
 """
 
-vitd_experiment_bic("hill",  5e-4, "maxbic")
+#vitd_experiment_bic("hill",  5e-3, "maxbic")

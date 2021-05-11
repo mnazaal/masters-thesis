@@ -38,7 +38,7 @@ def vitd_data():
         vitd_np[i,2] = mapper(vitd_np[i,2], np.percentile(vitd_np[:,2], [0,  25, 50, 75, 100]))
         vitd_np[i,3] = mapper(vitd_np[i,3], np.percentile(vitd_np[:,3], [0,   50,  100]))
     #vitd_np[:,0] = np.array(list(map(lambda x: mapper(x, [40,47,57,67,80]), vitd_np[:,0])))
-    return vitd_np
+    return vitd_np.astype('int')
 
 
 

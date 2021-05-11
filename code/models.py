@@ -220,8 +220,10 @@ class CSTree(object):
                 x_CjUk = [x[i] for i in range(p) if i+1 in CjUk]
                 x_Cj   = [x[i] for i in range(p) if i+1 in Cj]
                 
+
                 numerator   = u_x_C(x_CjUk, CjUk)
                 denominator = u_x_C(x_Cj,Cj)
+                
                 
                                 
                 if level==0:
@@ -230,6 +232,8 @@ class CSTree(object):
                         
 
                 pr = pr*(numerator/denominator)
+                if np.log(pr)!=np.log(pr):
+                    print(CjUk,Cj,x_CjUk,x_Cj, numerator, denominator)
                 #assert len(x_CjUk)>0
                 #assert len(x_Cj)>0
                 
@@ -245,6 +249,23 @@ class CSTree(object):
         #sprint("all-sttages",all_stages)
         #log_mle = sum(likelihood(self.dataset.T))
         #print(likelihood(self.dataset[np.random.randint(0,n),:],debug=True))
+        #Checking if they sum to 1 on vitd dataset which is giving nans somewhere ,
+        # # but weirdly add to 1 (which is good)when computing the BIC scores for the other 2 cstree configs     
+        """
+        tl=0
+        for a1 in self.val_dict[1]:
+            for a2 in self.val_dict[2]:
+                for a3 in self.val_dict[3]:
+                    for a4 in self.val_dict[4]:
+                        for a5 in self.val_dict[5]:
+                            tl+=likelihood(np.array([a1,a2,a3,a4,a5]))
+                            if math.isnan(tl):
+                                print(likelihood([a1,a2,a3,a4,a5]))
+                                print([a1,a2,a3,a4,a5])
+        
+        print("total lik",tl)
+        """
+        
         log_mle = sum(list(map(lambda i: np.log(likelihood(self.dataset[i,:])), range(n))))
         free_params = sum([len(set(stage_counts[i]))*(len(self.val_dict[i])-1) for i in range(1,p)])
         #print("free params are",free_params)
@@ -293,7 +314,6 @@ class CSTree(object):
                 # Apply weak union, decomposition, specialization iteratively
                 # Intersection and contraction afterwards
                 print("Applying graphoid axioms")
-                csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
                 csi_rels = graphoid_axioms(csi_rels.copy(), self.val_dict)
 
                 # Get all minimal context DAGs of this CSTree
@@ -437,12 +457,12 @@ class CSTree(object):
         # above which respect this ordering
         if orderings:
             orderings_given = True
-            consistent_dags=[]
-            for o in orderings:
-                consistent_dags += [dag for dag in dags_bn if o in nx.all_topological_sorts(dag)]
-            dags_bn = consistent_dags
-            if dags_bn == [] and use_dag:
-                dags_bn=[None]
+            #consistent_dags=[]
+            #for o in orderings:
+            #    consistent_dags += [dag for dag in dags_bn if o in nx.all_topological_sorts(dag)]
+            #dags_bn = consistent_dags
+            #if dags_bn == [] and use_dag:
+            #    dags_bn=[None]
                 #raise ValueError("No DAG with provided ordering in MEC of CPDAG learnt from PC algorithm")
         else:
             orderings_given=False
@@ -467,7 +487,8 @@ class CSTree(object):
 
 
         # For each DAG in the MEC
-        for mec_dag_num, mec_dag in enumerate(dags_bn):
+        skipped_orderings=0
+        for _, mec_dag in enumerate(dags_bn):
             if use_dag and mec_dag is not None:
                 assert len(mec_dag.edges) == mec_dag_edges
 
@@ -492,6 +513,15 @@ class CSTree(object):
             # since any use of it will empty its elements
             
             for _, ordering in enumerate(orderings):
+                
+                if orderings_given and ordering not in  nx.all_topological_sorts(mec_dag):
+                    print("Current DAG with edges {} not consistent with current given ordering {}".format(mec_dag.edges, ordering))
+                    skipped_orderings+=1
+                    print(skipped_orderings)
+                    temp_dag=None
+                else:
+                    temp_dag=mec_dag.copy()
+
                 # If the user knows the last variable, we skip orderings
                 # where the last variable does not match
                 if last_var:
@@ -507,7 +537,7 @@ class CSTree(object):
 
                 # Tree straight from DAG
                 #print("DAG to CSTree start")
-                tree, stages1 ,color_scheme1,stage_list1,color_scheme_list1 = dag_to_cstree(self.val_dict, ordering, mec_dag, use_dag=True)
+                tree, stages1 ,color_scheme1,stage_list1,color_scheme_list1 = dag_to_cstree(self.val_dict, ordering, temp_dag, use_dag=True)
                 #print("DAG to CSTree end")
 
                 # Tree without DAG CI relations
