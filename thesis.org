@@ -342,7 +342,7 @@ The staged tree model $\mathbb{M}_{(\mathbb{T},\theta)}$ is the image of the map
 \end{definition}
 #+end_export
 
-Thus given variables $X_1,...,X_p$, a causal ordering $\pi$, the staged tree for this with levels {{{footnote(The $k^{th}$ level of a rooted tree\, $L_k$\, is the set of nodes such that the unique path from each node in $L_k$ to the root consists of $k$ edges.)}}} $L_1,...,L_p \sim X_{\pi_1},...,X_{\pi_p}$, each path from the root to the leaf defines a sequence of events $x_1, x_1x_2, ...,x_1\cdotsx_p$ where $x_i \in \mathcal{X}_{\pi_i}$. Since for the edge  $e = \\$ $((x_1\cdots x_k), (x_1\cdots x_kx_{k+1}))$ we have $x_{\theta(e)} = \mathbb{P}(x_{k+1}\,|\, x_1\cdots x_k)$, the product in Definition \ref{def:stagedtreemodel} does indeed result in $\mathbb{P}(v_1,...,v_p)$ for each $v \in \textbf{i}_{\mathbb{T}}$ by the chain rule in probability. {{{footnote(The chain rule in probability states $\mathbb{P}(X_1 \,...\,X_p) = \mathbb{P}(X_p \; |\; X_{p-1}\,...\,X_1)\mathbb{P}(X_{p-1} \; | \; X_{p-2}\,...\,X_1 )\\ \cdots \mathbb{P}(X_2|X_1)\mathbb{P}(X_1)   )}}}
+Thus given variables $X_1,...,X_p$, a causal ordering $\pi$, the staged tree for this with levels {{{footnote(The $k^{th}$ level of a rooted tree\, $L_k$\, is the set of nodes such that the unique path from each node in $L_k$ to the root consists of $k$ edges.)}}} $L_1,...,L_p \sim X_{\pi_1},...,X_{\pi_p}$, each path from the root to the leaf defines a sequence of events $x_1, x_1x_2, ...,x_1\cdots x_p$ where $x_i \in \mathcal{X}_{\pi_i}$. Since for the edge  $e = ((x_1\cdots x_k), (x_1\cdots x_kx_{k+1}))$ we have $x_{\theta(e)} = \mathbb{P}(x_{k+1}\,|\, x_1\cdots x_k)$, the product in Definition \ref{def:stagedtreemodel} does indeed result in $\mathbb{P}(v_1,...,v_p)$ for each $v \in \textbf{i}_{\mathbb{T}}$ by the chain rule in probability. {{{footnote(The chain rule in probability states $\mathbb{P}(X_1 \,...\,X_p) = \mathbb{P}(X_p \; |\; X_{p-1}\,...\,X_1)\mathbb{P}(X_{p-1} \; | \; X_{p-2}\,...\,X_1 )\\ \cdots \mathbb{P}(X_2|X_1)\mathbb{P}(X_1)   )}}}
 
 # !!! TODO Dont fully understand the above x_theta thing
 
@@ -364,8 +364,8 @@ Stages are represented by colours, and when a stage contains a single node, it i
 Let $\mathcal{X}_i$ denote the state space of some variable $X_i$ with $\mathcal{X} = \Pi_{i=1}^p \mathcal{X}_i$, and $(\mathbb{T},\theta)$ be a staged tree with levels $L_1,...,L_p$ corresponding to variables $X_{\pi_1},...,X_{\pi_p}$ where $\pi = \pi_1...\pi_p$ is the causal ordering of the variables.  
 A CStree is a staged tree $(\mathbb{T}, \theta)$ where each level of the tree corresponds to some variable and  such that 
 \begin{itemize}
-\item It is compatibly labelled, i.e. $\forall x_{\pi_k} \in \mathcal{X}_i$ we have $\theta(x_{\pi_1}...x_{\pi_{k-1}}\rightarrow x_{\pi_{k-1}}x_{\pi_k}) = \theta(y_{\pi_1}...y_{\pi_{k-1}}\rightarrow y_{\pi_{k-1}}x_{\pi_k})$ whenever $x_{\pi_1}...x_{\pi_{k-1}}$ and $y_{\pi_1}...y_{\pi_{k-1}}$ are in the same stage
-\item (\textbf{CStree property}) Each stage $S_i \subset L_k$ of the tree has a fixed context, i.e. $\exists C_i \subset [k]$ and the fixed outcome context $x_{C_i} \in \mathcal{X}_{C_i}$, where the stages are the union over the variables beside those in $C_i$, i.e. if $Y_i = [k] \textbackslash C_i$ then $S_i = \bigcup_{x_{Y_i} \in \mathcal{X}_{Y_i}} \{x_{C_i}x_{Y_i} \}$  
+\item It is compatibly labelled, i.e. $\forall x_{\pi_k} \in \mathcal{X}_{\pi_k}$ we have $\theta(x_{\pi_1}...x_{\pi_{k-1}}\rightarrow x_{\pi_{k-1}}x_{\pi_k}) = \theta(y_{\pi_1}...y_{\pi_{k-1}}\rightarrow y_{\pi_{k-1}}x_{\pi_k})$ whenever $x_{\pi_1}...x_{\pi_{k-1}}$ and $y_{\pi_1}...y_{\pi_{k-1}}$ are in the same stage
+\item (\textbf{CStree property}) Each stage $S_i \subset L_k$ of the tree has a fixed context, i.e. $\exists C_i \subset [k]$ and the fixed outcome $x_{C_i} \in \mathcal{X}_{C_i}$, where the stages are the union over the variables beside those in $C_i$, i.e. if $Y_i = [k] \textbackslash C_i$ then $S_i = \bigcup_{x_{Y_i} \in \mathcal{X}_{Y_i}} \{x_{C_i}x_{Y_i} \}$  
 \end{itemize}
 \end{definition}
    #+end_export 
@@ -376,7 +376,7 @@ A CStree is a staged tree $(\mathbb{T}, \theta)$ where each level of the tree co
 
 Given a CStree $\mathbb{T}$ and a causal ordering $\pi$, each node in level $L_k$ corresponds to an outcome of the sequence of variables $X_{\pi_1},...,X_{\pi_k}$. Each edge coming into each node in $L_k$ is of the form $(x_1\cdots x_{k-1},x_1\cdots x_k)$ represents $P(x_{k}|x_1 \cdots x_{k-1})$, which is also the value of the parameter associated to this edge. Suppose we fix a node $n = a_1\cdots a_k \in L_k$. Each edge coming out of $n$ gives the probabilities for the variable in the next level $L_{k+1}$, conditioned on the context $(X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$. Thus, we can view this node $n$ as containing the distribution $\mathbb{P}(X_{\pi_{k+1}}\,|\, X_{\pi_1}=a_1,...,X_{\pi_k}=a_k)$ This is an important view which we will make use of when testing for context specific independence in the algorithms throughout this paper. We show an example of a CStree and a staged tree that is not a CStree below.
 
-{{{NEWPAGE}}}
+
 
       #+begin_export latex
 \begin{figure}[!h]\label{fig:cstreestagedtree}
@@ -885,7 +885,7 @@ In the CStree model, independence is implied from the staging of the tree, and e
 #+end_export
 
 
-In order to get these values from the data, we denote $\mathbb{U}$ to be *contingency table* of the data, which a multi-dimensional array {{{footnote(This is the same as tensors in the context of computer science)}}}  with dimensions $d_1 \times \cdots \times d_p$, where $d_i$ is the number of possible outcomes for variable $X_i$, and given a sample $(x_1,...,x_p)$, the value in $\mathbb{U}[(x_1,...,x_p)]$ is the number of times we have this sample in the dataset. The marginalized contingency table $\mathbb{U}_C$ represents the table after summing over the axes which are not in $C$. An important case is when $C$ is the empty set, which results in the marginal table to be 1 dimensional scalar and is the total number of samples in the dataset - when having a stage with an empty context this reflects the conditional distribution for the corresponding variable to simply be the ratio of its outcomes in the dataset. This allows the following compact representation for the likelihood cite:duarte-2021-repres-learn for a tree with levels $(L_1,...,L_p) \sim (X_1,...,X_p)$.
+In order to get these values from the data, we denote $\mathbb{U}$ to be *contingency table* of the data, which a multi-dimensional array {{{footnote(This is the same as tensors in the context of computer science)}}}  with dimensions $d_1 \times \cdots \times d_p$, where $d_i$ is the number of possible outcomes for variable $X_i$. Given a sample $(x_1,...,x_p)$, the value in $\mathbb{U}[(x_1,...,x_p)]$ is the number of times we have this sample in the dataset. The marginalized contingency table $\mathbb{U}_C$ represents the table after summing over the axes which are not in $C$. An important case is when $C$ is the empty set, which results in the marginal table to be 1 dimensional scalar and is the total number of samples in the dataset - when having a stage with an empty context this reflects the conditional distribution for the corresponding variable to simply be the ratio of its outcomes in the dataset. This allows the following compact representation for the likelihood cite:duarte-2021-repres-learn for a tree with levels $(L_1,...,L_p) \sim (X_1,...,X_p)$.
 
 #+begin_export latex
 \begin{align*}
@@ -1003,13 +1003,10 @@ The following table summarizes the empirical space time complexity of generating
  | $p_{edge}$ | DAG Nodes | Space  (GB) | Time  (s) |
  |------------+-----------+-------------+-----------|
  |        0.2 |        20 |       1.203 |        14 |
- |------------+-----------+-------------+-----------|
  |        0.2 |        21 |       2.422 |        43 |
- |------------+-----------+-------------+-----------|
  |        0.2 |        22 |       4.875 |        74 |
- |------------+-----------+-------------+-----------|
  |        0.2 |        23 |       9.812 |       240 |
- |------------+-----------+-------------+-----------|
+ 
 
 
  # !!! TODO Get the average of above for some number of runs
@@ -1048,14 +1045,14 @@ The following table summarizes the empirical space time complexity of generating
 
    
      #+begin_export latex
-\begin{figure}[H]\label{fig:synthetic_exp2a}
+\begin{figure}[]\label{fig:synthetic_exp2a}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/andersonwdag_subsample.pdf}}%
 \caption{CStree learnt using the CI relations from the DAG, which encodes the relation $X_3 \indep X_2,X_1$}
         
    \end{floatrow}
 \end{figure}
-\begin{figure}[H]\label{fig:synthetic_exp2b}
+\begin{figure}[]\label{fig:synthetic_exp2b}
    \begin{floatrow}
 \ffigbox{\includegraphics[width=1.1\linewidth]{temp/andersonwoutdag_subsample.pdf}}%
 \caption{CStree learnt without the CI relations from the DAG, which does not encode the relation $X_3 \indep X_2,X_1$ unlike when using the DAG on the same dataset}}
@@ -1064,22 +1061,22 @@ The following table summarizes the empirical space time complexity of generating
 \end{figure}
    #+end_export
 
-   
+{{{NEWPAGE}}}
 ** Coronary disease data
   
-   This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men cite:reinis-1981-progn-signif. These features are detailed below.
-   #+BEGIN_COMMENT
-   |------------------------------------------+---------------------|
-   | Variable                                 | Outcome space       |
-   |------------------------------------------+---------------------|
-   | Smoking                                  | {Yes,No}            |
-   | Strenuous mental work                    | {Yes,No}            |
-   | Strenuous physical work                  | {Yes,No}            |
-   | Systolic blood pressure                  | {<140,>140}         |
-   | Ratio of beta and alpha lipoproteins     | {<3,>3}             |
-   | Family history of coronary heart disease | {Negative,Positive} |
-   |                                          |                     |
-#+END_COMMENT
+   This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men cite:reinis-1981-progn-signif.  These features are detailed below.
+ |---------------------------------------+------+-----------------------------------|
+ | /                                     |    < | <                                 |
+ | Variable name                         | Node | Outcomes                          |
+ |---------------------------------------+------+-----------------------------------|
+ | Smoking                               |    1 | $\{ Yes,No \}$                    |
+ | Strenuous mental work                 |    2 | $\{ Yes,No \}$                    |
+ | Strenuous physical work               |    3 | $\{ Yes,No \}$                    |
+ | Systolic blood pressure               |    4 | $\{(-\infty,140],(140,-\infty)\}$ |
+ | Ratio of beta and alpha lipoproteins  |    5 | $\{(-\infty,3],(3,-\infty)\}$     |
+ | Coronary heart disease family history |    6 | $\{ Yes,No \}$                    |
+ 
+                                                                     
 This data set does not require further pre-processing since the outcome space is already categorical, and there were no missing values.
 
 
@@ -1088,7 +1085,7 @@ We first perform the following experiment: Learn a DAG model from both the PC al
 2. The CStree learnt only from context specific information without encoding the CI relations from the DAG
 3. The CStree learnt from encoding the CI relations from the DAG and then learning further context specific information
 
-For each of the cases above we create/merge stages using the Anderson-Darling test cite:scholz-1987-k-sampl, the Epps-Singleton test cite:epps-1986-omnib-test, and the symmetric KL divergence with different threshold values. The use of the symmetric KL divergence is motivated by the unreliability of conditional independence testing in practice. Given 2 distributions $\mathbb{P}, \mathbb{Q}$ over the same discret state space $\mathcal{X}$, the symmetric KL divergence is as follows. 
+For each of the cases above we create/merge stages using the Anderson-Darling test cite:scholz-1987-k-sampl, the Epps-Singleton test cite:epps-1986-omnib-test, and the symmetric KL divergence with different threshold values. The use of the symmetric KL divergence is motivated by the unreliability of conditional independence testing in practice. Given 2 distributions $\mathbb{P}, \mathbb{Q}$ over the same discrete state space $\mathcal{X}$, the symmetric KL divergence is as follows. 
 
 
 #+begin_export latex
@@ -1131,7 +1128,7 @@ We see that the results are nearly identical, other than for 2 entries correspon
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  & 
 
-\caption{Experimental setup 1 on the coronary dataset. Each cell under the column "Stages" is the minimum number of stages amongst all causal orderings generated from the either the PC or Hill Climbing algorithm, for different staging criteria. Many orderings produce CStrees with the same number of stages, the BIC score in the table above is the maximum such BIC score.}
+\caption{Experimental setup 1 on the coronary dataset. Each cell under the column "Stages" is the minimum number of stages amongst all causal orderings generated from the either the PC or Hill Climbing algorithm, for different staging criteria. Many orderings produce CStrees with the same number of stages, in which case the BIC score in the table above is the maximum over those CStrees.}
 \end{tabular}
 \end{table*}
 
@@ -1185,7 +1182,34 @@ We see that the results are nearly identical, other than for 2 entries correspon
 \end{table*}
 #+end_export
 
+
+
+In order to compare our CStrees with similar staged trees, we do the following. First take the BIC optimal CStree that we have learnt which does not correspond to a DAG model. Take the ordering of this tree, and then fit staged trees using score based learning algorithms, optimizing for the BIC score. The algorithms used to fit the staged trees are the following:
+   1. Hill climbing - Start from the full independence model, then in a greedy manner, for each node, either assign it an existing stage or create a new stage depending on whichever option best increases the score. 
+   2. Backward hill climbing - Similar to hill climbing except we start from a full model, i.e. one where each node belongs to a singleton stage.
+   3. Backward joining - Start from the full model, and iteratively merge stages depending on whether a certain measure between them is below a threshold. We use the KL divergence with twice the threshold which gave us the BIC optimal CStree from our methods.
+   4. Hierarchial clustering - Start from a full model, and iteratively cluster nodes in level $k$ to $c_k$ clusters using hierarchial clustering. We use the total variation measure alongside 2 clusters for each level.
+      We call our approach to fit the CStree modified Algorithm \ref{alg:cstreepc} since the BIC optimal CStree is not necessarily learnt using the PC algorithm to get the initial DAG.
+
+We call this *experimental setup 3*, and detail the results of it on the coronary dataset below. None of the staged trees are CStrees, and they are included in the Appendix.
+
+   
+ |-------------+---------------------------------------+---------+--------|
+ | /           | <                                     |       < |      < |
+ | Model       | Algorithm                             |     BIC | Stages |
+ |-------------+---------------------------------------+---------+--------|
+ | CStree      | Modified Algorithm \ref{alg:cstreepc} | -6729.5 |     30 |
+ | Staged tree | Hill climbing                         | -6645.3 |     11 |
+ | Staged tree | Backward hill climbing                | -6641.1 |     13 |
+ | Staged tree | Backward joining                      | -6790.4 |     57 |
+ | Staged tree | Hierarchial clustering                | -6654.7 |     10 |
+
+
+ 
     In order to generate the sequence of DAGs that capture the context specific causal information from this dataset, we require 4 variables for computational feasibility. We do this by first removing the variable that gives us the the best score after its removal, which in this case is the variable corresponding to systolic blood pressure. We then generate the 5 BIC optimal CSTrees arising after removing each of the remaining 5 variables.
+
+
+    
 
  # TODO In order to see the true discrepancy between the BIC score of DAGs and CStrees, we consider another method to get a starting DAG. This is to do an exhaustive search over the space of DAGs, and choose the DAG with the highest BIC score, and take the DAGs in its MEC to generate the possible causal orderings. We call this *experimental setup 3*. This task is intractable for variables more than 5, thus we have to remove 1 variable. To decide on which variable to choose, we generate all possible DAGs after removing each variable separately, and remove the variable which results in the highest BIC score. For this dataset, this happens to be the systolic blood pressure.
 
@@ -1209,8 +1233,23 @@ We see that the results are nearly identical, other than for 2 entries correspon
 
 
 
-   We choose 7 features and the predictor variable, giving a system of 8 variables. This number is chosen since this gives a maximum of 196 causal orderings which is computationally feasible, meanwhile increasing the variables to 9 and 10 increase this amount to 1008 and 13608 respectively. 
+   We choose 7 features and the predictor variable, giving a system of 8 variables. This number is chosen since this gives a maximum of 196 causal orderings which is computationally feasible, meanwhile increasing the variables to 9 and 10 increase this to 1008 and 13608 respectively. These are detailed below.
 
+ |---------------+------+-----------------------------------------|
+ | /             |    < | <                                       |
+ | Variable name | Node | Outcomes                                |
+ |---------------+------+-----------------------------------------|
+ | $AKT_N$       |    1 | $\{(-\infty, Q^1_2],(Q^1_2, \infty) \}$ |
+ | $APP_N$       |    2 | $\{(-\infty, Q^2_2],(Q^2_2, \infty) \}$ |
+ | $SOD1_N$      |    3 | $\{(-\infty, Q^3_2],(Q^3_2, \infty) \}$ |
+ | $NR2B_N$      |    4 | $\{(-\infty, Q^4_2],(Q^4_2, \infty) \}$ |
+ | $pNUMB_N$     |    5 | $\{(-\infty, Q^5_2],(Q^5_2, \infty) \}$ |
+ | $IL1B_N$      |    6 | $\{(-\infty, Q^6_2],(Q^6_2, \infty) \}$ |
+ | $SYP_N$       |    7 | $\{(-\infty, Q^7_2],(Q^7_2, \infty) \}$ |
+ | Class         |    8 | $\{C_i \}_{i=1}^8$                      |
+                                                   
+
+Here, $Q^i_2$ refers to the median of the variable corresponding to node $i$.
 
    #+begin_export latex
 % Please add the following required packages to your document preamble:
@@ -1284,13 +1323,22 @@ We see that the results are nearly identical, other than for 2 entries correspon
    # !!! TODO create variable table for above
 
    # TODO With or without DAG independence encoding
-
+ |-------------+---------------------------------------+---------+--------|
+ | /           | <                                     |       < |      < |
+ | Model       | Algorithm                             |     BIC | Stages |
+ |-------------+---------------------------------------+---------+--------|
+ | CStree      | Modified Algorithm \ref{alg:cstreepc} | -5433.0 |    133 |
+ | Staged tree | Hill climbing                         | -5320.1 |     28 |
+ | Staged tree | Backward hill climbing                | -5227.6 |     36 |
+ | Staged tree | Backward joining                      | -6427.1 |    148 |
+ | Staged tree | Hierarchial clustering                | -5990.4|     17 |
    # TODO Print all possible orderings
 
    # TODO mention that encoding CI relations before hand helps with data sparsity
    # TODO run coronary dataset again to consider ALL orderings
 
  {{{NEWPAGE}}}
+
 
 ** Supersymmetry data
 
@@ -1312,7 +1360,22 @@ We see that the results are nearly identical, other than for 2 entries correspon
                                         
 
 ** Vitamin-D dataset
-   This dataset comes from a real study on Vitamin D and mortality cite:martinussen-2017-instr-variab, and contains 4 feature variables corresponding to age, a binary indicator denoting mutations in the filaggrin gene, vitamin D levels measured  as serum 25-OH-D (nmol/L), follow up time, alongside the predictor variable which is a binary value indicating knowledge of whether the subject passed away during the follow up. Looking at the data it is clear that the ages are grouped into 4 distinct groups. We group the vitamin D measurement into 4 groups based on the quartiles of the data, and the follow up time is grouped into a binary outcome with the median being the cutoff point. We perform the experimental setup 1 and 2 on this dataset and get the following results.
+   This dataset comes from a real study on Vitamin D and mortality cite:martinussen-2017-instr-variab, and contains 4 feature variables corresponding to age, a binary indicator denoting mutations in the filaggrin gene, vitamin D levels measured  as serum 25-OH-D (nmol/L), follow up time, alongside the predictor variable which is a binary value indicating knowledge of whether the subject passed away during the follow up. Looking at the data it is clear that the ages are grouped into 4 distinct groups. We group the vitamin D measurement into 4 groups based on the quartiles of the data, and the follow up time is grouped into a binary outcome with the median being the cutoff point. The resulting dataset is summarized in the table below.
+
+ |----------------+------+---------------------------------------------------------------------|
+ | /              |    < | <                                                                   |
+ | Variable name  | Node | Outcomes                                                            |
+ |----------------+------+---------------------------------------------------------------------|
+ | Age            |    1 | $\{[40,47),[47,57),[57,67),[67,80)\}$                               |
+ | Filaggrin      |    2 | $\{Yes,No\}$                                                        |
+ | Vitamin D      |    3 | $\{ [-\infty,Q^3_1),[Q^3_1,Q^3_2),[Q^3_2,Q^3_3),[Q^3_1,-\infty) \}$ |
+ | Follow up time |    4 | $\{(-\infty, Q^4_2],(Q^4_2, \infty) \}$                             |
+ | Passed away    |    5 | $\{Yes,No \}$                                                       |
+
+Here $Q^i_1,Q^i_2,Q^i_3$ respectively denote the lower quartile, median and upper quartile of the variable corresponding to node $i$.
+
+
+   We perform the experimental setup 1 and 2 on this dataset and get the following results.
 
    #+begin_export latex
 % Please add the following required packages to your document preamble:
@@ -1372,12 +1435,35 @@ We see that the results are nearly identical, other than for 2 entries correspon
    #+end_export
 
    # TODO Analysis of vitamind 1 exp 1
+   #+CAPTION: Ordering 53421
+  |-------------+---------------------------------------+---------+--------|
+  | /           | <                                     |       < |      < |
+  | Model       | Algorithm                             |     BIC | Stages |
+  |-------------+---------------------------------------+---------+--------|
+  | CStree      | Modified Algorithm \ref{alg:cstreepc} | -8405.2 |      9 |
+  | Staged tree | Hill climbing                         | -8423.1 |     11 |
+  | Staged tree | Backward hill climbing                | -8423.4 |     12 |
+  | Staged tree | Backward joining                      | -8560.8 |     26 |
+  | Staged tree | Hierarchial clustering                | -8910.0 |     10 |
 
- 
+
+   # !!! TODO Cite table number above
+   #+CAPTION: Ordering 32145
+  |-------------+---------------------------------------+---------+--------|
+  | /           | <                                     |       < |      < |
+  | Model       | Algorithm                             |     BIC | Stages |
+  |-------------+---------------------------------------+---------+--------|
+  | CStree      | Modified Algorithm \ref{alg:cstreepc} | -8776.5 |      9 |
+  | Staged tree | Hill climbing                         | -8406.5 |     13 |
+  | Staged tree | Backward hill climbing                | -8403.5 |     16 |
+  | Staged tree | Backward joining                      | -8547.1 |     19 |
+  | Staged tree | Hierarchial clustering                | -8628.6 |     10 |
+
+Which is why we fix the last 2 variables TODO Explain this part
+Technically, the highest BIC score was achieved using the Epps test, which gives the CStree with ordering 12345 a BIC score of -8734.5 however this CStree has 48 stages. This is followed by the CStree obtained using the symmetric KL divergence with a threshold of $5 \times 10^{-2}$, which gives the ordering 21345 with a BIC score of -8771.7. However, this is a DAG model with one edge $4 \rightarrow 5$ in the empty context graph. We found changing this threshold to $5 \times 10^{-3}$ gave us a slightly worse BIC score but a CStree that encodes interesting context specific information, which is why we choose this ordering as a basis for comparison with staged trees. We show this CStree alongside its minimal context DAGs below.
+
 
    
-   # !!! TODO Cite table number above
-
    # TODO Print all possible orderings
 
    # TODO Skipped tests due to single values
@@ -1386,7 +1472,7 @@ We see that the results are nearly identical, other than for 2 entries correspon
    
 ** Discussion of empirical performance
 
-   We see in general that using the symmetric KL divergence to identify stages in the CStree result a higher BIC score when compared to choosing a CStree with the minimum number of stages. There are many reasons which could lead to this happening in practice, with the first being unreliability of the statistical independence tests, which is in general a very task cite:shah-2020-hardn-condit.
+   We see in general that using the symmetric KL divergence to identify stages in the CStree result a higher BIC score when compared to choosing a CStree with the minimum number of stages. There are many reasons which could lead to this happening in practice, with the first being unreliability of the statistical independence tests, which is in general a very hard task cite:shah-2020-hardn-condit.
 
 
    If the data generating distribution happens to be faithful to a CStree with a large number of stages, particularly non-singleton stages, then it is possible that there is not enough samples to learn the context specific information in the finite data setting. We note that a lot of this information was learnt by comparing samples with extremely different sizes, so in practice it might be a good idea to merge the corresponding nodes into the same stage if a certain criteria is met, for example, only if both sample sizes are at least half of their mean.
