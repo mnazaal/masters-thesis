@@ -1,4 +1,4 @@
-% Created 2021-05-11 Tue 15:26
+% Created 2021-05-12 Wed 03:22
 % Intended LaTeX compiler: pdflatex
 \documentclass{tufte-book}
 \usepackage[utf8]{inputenc}
@@ -31,14 +31,17 @@
 \setcounter{secnumdepth}{2}
 \newcommand{\indep}{\perp \!\!\! \perp}
 
-
 \(\chapter*{Abstract}\)
 Despite having a philosophical grounding from empiricism that span some centuries, the algorithmization of causal discovery started only a few decades ago. This formalization of studying causal relationships relies on connections between graphs and probability distributions. In this setting, the task of causal discovery is to recover the graph that best describes the causal structure based on the data we receive. A particular class of causal discovery algorithms, called constraint-based methods rely on Directed Acylic Graphs (DAGs) as an encoding of Conditional Independence (CI) relations that carry some level of causal information. However, a CI relation such as \(X\) and \(Y\) being independent conditioned on \(Z\) assumes the independence holds for all possible values \(Z\) can take, which can tend to be unrealistic in practice where causal relations are often context-specific.  In this thesis we aim to develop constraint based algorithms to learn causal structure from Context-Specific Independence (CSI) relations within the discrete setting, where the independence relations are of the form X and Y being independent of \(Z=a\) for some \(a\). This is done by using Context-Specific trees, or CStrees for short, which can encode CSI relations.
+
+\(\chapter*{Sammanfattning}\)
+Trots en filosofisk grund från empirism som sträcker sig över några århundraden, började algoritmiseringen av kausal upptäckt bara för några decennier sedan. Denna formalisering av att studera orsakssamband beror på samband mellan grafer och sannolikhetsfördelningar. I den här inställningen är kausal upptäckt att återställa den graf som bäst beskriver kausalstrukturen baserat på de data vi får. En särskild klass av kausala upptäcktsalgoritmer, kallade begränsningsbaserade metoder, är beroende av Directed Acylic Graphs (DAG) som en kodning av förhållanden med villkorlig självständighet (CI) som bär någon nivå av kausal information. En CI-relation som \(X\) och \(Y\) är oberoende förutsatt att \(Z\) förutsätter att självständigheten gäller för alla möjliga värden \(Z\) kan ta, vilket kan vara orealistiskt i praktiken där orsakssamband ofta är sammanhangsspecifikt. I denna avhandling strävar vi efter att utveckla begränsningsbaserade algoritmer för att lära kausalstruktur från Contex-Specific Independence (CSI) -relationer inom den diskreta miljön, där självständighetsrelationerna har formen \(X\) och \(Y\) är oberoende av \(Z = a\) för några \(a\). Detta görs med hjälp av sammanhangsspecifika träd, eller kort CStrees, som kan koda CSI-relationer.
 
 
  \newpage 
 
 \(\chapter*{Acknowledgements}\)
+I would really like to thank Liam for providing me the opportunity to work on a very exciting project, and for being a superb supervisor in every way imaginable. His guidance is without a doubt the secret ingredient that went into this work. A special thanks to George for being on standby for small discussions, and of course to Nikos and Cindy for the virtual study sessions. Also a special thanks to my family, especially my mom, for valuing a good education back when I was younger, and their patience now that I am maybe studying a bit too much. Last but not least, I thank KTH for funding my curiosity.
 
  \newpage 
 
@@ -49,31 +52,31 @@ Despite having a philosophical grounding from empiricism that span some centurie
  \newpage 
 
 \chapter{Introduction}
-\label{sec:orgcac3daa}
+\label{sec:orge3c6435}
 \label{sec:Intro}
 \section{Motivation}
-\label{sec:org774c8ff}
+\label{sec:org2aba2c5}
 At the heart of scientific discovery, and thus of modern society, is our ability to gain knowledge about causal relations based on observations and experimentation. Whilst being an active research area for its own sake, causal discovery has many applications to diverse fields ranging from economics  \cite{huang-2019-causal-discov} and genomics \cite{hu-2018-applic-causal} to the climate sciences \cite{runge-2019-infer-causat}. In fact, any field involving any form of measurements/observations which are hypothesized to involve causal interactions can benefit from the tools which this research area has to offer, by allowing the user to get some causal model of the system from which their data is generated. Armed with such a causal model, the user can answer more complex queries than they can using just observed data. Such queries form a hierarchy, referred to as Pearl's Causal Hierarchy, which starts from those related to observations, then interventions, then counterfactuals \cite{pearl-2018-book-why}. In fact it has been recently shown that their strict distinction holds in the measure theoretic sense \cite{elias-2020-pearl-hierar}.
 
 \section{Classical methods}
-\label{sec:orgba80232}
+\label{sec:org883420e}
 Historically speaking the task of causal discovery was achieved by using clever experimental design \cite{fisher-1935}. In particular, Randomized Controlled Trials (RCTs) are often called the gold standard in this regard. The common RCT setting involves allocating subjects in the experiment randomly into 2 groups, where one group called the treatment group receives an intervention and the other group called the control group receives no intervention (or treatment), often in the form of a placebo. One of the main limitations of RCTs is that not every system on which we want to infer causal relationships lends to this setting. For example, it is not a good idea to have a RCT to determine whether smoking causes lung cancer which would involve forcing the subjects to smoke. This creates a need for more sophisticated methods, namely causal models, to learn causal relationships from both observational and interventional data. In fact one can even use such models to explain the success of RCTs in a formal manner.
 
 
 \section{Context specific causal discovery}
-\label{sec:org33d9b4e}
+\label{sec:org13145f1}
 Much of the causal models in wide use today make use of Directed Acyclic Graphs (DAGs), with the semantics that the directed edges represent causal relationships between the variables, which correspond to the nodes in the graph. As we operate under the assumption that any data we receive is generated by some underlying probability distribution, we relate these graphs to them via conditional independence relations which carry elementary causal information about the system of variables. Many algorithms have been proposed to learn such causal models from observed data in recent decades \cite{chickering-2002-optimal,spirtes-1991-algor-fast,solus-2021-consis-guaran,tsamardinos-2006-max-min-hill}, and are in wide use across various domains. They are, however, restrictive in their modelling capacity, since a conditional independence relation by definition is assumed to hold over all possible outcomes of the conditioning set. We call these outcomes contexts, and it is realistic to assume that causal relations depend on context specific information. A number of approaches exist to model such context specific information \cite{collazo-2018-chain,silander-2013,thwaites-2010-causal-analy,goergen-2017-equiv-class}, however their representations are not as intuitive as DAGs. Recently, a new representation for context specific causal relations have been proposed, called Context Specific trees (CStrees), which can be seen as a natural generalization of DAGs to the context specific scenario. Namely, CStrees allow for the representation of context specific information as a sequence of DAGs, thus striking a balance between modelling capacity and an intuitive representation. The next natural step is to learn CStrees from data, and this thesis provides the first novel causal discovery algorithms for CStrees to learn from observational data, alongside algorithms to compute the required minimal contexts, which are required for representing CStrees as a sequence of DAGs. This approach is a constraint based approach which generalizes the classic PC algorithm \cite{spirtes-1991-algor-fast}, alongside applications to both synthetic and real world data.
 
 
 \section{Relevance to machine learning}
-\label{sec:org8114c75}
+\label{sec:orgd1c3a65}
 Causal discovery as a subfield of causal modelling contains many ideas which can help in overcoming hard barriers in machine learning. Machine learning can be summarized as the field where practitioners formulate mathematical models of a system of interest, followed by incorporating observed data into this model using various algorithms with the aim of making better predictions about the system. This field has been enjoying significant breakthroughs recently in part due to the availability of a lot of data and faster computers. However, a lot of the work in this field is set in the assumption of independent and identically distributed (i.i.d) data, and ignores information from interventions, domain shifts and temporal structure \cite{schoelkopf-2019-causal-machin-learn}. As such, there are various problems which still require a causal model, which without it in some cases even give rise to seemingly nuanced paradoxes \cite{pearl-2018-book-why}, such as Simpsons paradox \cite{simpson-1951-inter-inter}, where one might for example have a positive correlation between 2 variables over the whole data, but dividing the samples into further groups would result in a negative correlation within each group.  This is not just a theoretical issue, and has been reported in many real life data as well \cite{wagner-1982-simps-parad}.
 
 
 \chapter{Causal Discovery with Directed Acyclic Graphs}
-\label{sec:orge88181a}
+\label{sec:org6631e88}
 \section{The Causal Discovery problem}
-\label{sec:org497d1da}
+\label{sec:org64fb7c1}
 We first provide a formalization of the causal discovery problem. Suppose we have a system of \(p\) variables \(X_1,...,X_p\) which we assume has some underlying probability distribution \(\mathbb{P}\), and from which we have \(n\) samples \(\{x_1^i,...,x_p^i\}_{i=1}^n\). The goal of causal discovery is to recover a structure \(\mathbb{G}\) that best represents the causal mechanisms of the system. The structure \(\mathbb{G}\) is often a graph with certain properties that enables it to encode information about the system - this means we must make an assumption that such a structure \(\mathbb{G}\) exists and it is related to the distribution \(\mathbb{P}\). This information about the system is extracted from the samples we have from the distribution \(\mathbb{P}\) - this means we have to make further assumptions to relate information we get from samples in \(\mathbb{P}\) to our structure \(\mathbb{G}\).
 
 
@@ -84,7 +87,7 @@ There are two common approaches to causal discovery \cite{glymour-2019-review-ca
 
 
 \section{Direct Acyclic Graphs (DAGs)}
-\label{sec:org16bc1a8}
+\label{sec:org66162bc}
 We now cover some important definitions and concepts related to Directed Acyclic Graphs (DAGs). They are a convenient and informative graphical means of visualizing the direct cause-effect relationships between variables in a system, and the de-facto choice to model causal structures.
 
 
@@ -204,7 +207,7 @@ Two DAGs $\mathbb{G}_1$ and $\mathbb{G}_2$ are Markov Equivalent if and only if 
 For example, the Chain and Fork graphs from the previous page belong to the same Markov Equivalence class.
 
 \section{Causal Discovery Algorithms for DAGs}
-\label{sec:org2170d9a}
+\label{sec:org007656e}
 
 Theorem \ref{thm:markovdag} suggests that we can make use of CI testing on a distribution \(\mathbb{P}\) to learn a DAG \mathbb{G}. However, the distribution \(\mathbb{P}\) may contain CI relations not encoded in the DAG, thus we make the following assumption.
 
@@ -226,7 +229,7 @@ One of the first practical algorithms which make use of the theory above is the 
 
 
 \section{Limitations of using DAGs}
-\label{sec:org35dc1c7}
+\label{sec:org70d2e51}
 DAGs are a simple and informative structure for causal discovery, however their ability to only encode CI relations is a limitation. This is because the CI relation  \((X_A \indep_{\mathbb{P}} X_B \,|\, X_S)\) implies that \(X_A\) and \(X_B\) are independent for all possible outcomes of \(X_S\), which in some cases might be too strong of an assumption. A generalization of such relations is Context Specific Independence (CSI) relations, defined below.
 \begin{definition}[Context Specific Independence]\label{def:csirel}
 Let  $\mathbb{P}$ be a distribution with variables $X_1,...,X_p$ with a state space $\mathcal{X} = \prod_{i=1}^p \mathcal{X}_i$. Given non-empty subsets $A,B \subset [p]$ and (possibly empty) subsets $S,C \subset [p]$ and $x_C \in \prod_{i \in C}\mathcal{X}_i $ such that $\mathbb{P}(X_B, X_S, X_C = x_C)>0$ and $A \cap B \cap S \cap C = \{\}$, we say the variables $X_A$ and $X_B$ are conditional independent given $S$, in the context $X_C=x_C$ (denoted $(X_A\indep_{\mathbb{P}} X_B \,|\, X_S)$) if $\mathbb{P}(X_A \,|\,X_B, X_S,X_C=x_C) = \mathbb{P}(X_A \, |\, X_S,X_C=x_C)$ holds for all possible outcomes of $X_A,X_B,X_S$.
@@ -239,11 +242,11 @@ In the next chapter we introduce Context Specific Trees (CStrees) which can enco
  \newpage 
 
 \chapter{Causal Discovery with Context Specific Trees}
-\label{sec:orgdf872cb}
+\label{sec:org8d84397}
 One intuition is that to capture context specific relations one needs to make use of a structure that explicitly represents separate outcomes of a distribution. Typically in high school some might have encountered the use of trees to model small probabilistic systems, and they fully include all possible outcomes involved, and serve as an important tool to compute probabilities for relevant events. As we will see in this chapter, this is a good way to approach the problem of encoding context information as well.
 
 \section{Context Specific Trees (CStrees)}
-\label{sec:orgde2f2d9}
+\label{sec:org6307c57}
 Before defining CStrees we start by defining staged trees, which contain CStrees as a subset. Both of these are rooted trees.  \footnote{A rooted tree $\mathbb{T} = (\mathbb{V},\mathbb{E})$ is a directed graph whose skeleton is a tree and there exists a unique node $r$ such that $PA_{\mathbb{T}}(r) = \{\}$ which is called the root.} 
    \begin{definition}[Staged trees]
    Let $\mathbb{T} = (\mathbb{V},\mathbb{E})$ be a rooted tree, $\mathbb{L}$ a finite set of labels for the edges, and $\theta : \mathbb{E} \rightarrow \mathbb{L}$ a labelling of the edges. Let $E_{\mathbb{T}}(v) = \{v \rightarrow w \in \mathbb{E} \,:\, w \in CH_{\mathbb{T}}(v) \}$,   i.e. the set of edges coming out of $v$ in $\mathbb{T}$. The pair $(\mathbb{T}, \theta)$ is a staged tree if 
@@ -263,7 +266,7 @@ Given the probability simplex \(\Delta_{|\mathcal{X}|-1}\) and letting \(\mathbf
 \begin{definition}[Staged tree models]\label{def:stagedtreemodel}
 The staged tree model $\mathbb{M}_{(\mathbb{T},\theta)}$ is the image of the map $\varphi_\mathbb{T} \, : \, x \rightarrow f_v := $ $\Big($ $\prod_{e \in E_{\mathbb{T}(\lambda(v))} x_{\theta(e)}$ $\Big)_{v \in \mathbf{i}_{\mathbb{T}}}$
 \end{definition}
-
+ \begin{marginfigure} \includegraphics[width=\linewidth]{ ./temp/modelhierarchy.pdf}\caption{ Hierarchy of models on $\mathcal{X}$ that we are concerned with, the most general space of models being probability simplex since it contains all distributions on $\mathcal{X}$, followed by the space of staged tree models $\mathbb{M}_{(\mathbb{T},\theta)}$, the space of Cstree models $\mathbb{M}_{(\mathbb{T}', \theta)}$ then DAG models $\mathbb{M}_{\mathbb{G}}$. More general models can explain more datasets whilst simpler models can often be easier to work with.} \end{marginfigure} 
 Thus given variables \(X_1,...,X_p\), a causal ordering \(\pi\), the staged tree for this with levels  \footnote{The $k^{th}$ level of a rooted tree, $L_k$, is the set of nodes such that the unique path from each node in $L_k$ to the root consists of $k$ edges.}  \(L_1,...,L_p \sim X_{\pi_1},...,X_{\pi_p}\), each path from the root to the leaf defines a sequence of events \(x_1, x_1x_2, ...,x_1\cdots x_p\) where \(x_i \in \mathcal{X}_{\pi_i}\). Since for the edge  \(e = ((x_1\cdots x_k), (x_1\cdots x_kx_{k+1}))\) we have \(x_{\theta(e)} = \mathbb{P}(x_{k+1}\,|\, x_1\cdots x_k)\), the product in Definition \ref{def:stagedtreemodel} does indeed result in \(\mathbb{P}(v_1,...,v_p)\) for each \(v \in \textbf{i}_{\mathbb{T}}\) by the chain rule in probability.  \footnote{The chain rule in probability states $\mathbb{P}(X_1 ,...,X_p) = \mathbb{P}(X_p \; |\; X_{p-1},...,X_1)\mathbb{P}(X_{p-1} \; | \; X_{p-2},...,X_1 )\\ \cdots \mathbb{P}(X_2|X_1)\mathbb{P}(X_1)} 
 
 The important characteristic of staged trees are the stages. 
@@ -317,7 +320,7 @@ The CSI relations from the CStrees look similar to the CI relations from the ord
 
 
 \section{Learning CStrees from observed data}
-\label{sec:org785fe72}
+\label{sec:org6d2b262}
 Given a system of variables \(X_1,...,X_p\), we would first need a causal ordering \(\pi_1 \cdots \pi_p\) in order to construct a CStree for these variables. Since CStrees encode CSI relations, they can also encode CI relations, which means we can generate a CStree from a DAG. The following proposition formalizes this notion \cite{duarte-2020-algeb}.
 
 \begin{proposition}[CStrees corresponding to DAGs]\label{prop:dagandcstree}
@@ -333,17 +336,18 @@ We describe the computational procedure to generate a CStree \(\mathbb{T}\) from
       \SetAlgoLined
       \KwIn{A DAG $G$, causal ordering $O$}
       \KwOut{CStree $T$ with ordering $O$ and stages $S$ defined by $G$}
-      $T \leftarrow$ Empty staged tree with ordering $O$\;
-      $S \leftarrow$ Empty dictionary\;
-       \For{$l$ in $|O|-1$}{
-        $v \leftarrow O[l+1]$ \;
+      $T \gets$ Empty staged tree with ordering $O$\;
+      $S \gets$ Empty List\;
+       \For{$k$ in $|O|-1$}{
+        $v \leftarrow O[k+1]$ \;
 	$T.add\_level(v)$\;
-	$a \leftarrow \;  \textsc{Parents}(G, v)$\;
-	$b \leftarrow$ \textsc{CartesianProduct}($a$)\;
-	\tcp{Each element of $b$ is a context which fixes a stage in level $l$}
-	\For{$c$ in $b$}{
-	$S[c] \leftarrow$ [nodes in level $l$ such that $c$ is a subcontext]\;
+	$pars \leftarrow \;  \textsc{Parents}(G, v)$\;
+	$contexts \leftarrow$ \textsc{CartesianProduct}($pars$)\;
+	$stages\_k \gets$ Empty Dictionary\;
+	\For{$c$ in $contexts$}{
+	$stages\_k[c] \leftarrow$ [nodes in level $k$ where $c$ is a subcontext]\;
 	}
+	$S.append(stages\_k)$\;
        }
        \caption{\textsc{DagToCStree}\\Constructing a CStree from a DAG}
        \KwRet{$T, S$}
@@ -444,8 +448,8 @@ $min\_stage \gets \infty$\;
     $orderings \gets$  \textsc{AllTopologicalSort}($G$)\;}
 
     \For{$O$ in $orderings$}{
-    $S,T \gets $ \textsc{DagToCStree($G$,$O$)}\;
-    $S,T \gets $ \textsc{LearnCStree($T,S,O,D$)}\;
+    $T,S \gets $ \textsc{DagToCStree($G$,$O$)}\;
+    $T,S \gets $ \textsc{LearnCStree($T,S,O,D$)}\;
     \If{$|S|$ < $min\_stages$}
     {
     $min\_stages \gets$ |S|\;
@@ -470,12 +474,17 @@ Algorithm \ref{alg:cstreepc} considers many possible candidate CStree models, th
 
 
 
-Unlike DAGs, as the number of variables increase it gets progessively harder to visually understand the learnt causal structure by just looking at the learnt CStree. 
+Unlike DAGs, as the number of variables increase it gets progessively harder to visually understand the learnt causal structure by just looking at the learnt CStree.
+
+
+
+
+
 
 \section{Understanding high-dimensional CStrees}
-\label{sec:orgd8c0856}
- From a pragmatic perspective the aim of this section is to introduce the notion of Minimal Context (MC) DAGs which can help visualize CStrees with more variables and the context specific information they encode. On a theoretical note, this work has led to
-the generalization of Theorem \ref{thm:vermapearl} to define a characterization of Markov Equivalence for CStrees \cite{duarte-2021-repres-learn}. We start by first describing the procedure  \footnote{\textsc{StagesInLevel} takes a set of stages and a level and returns the stages in that level; \textsc{ContextOfStage} takes a stage and returns the common context of that stage; \textsc{VariablesOfContext} takes a context and returns the variables in it}  to generate the CSI relations from a CStree and its stages, which uses Lemma \ref{lem:cstreecsi}
+\label{sec:orga71e837}
+From a pragmatic perspective the aim of this section is to introduce the notion of Minimal Context (MC) DAGs which can help visualize CStrees with more variables and the context specific information they encode. On a theoretical note, this work has led to
+  the generalization of Theorem \ref{thm:vermapearl} to define a characterization of Markov Equivalence for CStrees \cite{duarte-2021-repres-learn}. We start by first describing the procedure  \footnote{\textsc{StagesInLevel} takes a set of stages and a level and returns the stages in that level; \textsc{ContextOfStage} takes a stage and returns the common context of that stage; \textsc{VariablesOfContext} takes a context and returns the variables in it}  to generate the CSI relations from a CStree and its stages, which uses Lemma \ref{lem:cstreecsi}
 
    \begin{algorithm}\label{alg:gencsirels}
   \SetAlgoLined
@@ -553,76 +562,98 @@ Let $X_1,X_2,X_3,X_4$ be binary variables taking values in $\{0,1\}$. If we have
 Example \ref{eg:mc1} shows that we can get absorption from CSI relations we get from different levels, while \ref{eg:mc2} shows that we have to check at least all possible pairs of CSI relations to get the minimal contexts. It is also possible to get the empty context as the minimal context, which happens when the all CSI relations \((X_A \indep X_B \,|\, X_S, X_C=x_C)\) hold for all outcomes \(x_C \in \mathcal{X}_C\) in which case the absorption axiom gives the CI relation \((X_A \indep X_A\,|\,X_S,X_C)\).
 
 
-From a computational perspective, given all CSI relations involving sets of variables \(X_A,X_B\) i.e. those of the form \((X_A \indep X_B \,|\, X_S, X_C=x_C)\), we want to find the largest set \(T \subset C\) such \((X_A \indep X_B \,|\, X_S, X_T=x_T, x_{C \textbackslash T} = x_{C \textbackslash T})\) is also in the CSI relations.  \footnote{If we are to use the CSI relations extracted from Algorithm \ref{alg:gencsirels} before getting their Context Specific closure they would be of the form $(X_i \indep X_B | X_C=x_C)$ where $i \in [p]$ and $B ,C \subset [p-1]$}  This can be thought of as decomposing \(C\) into sets \(C \textbackslash T\) and \(T\) such that Definition \ref{def:mcs} holds. To find the largest such \(T\), we can perform a binary search on the size of \(T\), which can range from \(0\) to \(|C|\).
-We describe this method below.  \footnote{Each break statement leaves the first loop it meets.} 
+From a computational perspective, given all CSI relations involving sets of variables \(X_A,X_B,X_S\) i.e. those of the form \((X_A \indep X_B \,|\, X_S, X_C=x_C)\), we want to find the largest set \(T \subset C\) such \((X_A \indep X_B \,|\, X_S, X_T=x_T, x_{C \textbackslash T} = x_{C \textbackslash T})\) is also in the CSI relations.  \footnote{If we are to use the CSI relations extracted from Algorithm \ref{alg:gencsirels} before getting their Context Specific closure they would be of the form $(X_i \indep X_B | X_C=x_C)$ where $i \in [p]$ and $B ,C \subset [p-1]$}  This can be thought of as decomposing \(C\) into sets \(C \textbackslash T\) and \(T\) such that Definition \ref{def:mcs} holds. To find the largest such \(T\), we can perform a binary search on the size of \(T\), which can range from \(0\) to \(|C|\). Algorithm \ref{alg:genmcs} describes our approach, which makes use of Algorithm \ref{alg:tsize} as a subroutine to find the largest possible \(T\) as in the definition of the absorption axiom.  \footnote{Each break statement leaves the first loop it meets. \textsc{RelsWithTriple}($A,B,S,J$) returns the CSI relations with the variables $A$,$B$ and conditioning set $S$ in $J$.\textsc{VariablesOfContext} takes a context and returns the variables involved in it. \textsc{Contained} takes a possible outcome $x_T$, a list of contexts, and a context $X_L=x_L$ (which can be a possible minimal context) and returns true if there is a context $X_C=x_C$ in the list of contexts such that it can be decomposed into $X_{C\textbackslash T}=x_{C\textbackslash T}, X_T=x_T$ and $X_L=x_L$ is a subcontext of $X_{C\T}=x_{C\T}$. \textsc{UpdateMinimalContexts} isa a function that updates the dictionary which stores the minimal contexts alongside all the CSI relations in $J$ that include it as a subcontext/} 
+
+
+
+
+
+
 \begin{algorithm}\label{alg:genmcs}
   \SetKw{Break}{break}
   \SetAlgoLined
   \SetKwBlock{Begin}{Begin}{}
   \KwIn{Set of CSI Relations $J$}
   \KwOut{Set of minimal contexts $MCs$ from $J$}
-  $set\_pairs \gets$ \textsc{PairsOfSets}($J$),$MCs \gets$ \textsc{EmptyDictionary}\;
-  \For{$A,B$ in $set\_pairs$}{
-    $rels \gets$ \textsc{RelsOfPair}($A,B$),$cs \gets$ \textsc{ContextsOfRels}($rels$)\;
+  $set\_triples \gets$ \textsc{TriplesOfSets}($J$)\;
+  $MCs \gets$ \textsc{EmptyDictionary}\;
+  \For{$A,B,S$ in $set\_triples$}{
+    $rels \gets$ \textsc{RelsWithTriple}($A,B,S,J$)\;
+    $cs \gets$ \textsc{ContextsOfRels}($rels$)\;
     \For{$rel$ in $rels$}{
-        $C \gets$ \textsc{VariablesOfContext}(\textsc{ContextOfRels}($rel$))\;
-        $T\_sizes \gets$ [0,...,|C|],$T\_found=False$\;
-        \While{not $T\_found$}{
-            $mid \gets |T\_sizes|$/2 , $T\_size \gets T\_sizes[mid]$\;
-            $T\_candidates \gets$ [subsets of $C$ of size $T\_size$] \;
-            \For {$T$ in $T\_candidates$}{
-                $T\_contained \gets False$\;
-                $x_{Ts} \gets$ \textsc{CartesianProduct}($T$),
-                $x_{Ts}\_count = 0$\;
-                \For {$x_T$ in $x_{Ts}$} {
-                    $x_{T}\_contained \gets$ True if $x_T$ in $cs$ else False\;
-                    \If{$x_{T}\_contained$ is True}{
-                        $x_{Ts}\_counts +=1$\;
-                        \If{$x_{Ts}\_counts = |x_{Ts}|$}{
-                             $T\_contained \gets$ True\;
-                         $search\_upperhalf \gets$ True\;
-                             }
-                       }
-                    \If{$x_T\_contained$ is False}{
-                    $search\_lowerhalf \gets$ True
-                    \Break}
+    $rel\_context \gets$ \textsc{ContextOfRels}$([rel])$\;
+        $C \gets$ \textsc{VariablesOfContext}($rel\_context$)\;
+        $T\_sizes \gets [0,...,|C|]$\;
+	$T\_size \gets $\textsc{RecursiveSearchT}($T\_sizes$, $C$, $cs$)\;
+	\uIf{$T\_size$=1}{$T=\{ \}$\;}
+	\uElseIf{$T\_size =|C|$}{$T=C$\;}
+	\Else{
+	$possible\_Ts \gets $ [subsets of $C$ of size $T\_size$]\;
+	\For{$possible\_T$ in $possible\_Ts$}{
+	$all\_outcomes \gets $\textsc{CartesianProduct}($possible\_T$)\;
+	$possible\_mc \gets$ [$(var,val)$ for $(var,val)$ in $rel\_context$ if $var$ not in $possible\_T$]\;
+	$outcome\_count=0$\;
+	\For{$outcome$ in $all\_outcomes$}
+	{$contained \gets$ \textsc{Contained}($outcome,cs,possible\_mc$)\;
+	\If{$contained=True$}{$outcome\_count$=$outcome\_count+1$\;}
+%	\If{$contained=False$}{\Break}
+	\If{$outcome\_count=|all\_outcomes|$}{$T = possible\_T$}
+	}
 
-                }
-                \If{(T\_contained and |T\_candidates|=1) or T\_sizes=[0] or T\_sizes=[|C|]}{
-                    $T\_found \gets True$\;
-		$MCs \gets$ \textsc{UpdateMinContexts}($MCs,rels$)\;
-                }
+	}
 
+	}
+$MCs \gets $\textsc{UpdateMinimalContexts}($MCs,\,rel,\,T,\,J$)\; 
+	}}
+          }\caption{\textsc{GenerateMinimalContexts} \\ Generate the Minimal Contexts from a set of CSI relations}
 
-                \uIf{search\_upperhalf}
-                {T\_sizes = T\_sizes[mid:end]
-                \Break}
-                \If{search\_lowerhalf}
-                {T\_sizes = T\sizes[start:mid]
-                \Break}
+\end{algorithm}
+\begin{algorithm}\label{alg:tsize}
+  \SetKw{Break}{break}
+  \SetAlgoLined
+  \SetKwBlock{Begin}{Begin}{}
+  \KwIn{Possible sizes for $T$ denoted $T\_sizes$, possible variables for $T$ denoted $T'$, set of contexts shared by the same triple $A,B,S$, denoted $cs$}
+  \KwOut{Size of the largest set $T$ such that all outcomes under $T$ are contained in $cs$}
+  \uIf{$|T\_sizes|=1$}{
+  \Return $T\_sizes[0]$}
+  \uElse{
+  $mid \gets |T\_sizes|/2$\;
+  $candidate\_size \gets T\_sizes[mid]$\;
+$possible\_Ts \gets $ [subsets of $C$ of size $candidate\_size$]\;
+$not\_contained=0$\;
+\For{$T$ in $possible\_Ts$}{
 
-            }
+$all\_outcomes \gets$ \textsc{CartesianProduct}($T$)
+$outcome\_count=0$\;
+\For{$outcome$ in $all\_outcomes$}{
+$contained \gets$ \textsc{Contained}($outcome,cs, \{\})$\;
+\If{$contained=True$}{$outcome\_count=outcome\_count+1$\;}
+\If{$contained=False$}{$not\_contained = not\_contained+1$\;\Break}
+\If{$outcome\_count=|all\_outcomes|$}{\textsc{RecursiveSearchT}($T\_sizes$[mid:end],$\,C,\,cs$)}}
+  \If{$not\_contained=|possible\_Ts|$} {\textsc{RecursiveSearchT}($T\_sizes$[start:mid],$\,C,\,cs$)  }
+  }
+}}
 
-
-            \If{T\_found}
-            {\Break}
-        }
-        \If{T\_found}
-        {\Break}
-    }}
-  }\caption{\textsc{GenerateMinimalContexts} \\ Generate the Minimal Contexts from a set of CSI relations}
+\caption{\textsc{RecursiveSearchT} \\ Find the largest possible size of the set $T$ for which the absorption axiom can be applied.}
 
 \end{algorithm}
 
+
 \begin{theorem}\label{alg:genmcscorrectness}
-Given a set of Context Specific Independence relations $\mathbb{J}$, Algorithm \ref{alg:genmcs} returns the set of minimal contexts in [!!! a long time theoretically]
+Given a set of Context Specific Independence relations $\mathbb{J}$, Algorithm \ref{alg:genmcs} returns the set of minimal contexts.
 \end{theorem}
 
-[!!! Describe subprocedures in minimal context generator algorithm]
 
-In theory, the number of possible pairs of sets \(A,B\) is \({2^p}\choose{2}\), though in practice it can be reduced. For example by the Symmetry axiom allows us to half the number of pairs we need to check. This motivates us to the pairwise case, where we focus on Context Specific Independence relations of the form between 2 variables \(X_i,X_j\) rather than two sets of variables \(X_A,X_B\). This drops the number of possible pairs to \(p \choose 2\). This leads us to the definition of pairwise minimal contexts.
+\textit{Proof: We work in sets of CSI relations where the variables $A$,$B$ and the conditioning set $S$ remain the same, which we denote $\mathbb{J}_{A,B,S}$. For each CSI relation $r \in \mathbb{J}_{A,B,S}$ which has a context with context variables $C$, Algorithm \ref{alg:tsize} finds the largest subset $T$ of $C$ such that $\mathbb{J}_{A,B,S}$ contains relations with contexts containing all outcomes of $T$ as a subcontext. The possible sizes of $T$ have the property that if we have a set of size $k_1$ that contains all of its outcomes in $\mathbb{J}_{A.B,S}$ then all sets of size $0,...,k_1-1$ also have all their outcomes in $\mathbb{J}_{A,B,S}$ as subcontexts meaning in order to maximize this size we then have to search over the sizes $k_1,...,|C|$. Similarly, if we find a set of size $k_2$ which does not contain a set with all possible sizes for $T$ inside $\mathbb{J}_{A,B,S}$, we know this size will be in $0,...,k_2-1$. Noting that the set with size $0$ i.e. the empty set is always a subcontext, and since the algorithm searches over all possible sizes for $T$ (which can only range from $0$ to $|C|$ since it is a subset of $C$) we get the largest set $T$ such that the absorption axiom is satisfied. Once we find the size of $T$, we check for $T$ itself. For each possible $T_i$ with the size we just found, this is done by decomposing the context variable of $r$, into $T_i$ and $C\textbackslash T_i$ and ensuring all outcomes of $T_i$ have a corresponding CI relation in $\mathbb{J}_{A,B,S}$ and the corresponding possible minimal context after this decomposition contains the context $X_{C\textbackslash T_i} = X_{C \textbackslash T_i}$ as a subcontext, which is what the absorption axiom asks for.}
 
- \newpage 
+A crude time complexity approximation is as follows. We start by computing how long it would take to find the optimal size for \(T\) given a CSI relation \(r\) and a set of CSI relations \(\mathbb{J}\) which share the same variables and conditioning set. In the worst case, the possible variables for \(T\) can be all the variables, which we denote \(p\). Let \(d\) denote the maximum number of outcomes over all variables. The first midpoint is then \(p/2\), which gives a total of \(p\choose \frac{p}{2}\) possible subsets of \(p\) with this size. For each of set, we generate the Cartesian product, which has at most \(d^{\frac{p}{2}}\) elements. Generalizing this, at iteration \(i\), we will will look over \(p \choose \frac{p}{2^i}\) possible subsets and corresponding \(d^{\frac{p}{2^i}}\) outcomes. We do this at most \(\log p\) times, giving the time complexity to be
+\begin{align*}
+\sum_{i=1}^{\log p} {p\choose{\frac{p}{2^i}}}d^{\frac{p}{2^i}}
+\end{align*}
+
+Once we find the optimal size for \(T\), we then find the set \(T\) itself, which involves generating the Cartesian product over all possible subsets of the size itself. This is done for all CSI relations of the form \((X_A\,\indep\,X_B|X_S,X_{C_i}=x_{C_i})\). Since we look at all pairs of sets \(A\),\(B\), and given that they are in general, subsets of \([p]\), we have \(2^p \choose 2\) possibilities for the pairs of sets \(A,B\). In practice, the number of CSI relations we have to look at can be reduced, for example the Symmetry axiom allows us to half the number of pairs we need to check. This motivates us to the pairwise case, where we focus on Context Specific Independence relations of the form between 2 variables \(X_i,X_j\) rather than two sets of variables \(X_A,X_B\). This drops the number of possible pairs to \(p \choose 2\). We note that however that even though we fix pairs of variables \(X_i,X_j\) now, we could still have the conditioning set \(S\) to be any subset of size \(p-2\) which does not include the nodes corresponding to \(X_i,X_j\). This leads us to the definition of pairwise minimal contexts.
+
+
 \begin{definition}[Pairwise minimal contexts]\label{def:pairmcs}
 Given a set Context Specific Independence model $\mathbb{J}$, we say that ${X_C=x_C}$ is a pairwise minimal context if we have $(X_i  \indep X_j \,|\, X_S, X_C=x_C) \in \mathbb{J}$ and there is no non-empty subset $T \subset C$ such that $(X_i \indep X_j \,|\, X_{S \cup T}, X_C=x_C) \in \mathbb{J}$.
 \end{definition}
@@ -646,7 +677,7 @@ Pairwise minimal contexts are always minimal contexts however but we could have 
 
 We now have the machinery to visualize higher dimensional CStrees. We start by generating the CSI relations from the trees. Then get the Context Specific closure, followed by the minimal contexts. Once we have the minimal contexts, the CI relations for each minimal context define a graphoid. This is called a Minimal Context DAG. Thus, the CStree can be represented as a sequence of DAGs for each minimal context. This representation is a consequence of the following theorem \cite{duarte-2021-repres-learn}.
 
- \newpage 
+
 
 \begin{theorem}[Markov theorem for CStrees]\label{thm:markovtheoremcstrees}
 Given a CStree $\mathbb{T}$, with levels $L_1,...,L_p \sim X_1,...,X_p$, minimal contexts $\mathbb{C}(\mathbb{T})$ and $\mathbb{P} \in \Delta_{|\mathcal{X}|-1}$. The following are equivalent.
@@ -723,12 +754,16 @@ Let \(\mathbb{P}\) be the data generating distribution and suppose it is faithfu
 
 
 \begin{theorem}\label{thm:cstreepccorrectness}
-Given variables $X_1,...,X_p$, assuming that the data generating distribution is faithful to some unknown CStree $\mathbb{T}$ with a known causal ordering $\pi = \pi_1 \cdots \pi_p$, Algorithm \ref{alg:cstreepc} is consistent, i.e. it recovers $\mathbb{T}$ as the number of samples $n \rightarrow \infty$.
+Given variables $X_1,...,X_p$, assuming that the data generating distribution $\mathbb{P}$ is faithful to some unknown CStree $\mathbb{T}$ with a known causal ordering $\pi = \pi_1 \cdots \pi_p$, Algorithm \ref{alg:cstreepc} is consistent, i.e. it recovers $\mathbb{T}$ as the number of samples $n \rightarrow \infty$.
 \end{theorem}
 
 
+\textit{Proof:
+Since $\mathbb{P}$ is faithful to $\mathbb{T}$ it entails the CSI relations encoded by minimal context DAGs $\mathbb{G}_{\mathbb{T}}$. By Theorem \ref{thm:markovtheoremcstrees}, this is equivalent $\mathbb{P}$ factorizing according to $\mathbb{T}$. Faithfulness also implies that if two nodes are in different stages, they must have different labels, since otherwise we would have a CSI relation not entailed by $\mathbb{G}_{\mathbb{T}}$. Thus in the limit of large data, we can differentiate between different stages in $\mathbb{T}$, allowing us to recover it up to Markov equivalence.
+}
+
 \section{Model selection for CStrees}
-\label{sec:orgc8f56d0}
+\label{sec:org925c218}
 In Algorithm \ref{alg:cstreepc} we select the CStree (or CStrees if there is more than one) with the causal ordering corresponding to the fewest stages, which is motivated by the principle of Occams razor \cite{pearl-2009-causal} since few stages imply lower model complexity and all else being, the simplest model is the best model. The original authors also present the \textbf{Bayesian Information Criterion (BIC)} for CStrees alongside a proof that it is locally consistent for CStrees, meaning it can be applicable to greedy search methods for CStrees. The BIC depends on two terms, the likelihood of the data, which assesses the quality of the model to explain the observed data, and a complexity term that depends on the amount of observed data and the free parameters of the model, with the idea being that models with more parameters should be penalized. Importantly, this helps against overfitting since one can simply add more parameters to the model to maximize the likelihood.
 
 
@@ -765,7 +800,7 @@ The free parameters is \(d=\sum_{k=1}^{p-1} (|\mathcal{X}_k| - 1)S_k\) where \(S
 
 
 \chapter{Experiments}
-\label{sec:orgf41f13a}
+\label{sec:org1d1ace6}
 The aim of this section is to run test the theory presented so far in both synthetic and real world data. Namely, for all the datasets we use, we ask ourselves the following.
 
 \begin{enumerate}
@@ -781,7 +816,7 @@ Throughout this section we omit the final layer of nodes for all the CStrees sin
 
 
 \section{Encoding DAGs as CStrees}
-\label{sec:org42f67df}
+\label{sec:orga46f571}
 We first run a sanity check on generating the CStrees from DAGs in the 2 extreme cases, when we have no connectivity and full connectivity.
 
 \begin{figure}[!h]\label{fig:dagtocstree_cstree}
@@ -803,7 +838,7 @@ We first run a sanity check on generating the CStrees from DAGs in the 2 extreme
 The results are as expected since there are no conditional independence relations encoded in the fully connected model, and no context specific independence statements since they are unable to encode them, meaning no 2 nodes share a fixed context and all stages have a single element. For the DAG with no edges, each variable is independent of all others, and each node has no parents. Thus by Proposition \ref{prop:dagsandcstrees} all levels share the empty context as the common context. 
 
 \section{Recovering the empty context DAG}
-\label{sec:orga69406d}
+\label{sec:org691f7f4}
 We start by generating random DAGs and generating the CStrees as per Algorithm \ref{alg:dagtocstree}. This is done by first choosing the number of variables (nodes in the DAG) \(p\), and then choosing an edge with probability \(p_{edge} \in (0,1)\), and then keeping edge \((u,v)\) if and only if \(u<v\). The causal ordering is chosen as \(12\cdots p\). We show the generated CStree below, and recover the original DAG as a minimal context DAG with the empty context with Algorithm \ref{alg:mcdags}. 
 
 \begin{figure}[!h]\label{fig:dagtocstree_cstree}
@@ -832,7 +867,7 @@ The following table summarizes the empirical space time complexity of generating
 \end{table}
 
 \section{Synthetic data}
-\label{sec:org340e0c1}
+\label{sec:orgbf21b5e}
 Next we generate a random DAG \(\mathbb{G}\) using the procedure above, and then generate samples from this DAG, where each variable is binary valued. We then discard the DAG and apply Algorithm \ref{alg:cstreepc} on the generated samples. For nodes which are adjacent to another node, we sample the data by constructing a conditional probability distribution table by taking the parents of the nodes, and creating one row for each possible outcome of the parents. In this binary case, if a variable \(X_i\) has \(d\) parents \(X_{PA_{X_1}},...,X_{PA_{X_d}}\), the corresponding table has \(2^d\) rows. The 2 columns represent the outcome 0 and 1 respectively. The probability values are filled by taking a row corresponding to some outcome of the parents, and assigning the probability of \(X_i=0\) under this outcome to be distributed uniformly between \([0.01,0.2]\) or \([0.8,0.99]\) each with a probability 0.5. The probability for \(X_i=1\) under this outcome is then simply computed such that the probabilities sum to 1. For the variables corresponding to nodes with no edges, we give them a Bernoulli distribution with a parameter chosen uniformly between \([0,1]\) for each such variable.
 
 
@@ -878,7 +913,7 @@ In order to assess the influence of the CI relations from the DAG in the final C
 
  \newpage 
 \section{Coronary disease data}
-\label{sec:orge28cb83}
+\label{sec:orgc1daf52}
 
 This is a dataset consisting of features which might increase the risk for coronary thrombosis, and consists of 1841 samples from men \cite{reinis-1981-progn-signif}.  These features are detailed below.
 \begin{center}
@@ -909,18 +944,15 @@ We first perform the following experiment: Learn a DAG model from both the PC al
 For each of the cases above we create/merge stages using the Anderson-Darling test \cite{scholz-1987-k-sampl}, the Epps-Singleton test \cite{epps-1986-omnib-test}, and the symmetric KL divergence with different threshold values. The use of the symmetric KL divergence is motivated by the unreliability of conditional independence testing in practice. Given 2 distributions \(\mathbb{P}, \mathbb{Q}\) over the same discrete state space \(\mathcal{X}\), the symmetric KL divergence is as follows. 
 
 
+
 \begin{align*}
 D_{SKL}(\mathbb{P} \, , \, \mathbb{Q}) = \sum_{x \in \mathcal{X}} \mathbb{P}(X=x)\log \frac{\mathbb{P}(X = x)}{\mathbb{Q}(X=x)} + \mathbb{Q}(X=x)\log \frac{\mathbb{Q}(X = x)}{\mathbb{P}(X=x)}
 \end{align*}
 
 
-We apply Algorithm \ref{alg:cstreepc} to the setup above, and record the CStrees with the minimum number of stages over all possible causal orderings, alongside their BIC scores. If we have CStrees with the same number of minimum stages, we record the highest BIC score among them. We call this \textbf{experimental setup 1}, and the result are summarized in the Table \ref{table:coronary1}.
+We apply Algorithm \ref{alg:cstreepc} to the setup above, and record the CStrees with the minimum number of stages over all possible causal orderings, alongside their BIC scores. If we have CStrees with the same number of minimum stages, we record the highest BIC score among them. We call this \textbf{experimental setup 1}, and the results of this experiment for the coronary dataset is summarized in the Table \ref{table:coronary1}.
 
 
-Here we see that the minimum number of stages over all the configurations is 6, and the result CStree is shown in Figure \ref{fig:coronary1}. The causal ordering is 346125, and we get this CStree by learning the original DAG using the PC algorithm, followed by the Anderson-Darling test to learn context specific information without encoding the CI relations from the original DAG. However it can be seen that the BIC score is lower compared to the CStree generated from the DAG itself and the CStree learnt using the CI relations in the DAG before learning the context specific information. The latter CStree also has more stages than the CStree learnt without using the CI relations, which can be explained by the possibility that the DAG encoded CI relation(s) which put nodes in the same stage, which otherwise may have been put in the same stage from the context specific testing procedure. Among the trees with the lowest stages, the CStree with the highest BIC score is generated with the ordering 534126, using the symmetric KL divergence with a threshold of \(5e^{-5}\) for the staging procedure, from the DAG learnt from the Hill Climbing algorithm and without encoding the CI relations from it. It shown in Figure \ref{fig:coronary2} We see that this CStree has 27 stages, which motivates us to define the \textbf{experimental setup 2}, where we aim to find the CStree with the highest BIC score instead of the minimum number of stages as in the experimental setup 1. We show the results of this in Table \ref{table:coronary2}.
-
-
-We see that the results are nearly identical, other than for 2 entries corresponding to the Epps-Singleton test and symmetric KL divergence with threshold \(5^{-5}\) which have an improved BIC score for the CStree learnt without the CI relations from the DAG. This could be due to the dataset allowing for few consistent causal orderings.
 
 
 
@@ -933,11 +965,11 @@ We see that the results are nearly identical, other than for 2 entries correspon
                         & \multicolumn{1}{c|}{}                                                                            & \multicolumn{1}{c|}{Stages}     & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}     & \multicolumn{1}{c|}{Stages} & \multicolumn{1}{c|}{BIC}              &  &  &  &  \\ \cline{3-12}
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{18}         & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6783.7} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6812.1} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6757.1} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-7032.3} & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6753.4}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{6}} & \multicolumn{1}{c|}{-6793.7} & \multicolumn{1}{c|}{13}     & \multicolumn{1}{c|}{-6812.1} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6757.1} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-7032.3} & \multicolumn{1}{c|}{44}     & \multicolumn{1}{c|}{-6753.4}          &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6771.3} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6780.4} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6775.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4} & \multicolumn{1}{c|}{18}     & \multicolumn{1}{c|}{-6739.4}          &  &  &  &  \\ \cline{2-12}
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{31}         & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6733.3}          &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6786.5} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6837.3} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6799.0} & \multicolumn{1}{c|}{39}     & \multicolumn{1}{c|}{-6828.0} & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-6755.9}          &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6786.5} & \multicolumn{1}{c|}{31}     & \multicolumn{1}{c|}{-6837.3} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6799.0} & \multicolumn{1}{c|}{39}     & \multicolumn{1}{c|}{-6828.0} & \multicolumn{1}{c|}{47}     & \multicolumn{1}{c|}{-6755.9}          &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CSTree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{8}          & \multicolumn{1}{c|}{-6788.7} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-6809.7} & \multicolumn{1}{c|}{26}     & \multicolumn{1}{c|}{-6801.4} & \multicolumn{1}{c|}{23}     & \multicolumn{1}{c|}{-6805.4} & \multicolumn{1}{c|}{30}     & \multicolumn{1}{c|}{\textbf{-6729.5}} &  &  &  &  \\ \cline{2-12}
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                                       &  &  &  &  \\
@@ -949,6 +981,7 @@ We see that the results are nearly identical, other than for 2 entries correspon
 \caption{Experimental setup 1 on the coronary dataset. Each cell under the column "Stages" is the minimum number of stages amongst all causal orderings generated from the either the PC or Hill Climbing algorithm, for different staging criteria. Many orderings produce CStrees with the same number of stages, in which case the BIC score in the table above is the maximum over those CStrees.}
 \end{tabular}
 \end{table*}
+Here we see that the minimum number of stages over all the configurations is 6, and which results in the CStree shown in Figure \ref{fig:coronary1}. The causal ordering is 346125, and we get this CStree by learning the original DAG using the PC algorithm, followed by the Anderson-Darling test to learn context specific information without encoding the CI relations from the original DAG. However it can be seen that the BIC score is lower compared to the CStree generated from the DAG itself and the CStree learnt using the CI relations in the DAG before learning the context specific information. The latter CStree also has more stages than the CStree learnt without using the CI relations, which can be explained by the possibility that the DAG encoded CI relation(s) may have put nodes in the same stage, which otherwise may have been put in the same stage from the context specific testing procedure. Among the trees with the lowest stages, the CStree with the highest BIC score is generated with the ordering 534126, using the symmetric KL divergence with a threshold of \(5e^{-5}\) for the staging procedure, from the DAG learnt from the Hill Climbing algorithm and without encoding the CI relations from it. It shown in Figure \ref{fig:coronary2} We see that this CStree has 27 stages, which motivates us to define the \textbf{experimental setup 2}, where we aim to find the CStree with the highest BIC score instead of the minimum number of stages as in experimental setup 1. We show the results of this in Table \ref{table:coronary2}.
 
 \begin{figure}[]\label{fig:coronary1}
    \begin{floatrow}
@@ -994,9 +1027,11 @@ We see that the results are nearly identical, other than for 2 entries correspon
 			\end{tabular}
 \end{table*}
 
+We note that using the PC algorithm gave a MEC with 12 orderings, whilst the Hill climbing algorithm gave us a DAG whose MEC gave 2 orderings.
 
 
-In order to compare our CStrees with similar staged trees, we do the following. First take the BIC optimal CStree that we have learnt which does not correspond to a DAG model. Take the ordering of this tree, and then fit staged trees using score based learning algorithms, optimizing for the BIC score. The algorithms used to fit the staged trees are the following:
+
+In order to compare our CStrees with similar staged trees, we run another experiment. First take the BIC optimal CStree that we have learnt which does not correspond to a DAG model. Take the ordering of this tree, and then fit corresponding staged trees using score based learning algorithms, optimizing for the BIC score. The algorithms used to fit the staged trees are the following:
 \begin{enumerate}
 \item Hill climbing - Start from the full independence model, then in a greedy manner, for each node, either assign it an existing stage or create a new stage depending on whichever option best increases the score.
 \item Backward hill climbing - Similar to hill climbing except we start from a full model, i.e. one where each node belongs to a singleton stage.
@@ -1032,7 +1067,7 @@ In order to generate the sequence of DAGs that capture the context specific caus
  \newpage 
 
 \section{Mice protein expression data}
-\label{sec:org514a400}
+\label{sec:orgae88564}
 This is a dataset with expression levels of 77 proteins, measured in the cerebral cortex of 8 classes of mice \cite{higuera-2015-self-organ}. There are 38 control mice and 34 trisomic mice, and for each of them 15 separate measurements were taken which gives a total of 1080 samples. The aim is to identify features that can discriminate between the 8 classes that make up all possible combinations of the following 3 binary features - Control or Trisonomy, stimulated to learn or not, injected with saline or memantine. This dataset had missing values, which is why we handle by first inspecting the missing value counts for each feature and then removing features which had 180 or more missing values. This removes the expression data corresponding to the columns \(BAD_N, BCL2_N, H3AcK18_N, EGR1_N, H3MeK4_N\). This still leaves 72 features, which we further reduce by recursive feature elimination \cite{guyon-2002} where we first train a linear support vector classifier on all the features and prune the least important features in a greedy manner until we arrive at the number of features we want. After this we compute the medians for each feature and assign each feature to take binary outcomes depending on whether or not the value is above or below the median.
 
 
@@ -1068,7 +1103,7 @@ Here, \(Q^i_2\) refers to the median of the variable corresponding to node \(i\)
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                              &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{154}        & \multicolumn{1}{c|}{-5615.9} & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9} & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9} & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9} & \multicolumn{1}{c|}{154}    & \multicolumn{1}{c|}{-5615.9} &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{\rotatebox{90}{PC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{\textbf{7}} & \multicolumn{1}{c|}{-6555.4} & \multicolumn{1}{c|}{8}      & \multicolumn{1}{c|}{-6442.3} & \multicolumn{1}{c|}{61}     & \multicolumn{1}{c|}{-5678.9} & \multicolumn{1}{c|}{64}     & \multicolumn{1}{c|}{-5640.6} & \multicolumn{1}{c|}{78}     & \multicolumn{1}{c|}{-5587.6} &  &  &  &  \\ \cline{2-12}
-\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{11}         & \multicolumn{1}{c|}{-6591.4} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6591.4} & \multicolumn{1}{c|}{15}     & \multicolumn{1}{c|}{-5702.0} & \multicolumn{1}{c|}{68}     & \multicolumn{1}{c|}{-5705.4} & \multicolumn{1}{c|}{71}     & \multicolumn{1}{c|}{-5692.2} &  &  &  &  \\ \cline{2-12}
+\multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w/o DAG\end{tabular}}                   & \multicolumn{1}{c|}{11}         & \multicolumn{1}{c|}{-6591.4} & \multicolumn{1}{c|}{11}     & \multicolumn{1}{c|}{-6591.4} & \multicolumn{1}{c|}{67}     & \multicolumn{1}{c|}{-5702.0} & \multicolumn{1}{c|}{68}     & \multicolumn{1}{c|}{-5705.4} & \multicolumn{1}{c|}{71}     & \multicolumn{1}{c|}{-5692.2} &  &  &  &  \\ \cline{2-12}
                         &                                                                                                  &                                 &                              &                             &                              &                             &                              &                             &                              &                             &                              &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{}   & \multicolumn{1}{c|}{DAG}                                                                         & \multicolumn{1}{c|}{102}        & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} & \multicolumn{1}{c|}{102}    & \multicolumn{1}{c|}{\textbf{-5376.6}} &  &  &  &  \\ \cline{2-12}
 \multicolumn{1}{c|}{\rotatebox{90}{HC}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}CStree \\ w DAG\end{tabular}}                     & \multicolumn{1}{c|}{13}         & \multicolumn{1}{c|}{-6373.8} & \multicolumn{1}{c|}{82}     & \multicolumn{1}{c|}{-6095.1} & \multicolumn{1}{c|}{33}     & \multicolumn{1}{c|}{-6017.8} & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5857.2} & \multicolumn{1}{c|}{41}     & \multicolumn{1}{c|}{-5857.2} &  &  &  &  \\ \cline{2-12}
@@ -1136,23 +1171,23 @@ Staged tree & Hierarchial clustering & -5990.4 & 17\\
 
 
 \section{Supersymmetry data}
-\label{sec:org1994d8d}
+\label{sec:orgbad60f1}
 
-This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features \cite{baldi-2014-searc-exotic}. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features, and after taking a random subsample of size 2500000 samples. Our aim with using this dataset is to assess the empirical feasibility of our methods on large sample sizes. The number of valid causal orderings varies largely depending on the subsampled data, which ranged from 200 to 8000 in our experiments. As a result, we simply learn the CStree with the first ordering in the algorithm. 
+This is a simulated dataset involving 8 kinematic features measured by detectors in a particle accelerator alongside 10 more high-level features which are functions of the original 8 features \cite{baldi-2014-searc-exotic}. The aim is is to identify the class label for each sample which denotes whether the measurement corresponds to a signal or background event. The dataset contains in total 5000000 samples. There are no missing values in this dataset, and we apply it on the 8 low-level features, and after taking a random subsample of size 2500000 samples. Our aim with using this dataset is to assess the empirical feasibility of our methods on large sample sizes. The number of valid causal orderings varies largely depending on the subsampled data, which ranged from 200 to 8000 in our experiments. As a result, we simply learn the CStree with the first ordering in the algorithm,  using the KL divergence with a threshold of \(5\times 10^{-7}\). The process of learning the DAG model, converting it to a CStree, and learning CStrees using with and without the CI relations from the DAG for one ordering took approximately 6-7 hours on an Intel i7-7700 machine. 
 
-\begin{figure}[H]\label{fig:susy1}
+\begin{figure}[!h]\label{fig:susy1}
    \begin{floatrow}
-\ffigbox{\includegraphics[width=1.1\linewidth]{temp/susy1_cstree.pdf}}%
-\caption{First CStree learnt from the supersymmetry dataset.}
+\ffigbox{\includegraphics[width=1.1\linewidth]{temp/susy1.pdf}}%
+\caption{First CStree learnt from the supersymmetry dataset, with causal ordering 852916347.}
         
    \end{floatrow}
 \end{figure}
 
-It is expected that since the supersymmetry data involves many causal interactions, there will be few independence relations, which is what we see from the CStree.
+The resulting CStree does not contain any non-singleton stage, which is perhaps surprising considering that one might expect many causal interactions to be present, and thus more stages. 
 
 
 \section{Vitamin-D dataset}
-\label{sec:org6ae6bb8}
+\label{sec:orgbb16b32}
 This dataset comes from a real study on Vitamin D and mortality \cite{martinussen-2017-instr-variab}, and contains 4 feature variables corresponding to age, a binary indicator denoting mutations in the filaggrin gene, vitamin D levels measured  as serum 25-OH-D (nmol/L), follow up time, alongside the predictor variable which is a binary value indicating knowledge of whether the subject passed away during the follow up. Looking at the data it is clear that the ages are grouped into 4 distinct groups. We group the vitamin D measurement into 4 groups based on the quartiles of the data, and the follow up time is grouped into a binary outcome with the median being the cutoff point. The resulting dataset is summarized in the table below.
 
 \begin{center}
@@ -1228,8 +1263,10 @@ We perform the experimental setup 1 and 2 on this dataset and get the following 
 			\end{tabular}
 \end{table*}
 
+Table \ref{tab:orgc0aba4d} shows the results of experimental setup 3 on the Vitamin D dataset.
+
 \begin{table}[htbp]
-\caption{Ordering 53421}
+\caption{\label{tab:orgc0aba4d}Experimental setup 3 on Vitamin D dataset with ordering 53421}
 \centering
 \begin{tabular}{l|l|r|r}
 \hline
@@ -1243,9 +1280,11 @@ Staged tree & Hierarchial clustering & -8910.0 & 10\\
 \end{tabular}
 \end{table}
 
+Here we see that the CStree outperforms all staged tree models learnt in terms of the BIC score, and also provides the sparsest model if we exclude the result of the hierarchial clustering algorithm where we pre define the number of maximum stages per level. However, it is very important to note that the causal ordering is starting from the variable corresponding to whether the subject passed away or not, which is not consistent with the true causal ordering. This is because the outcome corresponding to this variable is the last to be measured in the data generating process. This suggests errors in the initial DAG, which may have been caused due to instability in the conditional independence tests or being stuck at a local minima. Similarly, it would make sense if the variable corresponding to the follow up time happens second to last, since the only measurement taken during the follow up is whether the subject passed away or not. We thus learn the CStrees for all possible orderings ending with 45, and rerun experimental setup 3 with a more realistic causal ordering. The results are summarized in Table \ref{tab:org9710f41} below.
+
 
 \begin{table}[htbp]
-\caption{Ordering 32145}
+\caption{\label{tab:org9710f41}Experimental setup 3 on Vitamind D dataset with orrdering 32145}
 \centering
 \begin{tabular}{l|l|r|r}
 \hline
@@ -1259,13 +1298,12 @@ Staged tree & Hierarchial clustering & -8628.6 & 10\\
 \end{tabular}
 \end{table}
 
-Which is why we fix the last 2 variables TODO Explain this part
-Technically, the highest BIC score was achieved using the Epps test, which gives the CStree with ordering 12345 a BIC score of -8734.5 however this CStree has 48 stages. This is followed by the CStree obtained using the symmetric KL divergence with a threshold of \(5 \times 10^{-2}\), which gives the ordering 21345 with a BIC score of -8771.7. However, this is a DAG model with one edge \(4 \rightarrow 5\) in the empty context graph. We found changing this threshold to \(5 \times 10^{-3}\) gave us a slightly worse BIC score but a CStree that encodes interesting context specific information, which is why we choose this ordering as a basis for comparison with staged trees. We show this CStree alongside its minimal context DAGs below.
+As anticipated, none of the DAGs in the MEC of the DAG learnt using both the PC algorithm and the Hill climbing search were consistent with any of the orderings ending with 45. Thus, we only rely on context specific information learnt from the staging procedure, without any CI relations. Technically, the highest BIC score was achieved using the Epps test, which gives the CStree with ordering 12345 a BIC score of -8734.5 however this CStree has 48 stages. This is followed by the CStree obtained using the symmetric KL divergence with a threshold of \(5 \times 10^{-2}\), which gives the ordering 21345 with a BIC score of -8771.7. However, this is a DAG model with one edge \(4 \rightarrow 5\) in the empty context graph. We found changing this threshold to \(5 \times 10^{-3}\) gave us a slightly worse BIC score but a CStree that encodes interesting context specific information, which is why we choose this ordering as a basis for comparison with staged trees. We show this CStree alongside its minimal context DAGs below.
 
 
 
 \section{Discussion of empirical performance}
-\label{sec:org345ad69}
+\label{sec:orgce73e20}
 
 We see in general that using the symmetric KL divergence to identify stages in the CStree result a higher BIC score when compared to choosing a CStree with the minimum number of stages. There are many reasons which could lead to this happening in practice, with the first being unreliability of the statistical independence tests, which is in general a very hard task \cite{shah-2020-hardn-condit}.
 
@@ -1280,14 +1318,14 @@ One important aspect of this process is to choose the best CStree from all possi
 
 
 \chapter{Conclusions}
-\label{sec:org336a6a4}
+\label{sec:org4be5443}
 \section{Summary}
-\label{sec:org3bd8117}
+\label{sec:orgc91df00}
 We start with DAGs as a means to encode CI relations, and how one can use the characterization of Markov Equivalence in DAGs to learn causal structure through CI testing. We then cover the limitations of CI relations in comparison to CSI relations, and go over CStrees as a means to encode such CSI relations. We then show how one can learn these CSI relations from observational data and learn a CStree, and how to compute minimal contexts which are important when it comes to visualizing higher dimensional CStrees. We then apply these techniques to synthetic and real data.
 
 
 \section{Future work}
-\label{sec:orge0e4e69}
+\label{sec:org8427dd8}
 One of the more natural extensions of this work is to learn CStrees from interventional data. This can already be done with DAGs \cite{yang-2018-charac-learn}. On the topic of model selection, it might be interesting to see the applicability of Bayesian model selection for CStrees, whereby the model evidence is used as the basis for comparing models which automatically penalizes over-complex models whilst also penalizing models which do not agree with the observed data \cite{mackay-1992-bayes-inter}. Similar approaches have been applied to Gaussian DAG models \cite{castelletti-2020-bayes-model}. Generalization to missing data problems would also be an interesting avenue, considering that the PC algorithm has been recently extended for missing data instances in DAGs \cite{tu-2019-causal-discov}. But perhaps the most impactful extension would be formulating the problem of finding the best CStree into a continuous optimization problem, which can lead to scalable score based methods. Recent work has formulate the problem of searching for the best DAG according to some metric by using a characterization of acyclicity that is smooth and exact, allowing the conversion of the combinatorial problem into a purely continuous problem \cite{zheng-2018-dags-no-tears}. 
 
 
@@ -1302,9 +1340,126 @@ One of the more natural extensions of this work is to learn CStrees from interve
 
  \newpage 
 
-\chapter{Appendix A}
-\label{sec:org85ad2de}
-\section{Remarks on implementation}
-\label{sec:orgc96c5ef}
+\chapter{Appendix A : Implementation remarks}
+\label{sec:org89bbbf7}
 Implementation of this work was done in Python. Draft code repository is available at github.com/mnazaal/masters-thesis. This document was generated with org-mode. Use of scikit, pandas, numpy. Test driven development with pytest.
+
+
+\chapter{Appendix B : Extra figures}
+\label{sec:orga4a2c9a}
+\begin{figure}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}PC \hspace{60mm} Hill climbing }\par\medskip
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/coronary_pcdag.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/coronary_hcdag.pdf}}
+   \end{floatrow}
+   \caption{CPDAG representing the MEC of the DAG learnt from the coronary dataset.}
+\end{figure}
+
+\begin{figure}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}PC \hspace{60mm} Hill climbing }\par\medskip
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/mice_pcdag.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/mice_hcdag.pdf}}
+   \end{floatrow}
+   \caption{CPDAG representing the MEC of the DAG learnt from the mice protein expression dataset.}
+\end{figure}
+
+
+\begin{figure}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}PC \hspace{60mm} Hill climbing }\par\medskip
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/vitd_pcdag.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.31\linewidth]{figures/vitd_hcdag.pdf}}
+   \end{floatrow}
+   \caption{CPDAG representing the MEC of the DAG learnt from the Vitamin D dataset.}
+\end{figure}
+
+
+
+\begin{figure*}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{10mm}Hill Climbing \hspace{50mm} Backwards hill climbing}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/coronary_hc.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/coronary_bhc.pdf}}
+   \end{floatrow}
+
+   
+      \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}Backwards joining \hspace{55mm} Hierarchial clustering}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/coronary_bj.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/coronary_hclust.pdf}}%
+   \end{floatrow}
+   \caption{BIC Optimal staged trees learnt from the coronary dataset using the ordering 534126.}
+\end{figure*}
+
+\begin{figure*}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{10mm}Hill Climbing \hspace{50mm} Backwards hill climbing}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/mice_hc.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/mice_bhc.pdf}}
+   \end{floatrow}
+
+   
+      \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}Backwards joining \hspace{55mm} Hierarchial clustering}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/mice_bj.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/mice_hclust.pdf}}%
+   \end{floatrow}
+   \caption{BIC Optimal staged trees learnt from the mice protein expression dataset using the ordering 32765148.}
+\end{figure*}
+
+\begin{figure*}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{10mm}Hill Climbing \hspace{50mm} Backwards hill climbing}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hc.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_bhc.pdf}}
+   \end{floatrow}
+
+   
+      \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}Backwards joining \hspace{55mm} Hierarchial clustering}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_bj.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hclust.pdf}}%
+   \end{floatrow}
+   \caption{BIC Optimal staged trees learnt from the Vitamin D dataset using the ordering 53421.}
+\end{figure*}
+
+\begin{figure*}
+   \begin{floatrow}
+   \centering
+   \textbf{\hspace{10mm}Hill Climbing \hspace{50mm} Backwards hill climbing}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hc_gordering.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_bhc_gordering.pdf}}
+   \end{floatrow}
+
+   
+      \begin{floatrow}
+   \centering
+   \textbf{\hspace{5mm}Backwards joining \hspace{55mm} Hierarchial clustering}\par\medskip
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_bj_gordering.pdf}}%
+\hfill
+\ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hclust_gordering.pdf}}%
+   \end{floatrow}
+   \caption{BIC Optimal staged trees learnt from the Vitamin D dataset using the ordering 32145.}
+\end{figure*}
 \end{document}

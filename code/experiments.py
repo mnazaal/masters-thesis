@@ -200,7 +200,7 @@ def micecortex_config():
     num_features=10
     
 #@ex4.automain
-def micecortex_experiment(num_features, cpdag_method, csi_test, return_type):
+def micecortex_experiment(num_features, cpdag_method, csi_test, return_type, visualize=False, plot_mcdags=False):
     # Anderson test
     # With and without CI relations
     # With 6 features and 10 features
@@ -222,7 +222,10 @@ def micecortex_experiment(num_features, cpdag_method, csi_test, return_type):
 
     
 
-    cstree_object.visualize(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None, plot_limit=None)
+    if not visualize:
+        cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    else:
+        cstree_object.visualize(plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
 
 
 #micecortex_experiment(6)
@@ -258,7 +261,7 @@ def susy_experiment(cpdag_method, csi_test, return_type, ratio):
 
 
     
-def vitd_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
+def vitd_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None, visualize=False, plot_mcdags=False):
     # remove_var: Variable to remove
     # cpdag_method: 
     kl_threshold=None
@@ -294,11 +297,13 @@ def vitd_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, p
     orderings = [list(o)+[4,5] for o in orderings]
 
     # to visualize mcdags which is somehow tractable here
-    cstree_object.visualize(plot_mcdags=True,orderings=orderings,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
-    #cstree_object.learn(orderings=orderings,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    if not visualize:
+        cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    else:
+        cstree_object.visualize(plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
 
     
-def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None):
+def coronary_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None, visualize=False, plot_mcdags=False):
     # remove_var: Variable to remove
     # cpdag_method: 
     kl_threshold=None
@@ -329,10 +334,13 @@ def coronary_experiment_bic(cpdag_method, csi_test, return_type, remove_vars=Non
     # 1. Just the DAG converted to a CSTree
     # 2. CSTree learnt without any CI relations from DAG
     # 3. CSTree learnt using CI relations from DAG
-    cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    if not visualize:
+        cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
+    else:
+        cstree_object.visualize(plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
                         #save_dir=cpdag_method+csi_test+"_coronary_bic")
 
-def coronary_experiment_mcdag():
+def coronary_experiment_mcdag(p):
     # remove_var: Variable to remove
     # cpdag_method: 
 
@@ -368,6 +376,41 @@ synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 # coronary experiments
 # Minimum stages
 # CPDAG method, staging method change
+
+
+print("\n\n!!!!!Coronary experiment!!!!\n\n")
+for objective in ["minstages"]:
+    for cpdag_method in ["pc1", "hill"]:
+        for merge_method in ["anderson", "epps", 5e-5,5e-6,5e-7]:
+            print("\n!!!!!!!!!!!!!!!! coronary Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
+            coronary_experiment(cpdag_method, merge_method, objective)
+            print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
+
+print("\n\n!!!!!Mice cortex experiment!!!!\n\n")
+for objective in ["minstages"]:
+    for cpdag_method in ["pc1", "hill"]:
+        for merge_method in ["anderson", "epps", 5e-4,5e-5,5e-6]:
+            print("\n!!!!!!!!!!!!!!!! Mice Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
+            micecortex_experiment(7,cpdag_method, merge_method, objective)
+            print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
+
+print("\n\n!!!!!VitaminD experiment!!!!\n\n")
+for objective in ["minstages"]:
+    for cpdag_method in ["pc1", "hill"]:
+        for merge_method in ["anderson", "epps", 5e-1,5e-2,5e-4]:
+            print("\n !!!!!!!!!!!!!!!! vitamind Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
+            vitd_experiment(cpdag_method, merge_method, objective)
+            print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
+
+
+
+# minimum stage tree
+#coronary_experiment("pc1", "epps", "minstages")
+#coronary_experiment("hill", 5e-7, "maxbic", visualize=True)
+#micecortex_experiment(7, "pc1", "epps", "minstages", visualize=True)
+#vitd_experiment("pc1", 5e-2, "maxbic", visualize=True)
+
+
 """
 coronary_experiment_bic("pc1", "anderson", "minstages")
 print("========================================\nAbove is for pc1, and, mins")

@@ -86,7 +86,7 @@ def v_structure(e1, e2, g):
     heads_meet = e1[1]==e2[1]
     tails_dont = e1[0]!=e2[0]
     all_edges  = list(g.edges)
-    no_other_tail_edge = ((e1[0], e2[0]) not in all_edges) or ((e2[0], e1[0]) not in all_edges) 
+    no_other_tail_edge = ((e1[0], e2[0]) not in all_edges) and ((e2[0], e1[0]) not in all_edges) 
     return heads_meet and tails_dont and no_other_tail_edge
 
 

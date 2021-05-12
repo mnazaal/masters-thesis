@@ -553,10 +553,13 @@ class CSTree(object):
                 total_tree_nodes = nodes_per_tree(self.val_dict, ordering)
                 dag_stages    = total_tree_nodes-len(color_scheme1)+len(stages1)
                 no_dag_stages = total_tree_nodes-len(color_scheme2)+len(stages2)
+
                 pc_stages     = total_tree_nodes-len(color_scheme3)+len(stages3)
                 dag_bic    = self.cstree_bic(tree, stages1.copy(), color_scheme1.copy(),ordering)
                 no_dag_bic = self.cstree_bic(tree, stages2.copy(), color_scheme2.copy(),ordering)
                 pc_bic     = self.cstree_bic(tree, stages3.copy(), color_scheme3.copy(),ordering)
+
+                    
 
                 
                 #print("CSTree from DAG has {} stages, {} non-singleton stages".format(dag_stages, len(stages1)))
@@ -564,17 +567,23 @@ class CSTree(object):
                 #print("CSTree with DAG CI relations has {} stages, {} non-singleton stages".format(pc_stages, len(stages3)))
 
                 if return_type=="minstages":
-                    if dag_stages <= min_dag_stages:
+                    if dag_stages < min_dag_stages:
                         min_dag_stages = dag_stages
+                        min_dag_stages_bic = dag_bic
+                    if dag_stages==min_dag_stages:
                         if dag_bic > min_dag_stages_bic:
                             min_dag_stages_bic = dag_bic
-                    if no_dag_stages <= min_no_dag_stages:
+                    if no_dag_stages < min_no_dag_stages:
                         min_no_dag_stages = no_dag_stages
+                        min_no_dag_stages_bic = no_dag_bic
+                    if no_dag_stages == min_no_dag_stages:
                         if no_dag_bic > min_no_dag_stages_bic:
                             min_no_dag_stages_bic = no_dag_bic
                             #print("!!!!!!!!!",no_dag_bic, ordering) #for experiment section
-                    if pc_stages <= min_pc_stages:
+                    if pc_stages < min_pc_stages:
                         min_pc_stages = pc_stages
+                        min_pc_stages_bic=pc_bic
+                    if pc_stages==min_pc_stages:
                         if pc_bic > min_pc_stages_bic:
                             min_pc_stages_bic=pc_bic
                         
@@ -627,6 +636,8 @@ class CSTree(object):
                 elif return_type=="all":
                     # In this case we only save the tree as per algorithm 6,
                     # i.e. tree with DAG CI relations and further CSI relations
+                    trees.append((tree, stages1, color_scheme1, ordering))
+                    trees.append((tree, stages2, color_scheme2, ordering))
                     trees.append((tree, stages3, color_scheme3, ordering))
 
                 

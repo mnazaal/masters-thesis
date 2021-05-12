@@ -25,7 +25,7 @@ def dag_to_cstree_util(nodes, val_dict, ordering, dag, expected_stages):
 
     last_level_nodes = [n for n in cstree.nodes if nx.shortest_path_length(cstree,"Root",n)==len(ordering)-1]
     uncounted_last_level_nodes = len(last_level_nodes)*len(val_dict[ordering[-1]])
-    assert len(cstree.nodes)+uncounted_last_level_nodes-1 == nodes_per_tree(val_dict, ordering)
+    assert len(cstree.nodes)-1 == nodes_per_tree(val_dict, ordering)
 
     coloured_nodes = []
     for c,ns in stages.items():
