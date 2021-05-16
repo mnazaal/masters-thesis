@@ -348,15 +348,15 @@ def color_cstree(c,
 
         #print("level {} stages {}".format(level,stages_l))
         # If the DAG already coloured this level the same colour, move on
-        if len(stages_l) == 1 and list(color_scheme_l.values())[0] == ():
-            # If we have only one stage that contains all the nodes in this level
-            # We go to the next level
-            skipped+=len(color_scheme_l)
-            #csi_stages.append(stages_l)
-            newcolor_scheme_list.append(color_scheme_l.copy())
-            #print("DAG model gave whole level {} the same context {} length".format(level,list(color_scheme_l.values())[0]), len(color_scheme_l))
-            level+=1
-            continue
+        #if len(stages_l) == 1 and list(color_scheme_l.values())[0] == ():
+        #    # If we have only one stage that contains all the nodes in this level
+        #    # We go to the next level
+        #    skipped+=len(color_scheme_l)
+        #    #csi_stages.append(stages_l)
+        #    newcolor_scheme_list.append(color_scheme_l.copy())
+        #    #print("DAG model gave whole level {} the same context {} length".format(level,list(color_scheme_l.values())[0]), len(color_scheme_l))
+        #    level+=1
+        #    continue
         # v0, generate common contexts starting from the empty context to the full contexts
         
         # TODO Create 3 cases here for generator of pairs, randomized sampler, pincer movement

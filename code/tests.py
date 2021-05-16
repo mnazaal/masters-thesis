@@ -394,7 +394,6 @@ def test_ternary_minimal_contexts2():
 
     
 
-
     
 def test_weak_union():
     pass

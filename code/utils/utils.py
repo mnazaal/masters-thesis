@@ -132,9 +132,65 @@ def remove_cycles(g):
             cycles_removed=True
     return g
 
-
-
 def dag_to_cpdag(g):
+    def order_edges(g):
+        sorted_nodes = list(nx.topological_sort(g))
+        unordered_edges = list(g.edges)
+        ordered_edges = []
+        while unordered_edges != []:
+            y = [node for node in sorted_nodes if any([True if u in g.in_edges(node) else False for u in unordered_edges])][0]
+            x = [node for node in sorted_nodes if (node, y) in unordered_edges][-1]
+            ordered_edges.append((x,y))
+            unordered_edges.remove((x,y))
+        return ordered_edges
+            
+    edge_labels = {}
+    ordered_edges = order_edges(g.copy())
+    for edge in ordered_edges:
+        edge_labels[edge]=0
+    while 0 in list(edge_labels.values()):
+        goto3=False
+        (x,y) = [o for o in ordered_edges if edge_labels[o]==0][0]
+        compelled_edges = [o for o in ordered_edges if edge_labels[o]==1]
+        for (w,x) in compelled_edges:
+            if w not in parents(g,y):
+                edge_labels[(x,y)]=1
+                for e_1 in list(g.in_edges(y)):
+                    edge_labels[e_1]=1
+                goto3=True
+            
+            if goto3:
+                continue
+            else:
+                edge_labels[(w,y)]=1
+        if goto3:
+            continue
+        cond_list = [e for e in list(g.edges) if (e[1]==y) and (e[0]!=x) and (e[0] not in parents(g,x))]
+        temp = [e for e in g.in_edges(y) if edge_labels[e]==0]
+        if len(cond_list)>0:
+            edge_labels[(x,y)]=1
+            for e_2 in temp:
+                edge_labels[e_2]=1
+        else:
+            edge_labels[(x,y)]=2
+            for e_3 in temp:
+                edge_labels[e_3]=2
+
+    cpdag=nx.DiGraph()
+    cpdag.add_nodes_from(list(g.nodes))
+    for (ed,label) in list(edge_labels.items()):
+        u,v=ed[0],ed[1]
+        assert label!=0
+        if label==1:
+            cpdag.add_edge(u,v)
+        elif label==2:
+            cpdag.add_edge(v,u)
+            cpdag.add_edge(u,v)
+        else:
+            raise ValueError("unlabelled edge")
+    return cpdag
+
+def dag_to_cpdag1(g):
     fixed_edges=set()
     # Gather all v-structures
     for node in g.nodes:
@@ -145,15 +201,23 @@ def dag_to_cpdag(g):
                 fixed_edges=fixed_edges.union({e1,e2})
                 
     dag = nx.DiGraph()
-    dag.add_edges_from(fixed_edges)
+    dag.add_edges_from(list(fixed_edges))
+    dag.add_nodes_from(list(g.nodes))
     for (u,v) in g.edges:
         if (u,v) not in fixed_edges:
-            if not v_structure((u,v),(v,u),dag):
+            # potential edges which ae not fixed by v structures
+            to_add = (v,u)
+
+            # edges incident on node u, we want to make sure no edges of the form (x,u)
+            # make a v structure
+            potential_v_struct_es = dag.in_edges(u)
+            if all([not v_structure(to_add, e, dag) for e in potential_v_struct_es]):
+            #if not v_structure((u,v),(v,u),dag):
                 dag.add_edge(v,u)
             try:
                 cycles =list(nx.simple_cycles(dag))
                 if len(cycles)>0:
-                    g.remove_edge(v,u)
+                    dag.remove_edge(v,u)
             except:
                 pass
     return dag
@@ -165,7 +229,12 @@ def cpdag_to_dags(g):
     directed_edges   = directed(g.edges)
     
     if undirected_edges == []:
-        yield g
+        try:
+            cycles =list(nx.simple_cycles(g))
+            if len(cycles)==0:
+                yield g
+        except:
+            pass
     else:
         
         u = undirected_edges.pop()
@@ -195,7 +264,7 @@ def cpdag_to_dags(g):
                 # If they do not form a v structure in g, we are good
                 if not v_structure(u1,e,g):
                     new_g1 = g.copy()
-                    # Set (u,v) as a directed edge (by removing (v,u)) and recurse
+                    # Set (u,v) as a directed edge (by removing (v,u)) and recurse if it doesnt ca
                     new_g1.remove_edge(u[1],u[0])
                     yield from cpdag_to_dags(new_g1)
 

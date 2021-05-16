@@ -37,6 +37,7 @@ class CSTree(object):
             cpdag = nx.DiGraph()
             cpdag.add_nodes_from([i+1 for i in range(self.dataset.shape[1])])
             cpdag.add_edges_from(list(cpdag_pgmpy.edges()))
+            cpdag= remove_cycles(cpdag)
         if method=="pc2":
             # If the data is binary we do a different test in the PC algorithm
             binary_data = True if all(list(map(lambda f: True if len(f)==2 else False, list(self.val_dict.values())))) else False
@@ -57,8 +58,10 @@ class CSTree(object):
             cpdag = nx.relabel_nodes(cpdag, lambda x: x+1)
             
         if method == "hill":
-            cpdag_model=HillClimbSearch(pd.DataFrame(self.dataset, columns=[str(i+1) for i in range(self.dataset.shape[1])]))
-            dag_pgmpy = cpdag_model.estimate()
+            data_pd = pd.DataFrame(self.dataset, columns=[str(i+1) for i in range(self.dataset.shape[1])])
+            cpdag_model=HillClimbSearch(data_pd)
+            dag_pgmpy = cpdag_model.estimate(BicScore(data_pd))
+            print(list(dag_pgmpy.edges))
             dag_pgmpy=nx.relabel_nodes(dag_pgmpy, lambda x:int(x))
             dag = nx.DiGraph()
             dag.add_nodes_from([i+1 for i in range(self.dataset.shape[1])])
@@ -93,14 +96,18 @@ class CSTree(object):
             dag.add_edges_from(dag_pgmpy.edges)
             cpdag = dag_to_cpdag(dag)
             
-
-        cpdag= remove_cycles(cpdag)
+        edges = list(cpdag.edges)
+        #print("Before removing cycles CPDAG from {} has edges {}".format(method, list(cpdag.edges)))
+        
         cpdag.add_nodes_from([i+1 for i in range(self.dataset.shape[1])])
-        print("CPDAG from has edges {}".format(list(cpdag.edges)))
+        print("CPDAG from {} has edges {}".format(method, list(cpdag.edges)))
         mec_dags = cpdag_to_dags(cpdag)
-        dags_bn  = []
+        seen_edges = [] #fix duplicates from the algorithm level
+        dags_bn    = []
         for g in mec_dags:
-            dags_bn.append(g)            
+            if list(g.edges) not in seen_edges:
+                dags_bn.append(g)
+                seen_edges.append(list(g.edges))
 
         return dags_bn
 
@@ -209,6 +216,8 @@ class CSTree(object):
                 
 
                 next_var = ordering[level]
+                if next_var in context_vars:
+                    print(next_var, context_vars)
                 assert next_var not in context_vars
                 
                 # since the table is ordered with 1...p, we sort C 
@@ -310,6 +319,7 @@ class CSTree(object):
                 # CSI relations from tree
                 print("Tree {} generating CSI rels from tree".format(iteration))
                 csi_rels = stages_to_csi_rels(stages.copy(), ordering)
+                print(csi_rels)
 
                 # Apply weak union, decomposition, specialization iteratively
                 # Intersection and contraction afterwards
@@ -318,7 +328,7 @@ class CSTree(object):
 
                 # Get all minimal context DAGs of this CSTree
                 print("Generating minimal contexts and minimal context DAGs")
-                all_mc_dags = minimal_context_dags(ordering, csi_rels.copy(), self.val_dict)
+                all_mc_dags = minimal_context_dags(ordering, csi_rels.copy(), self.val_dict, closure=csi_rels.copy())
                 num_mc_dags = len(all_mc_dags)
                 fig = plt.figure(figsize=(14,12))
                 main_ax = fig.add_subplot(111)
@@ -328,6 +338,8 @@ class CSTree(object):
 
                 if nodes < 11:
                     except_last = [o for o in ordering[:-1]]
+                    #change_dict = {1:2,2:3,3:4,4:5,5:8}
+                    #except_last = [change_dict[o] for o in except_last]
                     cstree_ylabel = "".join(["      $X_{}$           ".format(o) for o in except_last[::-1]])
                     tree_pos = graphviz_layout(tree, prog="dot", args="")
                     tree_ax.set_ylabel(cstree_ylabel)
@@ -341,6 +353,7 @@ class CSTree(object):
 
                 for i, (minimal_context, dag) in enumerate(all_mc_dags):
                     options = {"node_color":"white", "node_size":1000}
+                    #dag = nx.relabel_nodes(dag, lambda x: x+1 if x>=4 else x)
                     if minimal_context!=():
                         mcdag_title = "".join(["$X_{}={}$  ".format(minimal_context[i][0],minimal_context[i][1]) for i in range(len(minimal_context))])
                     else:
@@ -553,15 +566,24 @@ class CSTree(object):
                 total_tree_nodes = nodes_per_tree(self.val_dict, ordering)
                 dag_stages    = total_tree_nodes-len(color_scheme1)+len(stages1)
                 no_dag_stages = total_tree_nodes-len(color_scheme2)+len(stages2)
-
                 pc_stages     = total_tree_nodes-len(color_scheme3)+len(stages3)
+
+
                 dag_bic    = self.cstree_bic(tree, stages1.copy(), color_scheme1.copy(),ordering)
                 no_dag_bic = self.cstree_bic(tree, stages2.copy(), color_scheme2.copy(),ordering)
                 pc_bic     = self.cstree_bic(tree, stages3.copy(), color_scheme3.copy(),ordering)
 
                     
 
-                
+                print("Ordering {} Just DAG {} - {}, w/o DAG {} - {}, w DAG  {} - {}, DAG is {}".format(
+                    ordering, 
+                    round(dag_bic,2), 
+                    dag_stages,
+                    round(no_dag_bic,2),
+                    no_dag_stages, 
+                    round(pc_bic,2),
+                    pc_stages,
+                    list(mec_dag.edges)))
                 #print("CSTree from DAG has {} stages, {} non-singleton stages".format(dag_stages, len(stages1)))
                 #print("CSTree without DAG CI relations has {} stages, {} non-singleton stages".format(no_dag_stages, len(stages2)))
                 #print("CSTree with DAG CI relations has {} stages, {} non-singleton stages".format(pc_stages, len(stages3)))
@@ -570,19 +592,24 @@ class CSTree(object):
                     if dag_stages < min_dag_stages:
                         min_dag_stages = dag_stages
                         min_dag_stages_bic = dag_bic
+
                     if dag_stages==min_dag_stages:
                         if dag_bic > min_dag_stages_bic:
                             min_dag_stages_bic = dag_bic
+
                     if no_dag_stages < min_no_dag_stages:
                         min_no_dag_stages = no_dag_stages
                         min_no_dag_stages_bic = no_dag_bic
+
                     if no_dag_stages == min_no_dag_stages:
                         if no_dag_bic > min_no_dag_stages_bic:
                             min_no_dag_stages_bic = no_dag_bic
                             #print("!!!!!!!!!",no_dag_bic, ordering) #for experiment section
+
                     if pc_stages < min_pc_stages:
                         min_pc_stages = pc_stages
                         min_pc_stages_bic=pc_bic
+
                     if pc_stages==min_pc_stages:
                         if pc_bic > min_pc_stages_bic:
                             min_pc_stages_bic=pc_bic
@@ -612,7 +639,7 @@ class CSTree(object):
 
 
                     #print("BIC Scores for ordering {} are".format(ordering))
-                    #print("Just DAG {}, Without DAG CI relations {}, With DAG CI relations {}".format(dag_bic, no_dag_bic, pc_bic))
+                    
                     
                     if dag_bic>max_dag_bic:
                         max_dag_bic           = dag_bic

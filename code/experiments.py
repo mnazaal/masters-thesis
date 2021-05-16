@@ -52,7 +52,8 @@ def dag_to_cstree_experiment(nodes,p_edge, mc_dag=False):
     nx.draw_networkx(dag,pos=nx.drawing.layout.shell_layout(dag), **options)
     ax = plt.gca()
     ax.collections[0].set_edgecolor("#000000")
-    plt.savefig("figs/dag_to_cstree/dag"+exp_name+".pdf")
+    plt.show()
+    #plt.savefig("figs/dag_to_cstree/dag"+exp_name+".pdf")
 
     fig =plt.figure(figsize=(5,5))
     ax = fig.add_subplot(111)
@@ -65,31 +66,30 @@ def dag_to_cstree_experiment(nodes,p_edge, mc_dag=False):
     nx.draw_networkx(tree, node_color=tree_node_colors, ax=ax, pos=tree_pos,
                         with_labels=False, font_color="white", linewidths=1)
     ax.collections[0].set_edgecolor("#000000")
-    plt.savefig("figs/dag_to_cstree/dag-cstree"+exp_name+".pdf")
+    plt.show()
+    #plt.savefig("figs/dag_to_cstree/dag-cstree"+exp_name+".pdf")
 
     if mc_dag:
         csi_rels = stages_to_csi_rels(stages, ordering)
         csi_rels = graphoid_axioms(csi_rels, val_dict, specialize=False)
         mc_dags = minimal_context_dags(ordering, csi_rels, val_dict)
         for i, (mc, mc_dag) in enumerate(mc_dags):
-            fig=plt.figure(figsize=(5,5))
-        options = {
-        'node_color': 'white',
-        'node_size': 1000,
-                    }
-        if mc!=():
-            mcdag_title = "".join(["$X_{}={}$  ".format(mc[i][0],mc[i][1]) for i in range(len(mc))])
-        else:
-            mcdag_title = "Empty context"
-        nx.draw_networkx(mc_dag, **options)
-        ax.set_title(mcdag_title)
-        ax = plt.gca()
-        ax.collections[0].set_edgecolor("#000000")
-        plt.savefig("figs/dag_to_cstree/mc-dag"+str(i)+exp_name+".pdf")
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            options = {
+            'node_color': 'white',
+            'node_size': 1000,
+                        }
+            nx.draw_networkx(mc_dag, pos=nx.drawing.layout.shell_layout(mc_dag),ax=ax1,**options)
+            #ax1.set_title(mcdag_title)
+            #ax1.collections.set_edgecolor("#000000")
+            nx.draw_networkx(dag,pos=nx.drawing.layout.shell_layout(dag),ax=ax2, **options)
+            #ax2.collections.set_edgecolor("#000000")
+            plt.show()
+        #plt.savefig("figs/dag_to_cstree/mc-dag"+str(i)+exp_name+".pdf")
 
 
 
-def synthetic_dag_binary_data_experiment(dataset, dag, exp_name, use_dag):
+def synthetic_dag_binary_data_experiment(dataset):
 
 
     fig=plt.figure(figsize=(5,5))
@@ -98,19 +98,20 @@ def synthetic_dag_binary_data_experiment(dataset, dag, exp_name, use_dag):
     'node_size': 1000,
                 }
 
-    nx.draw_networkx(dag,pos=nx.drawing.layout.shell_layout(dag), **options)
-    ax = plt.gca()
-    ax.collections[0].set_edgecolor("#000000")
-    plt.savefig("figs/synthetic/dag"+exp_name+".pdf")
+    #nx.draw_networkx(dag,pos=nx.drawing.layout.shell_layout(dag), **options)
+    #ax = plt.gca()
+    #ax.collections[0].set_edgecolor("#000000")
+    #plt.savefig("figs/synthetic/dag"+exp_name+".pdf")
 
 
+    n,p = dataset.shape
+    ordering=[i+1 for i in range(p)]
+    val_dict = {i+1:[0,1] for i in range(p)}
 
-    val_dict = {i+1:[0,1] for i in range(nodes)}
-    ordering = [i+1 for i in range(nodes)]
 
 
     cstree_object=CSTree(dataset,val_dict)
-    cstree_object.visualize(save_dir="synthetic/bindata"+exp_name, plot_mcdags=True,use_dag=use_dag)
+    cstree_object.visualize(orderings=[ordering], csi_test="epps", return_type="all", plot_mcdags=True,use_dag=True, learn_limit=None, plot_limit=None)
 
 #@ex2.config
 def synthetic_dag_binarydata_config():
@@ -153,27 +154,9 @@ def synthetic_dag_binarydata_experiment_1(dataset, use_dag):
             for line in (traceback.format_tb(exception_traceback)):
                 print(line)
 
-def synthetic_dag_binarydata_experiment_2(nodes, p_edge, n):
-    # Using epps and Anderson
-    pass
-
-def synthetic_dag_binarydata_experiment_3(nodes, p_edge, n):
-    # With and without CI relations from DAG
-    pass
-
-def synthetic_dag_binarydata_experiment_4(nodes, p_edge, n):
-    # Effect of not including imbalanced data
-    pass
 
 
-#dag = generate_dag(6, 0.5)
-#print("True DAG edges",list(dag.edges))
-#dataset = synthetic_dag_binarydata(dag, 100000)
-#np.savetxt('bic_dataset.csv', dataset, fmt="%d", delimiter=",")
-#dataset=np.genfromtxt('bic_dataset.csv', delimiter=',').astype(int)
-# TODO Save this
-#synthetic_dag_binarydata_experiment_1(dataset, use_dag=True)
-#synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)
+
 
 
 @ex3.config
@@ -273,6 +256,8 @@ def vitd_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_
     # Load dataset
     dataset = vitd_data()
     
+    #if remove_vars:
+    #dataset = dataset[:,tuple(i for i in range(dataset.shape[1]) if i!=1)]
     
     n,p = dataset.shape
 
@@ -295,12 +280,14 @@ def vitd_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_
     # our fixed orderings, rm
     orderings = list(itertools.permutations([1, 2, 3]))
     orderings = [list(o)+[4,5] for o in orderings]
+    o1 = [3,2,1,4,5]
+    o2 = [5,3,4,2,1]
 
     # to visualize mcdags which is somehow tractable here
     if not visualize:
         cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
     else:
-        cstree_object.visualize(plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
+        cstree_object.visualize(orderings=[o2],plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
 
     
 def coronary_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None, visualize=False, plot_mcdags=False):
@@ -376,236 +363,57 @@ synthetic_dag_binary_data_experiment(dataset,dag,exp_name,use_dag=False)
 # coronary experiments
 # Minimum stages
 # CPDAG method, staging method change
-
-
+"""
 print("\n\n!!!!!Coronary experiment!!!!\n\n")
-for objective in ["minstages"]:
-    for cpdag_method in ["pc1", "hill"]:
+for objective in ["minstages", "maxbic"]:
+    for cpdag_method in ["hill"]:
         for merge_method in ["anderson", "epps", 5e-5,5e-6,5e-7]:
             print("\n!!!!!!!!!!!!!!!! coronary Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
             coronary_experiment(cpdag_method, merge_method, objective)
             print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
 
 print("\n\n!!!!!Mice cortex experiment!!!!\n\n")
-for objective in ["minstages"]:
-    for cpdag_method in ["pc1", "hill"]:
+for objective in ["minstages", "maxbic"]:
+    for cpdag_method in ["hill"]:
         for merge_method in ["anderson", "epps", 5e-4,5e-5,5e-6]:
             print("\n!!!!!!!!!!!!!!!! Mice Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
             micecortex_experiment(7,cpdag_method, merge_method, objective)
             print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
 
 print("\n\n!!!!!VitaminD experiment!!!!\n\n")
-for objective in ["minstages"]:
+for objective in ["minstages", "maxbic"]:
     for cpdag_method in ["pc1", "hill"]:
         for merge_method in ["anderson", "epps", 5e-1,5e-2,5e-4]:
             print("\n !!!!!!!!!!!!!!!! vitamind Starting on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!".format(cpdag_method, merge_method, objective))
             vitd_experiment(cpdag_method, merge_method, objective)
             print("!!!!!!!!!!!!!!!! End on config {} {} {} !!!!!!!!!!!!!!!!!!!!!!!!\n".format(cpdag_method, merge_method, objective))
+"""
 
-
-
+#coronary_experiment("hill", 5e-7, "maxbic", visualize=True, plot_mcdags=True)
 # minimum stage tree
 #coronary_experiment("pc1", "epps", "minstages")
 #coronary_experiment("hill", 5e-7, "maxbic", visualize=True)
 #micecortex_experiment(7, "pc1", "epps", "minstages", visualize=True)
 #vitd_experiment("pc1", 5e-2, "maxbic", visualize=True)
+#for remove_var in [1,2,3,5]:
+#coronary_experiment("pc1", 5e-5, "maxbic", visualize=True, plot_mcdags=True, remove_vars=[4])
+#micecortex_experiment(7, "pc1", "epps", "minstages", visualize=True)
+vitd_experiment("pc1", 5e-3, "minstages", visualize=True, plot_mcdags=True)
+#micecortex_experiment(4, "pc1", 5e-5, "minstages", visualize=True, plot_mcdags=True)
+#dag_to_cstree_experiment(5,0.5, mc_dag=True)
 
-
-"""
-coronary_experiment_bic("pc1", "anderson", "minstages")
-print("========================================\nAbove is for pc1, and, mins")
-coronary_experiment_bic("hill", "anderson", "minstages")
-print("========================================\nAbove is for hill, and, mins")
-
-
-coronary_experiment_bic("pc1", "epps", "minstages")
-print("========================================\nAbove is for pc1, epps, mins")
-coronary_experiment_bic("hill", "epps", "minstages")
-print("========================================\nAbove is for hill, epps, mins")
-
-
-#coronary_experiment_bic("pc1", 5e-4, "minstages")
-#coronary_experiment_bic("hill", 5e-4, "minstages")
-
-coronary_experiment_bic("pc1", 5e-5, "minstages")
-print("========================================\nAbove is for pc1, 5e-5, mins")
-coronary_experiment_bic("hill", 5e-5, "minstages")
-print("========================================\nAbove is for hill, 5e-5, mins")
-
-coronary_experiment_bic("pc1", 5e-6, "minstages")
-print("========================================\nAbove is for pc1, 5e-6, mins")
-coronary_experiment_bic("hill", 5e-6, "minstages")
-print("========================================\nAbove is for hill, 5e-6, mins")
-
-coronary_experiment_bic("pc1", 5e-7, "minstages")
-print("========================================\nAbove is for pc1, 5e-7, mins")
-coronary_experiment_bic("hill", 5e-7, "minstages")
-print("========================================\nAbove is for hill, 5e-7, mins")
-
-
-# BIC
-coronary_experiment_bic("pc1",  "anderson", "maxbic")
-print("========================================\nAbove is for pc1, and, bic")
-coronary_experiment_bic("hill", "anderson", "maxbic")
-print("========================================\nAbove is for hill, and, bic")
-
-coronary_experiment_bic("pc1",  "epps", "maxbic")
-print("========================================\nAbove is for pc1, epps, bic")
-coronary_experiment_bic("hill", "epps", "maxbic")
-print("========================================\nAbove is for hill, epps, bic")
-
-#coronary_experiment_bic("pc1",  5e-4, "maxbic")
-#coronary_experiment_bic("hill", 5e-4, "maxbic")
-
-coronary_experiment_bic("pc1",  5e-5, "maxbic")
-print("========================================\nAbove is for pc1, 5e-5, bic")
-coronary_experiment_bic("hill", 5e-5, "maxbic")
-print("========================================\nAbove is for hill, 5e-5, bic")
-
-
-coronary_experiment_bic("pc1",  5e-6, "maxbic")
-print("========================================\nAbove is for pc1, 5e-6, bic")
-coronary_experiment_bic("hill", 5e-6, "maxbic")
-print("========================================\nAbove is for hill, 5e-6, bic")
-
-
-coronary_experiment_bic("pc1",  5e-7, "maxbic")
-print("========================================\nAbove is for pc1, 5e-7, bic")
-coronary_experiment_bic("hill", 5e-7, "maxbic")
-print("========================================\nAbove is for hill, 5e-7, bic")
-
-# All
-print("!!!!!!!!!!!!!!!!!!!!!!! ANDERSON  !!!!!!!!!!!!!!!!!!!")
-coronary_experiment_bic("pc1",  "anderson", "maxbic", remove_var=4)
-coronary_experiment_bic("hill", "anderson", "maxbic", remove_var=4)
-coronary_experiment_bic("all", "anderson", "maxbic", remove_var=4)
-
-print("!!!!!!!!!!!!!!!!!!!!!!! EPPS  !!!!!!!!!!!!!!!!!!!")
-coronary_experiment_bic("pc1",  "epps", "maxbic", remove_var=4)
-coronary_experiment_bic("hill", "epps", "maxbic", remove_var=4)
-coronary_experiment_bic("all", "epps", "maxbic", remove_var=4)
-
-print("!!!!!!!!!!!!!!!!!!!!!!! KL 1  !!!!!!!!!!!!!!!!!!!")
-coronary_experiment_bic("pc1",  5e-5, "maxbic", remove_var=4)
-coronary_experiment_bic("hill", 5e-5, "maxbic", remove_var=4)
-coronary_experiment_bic("all", 5e-5, "maxbic", remove_var=4)
-
-print("!!!!!!!!!!!!!!!!!!!!!!! KL 2  !!!!!!!!!!!!!!!!!!!")
-coronary_experiment_bic("pc1",  5e-6, "maxbic", remove_var=4)
-coronary_experiment_bic("hill", 5e-6, "maxbic", remove_var=4)
-coronary_experiment_bic("all",  5e-6, "maxbic", remove_var=4)
-
-print("!!!!!!!!!!!!!!!!!!!!!!! KL 3  !!!!!!!!!!!!!!!!!!!")
-coronary_experiment_bic("pc1",  5e-7, "maxbic", remove_var=4)
-coronary_experiment_bic("hill", 5e-7, "maxbic", remove_var=4)
-coronary_experiment_bic("all", 5e-7, "maxbic", remove_var=4)
-"""
-#coronary_experiment_mcdag()
-# Mice cortex
-# 7 is the features to use, including the predictor it will have 8
-mice_cortex_vars=7
-#micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "minstages")
-#micecortex_experiment(mice_cortex_vars, "hill", "anderson", "minstages")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", "epps", "minstages")
-#micecortex_experiment(mice_cortex_vars, "hill", "epps", "minstages")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "minstages")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "minstages")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "minstages")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "minstages")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-6, "minstages")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "minstages")
-
-
-
-# Max BIC
-#micecortex_experiment(mice_cortex_vars, "pc1", "anderson", "maxbic")#RUN THIS to get stages
-#micecortex_experiment(mice_cortex_vars, "hill", "anderson", "maxbic")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", "epps", "maxbic")
-#micecortex_experiment(mice_cortex_vars, "hill", "epps", "maxbic")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-4, "maxbic")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-4, "maxbic")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-5, "maxbic")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-5, "maxbic")
-
-#micecortex_experiment(mice_cortex_vars, "pc1", 5e-7, "maxbic")
-#micecortex_experiment(mice_cortex_vars, "hill", 5e-6, "maxbic")
-
-
-#coronary_experiment_bic()
-
-#susy_experiment("hill", 5e-7, "all",0.5)
-
-#synthetic_dag_binarydata_experiment(9, 0.2, 350)
-#coronary_experiment()
-#dermatology_experiment(grouped=True)
-#micecortex_experiment()
-#susy_experiment()
-
-"""
-vitd_experiment_bic("pc1", "anderson", "minstages")
-print("========================================\nAbove is for pc1, and, mins")
-vitd_experiment_bic("hill", "anderson", "minstages")
-print("========================================\nAbove is for hill, and, mins")
-
-
-vitd_experiment_bic("pc1", "epps", "minstages")
-print("========================================\nAbove is for pc1, epps, mins")
-vitd_experiment_bic("hill", "epps", "minstages")
-print("========================================\nAbove is for hill, epps, mins")
-
-
-vitd_experiment_bic("pc1", 5e-1, "minstages")
-print("========================================\nAbove is for pc1, 5e-1, mins")
-vitd_experiment_bic("hill", 5e-1, "minstages")
-print("========================================\nAbove is for hill, 5e-1, mins")
-
-vitd_experiment_bic("pc1", 5e-2, "minstages")
-print("========================================\nAbove is for pc1, 5e-2, mins")
-vitd_experiment_bic("hill", 5e-2, "minstages")
-print("========================================\nAbove is for hill, 5e-2, mins")
-
-vitd_experiment_bic("pc1", 5e-4, "minstages")
-print("========================================\nAbove is for pc1, 5e-4, mins")
-vitd_experiment_bic("hill", 5e-4, "minstages")
-print("========================================\nAbove is for hill, 5e-4, mins")
-
-
-# BIC
-vitd_experiment_bic("pc1",  "anderson", "maxbic")
-print("========================================\nAbove is for pc1, and, bic")
-vitd_experiment_bic("hill", "anderson", "maxbic")
-print("========================================\nAbove is for hill, and, bic")
-
-vitd_experiment_bic("pc1",  "epps", "maxbic")
-print("========================================\nAbove is for pc1, epps, bic")
-vitd_experiment_bic("hill", "epps", "maxbic")
-print("========================================\nAbove is for hill, epps, bic")
-
-
-
-vitd_experiment_bic("pc1",  5e-1, "maxbic")
-print("========================================\nAbove is for pc1, 5e-1, bic")
-vitd_experiment_bic("hill", 5e-1, "maxbic")
-print("========================================\nAbove is for hill, 5e-1, bic")
-
-
-vitd_experiment_bic("pc1",  5e-2, "maxbic")
-print("========================================\nAbove is for pc1, 5e-2, bic")
-vitd_experiment_bic("hill", 5e-2, "maxbic")
-print("========================================\nAbove is for hill, 5e-2, bic")
-
-
-vitd_experiment_bic("pc1",  5e-4, "maxbic")
-print("========================================\nAbove is for pc1, 5e-4, bic")
-vitd_experiment_bic("hill", 5e-4, "maxbic")
-print("========================================\nAbove is for hill, 5e-4, bic")
-"""
-
-#vitd_experiment_bic("hill",  5e-3, "maxbic")
+#dag = generate_dag(6, 0.5)
+#dag=nx.DiGraph()
+#dag.add_edges_from([(1,4),(2,4),(3,4)])
+#print("True DAG edges",list(dag.edges))
+#dataset = synthetic_dag_binarydata(dag, 100000)
+#np.savetxt('bic_dataset.csv', dataset, fmt="%d", delimiter=",")
+#dataset=np.genfromtxt('bic_dataset2.csv', delimiter=',').astype(int)
+# TODO Save this
+#synthetic_dag_binary_data_experiment(dataset)
+#samples =random.sample(range(2000), 500)
+#dataset1 = dataset[tuple(samples),:].copy()
+#np.savetxt('bic_dataset3.csv', dataset1, fmt="%d", delimiter=",")
+#dataset1=np.genfromtxt('bic_dataset3.csv', delimiter=',').astype(int)
+#synthetic_dag_binary_data_experiment(dataset1)
+#synthetic_dag_binarydata_experiment_1(dataset, use_dag=False)

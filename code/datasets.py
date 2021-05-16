@@ -145,6 +145,8 @@ def micecortex_data(num_features=10):
     feature_indices = [i for i in range(X.shape[1]) if selector.support_[i]]
     feature_names   = [micecortex_pd.columns[i] for i in feature_indices]+[micecortex_pd.columns[-1]]
 
+    print(feature_names)
+
     reduced_micecortex_pd = micecortex_pd[feature_names]
 
     # We divide each feature into 2 classes based on the median
