@@ -41,7 +41,7 @@ def recursive_search(T_sizes, C, contexts_with_p, val_dict):
                 return recursive_search(T_sizes[:mid], C, contexts_with_p, val_dict)
 
     
-def binary_minimal_contexts(csi_rels, val_dict, pairwise=True):
+def binary_minimal_contexts(csi_rels, val_dict, pairwise=False):
     minimal_cs      = set()
     minimal_cs_dict = {}
     #print("beagn with", csi_rels,"\n")

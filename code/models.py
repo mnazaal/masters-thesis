@@ -338,8 +338,8 @@ class CSTree(object):
 
                 if nodes < 11:
                     except_last = [o for o in ordering[:-1]]
-                    #change_dict = {1:2,2:3,3:4,4:5,5:8}
-                    #except_last = [change_dict[o] for o in except_last]
+                    change_dict = {1:1,2:2,3:3,4:5,5:6}
+                    except_last = [change_dict[o] for o in except_last]
                     cstree_ylabel = "".join(["      $X_{}$           ".format(o) for o in except_last[::-1]])
                     tree_pos = graphviz_layout(tree, prog="dot", args="")
                     tree_ax.set_ylabel(cstree_ylabel)
@@ -353,7 +353,7 @@ class CSTree(object):
 
                 for i, (minimal_context, dag) in enumerate(all_mc_dags):
                     options = {"node_color":"white", "node_size":1000}
-                    #dag = nx.relabel_nodes(dag, lambda x: x+1 if x>=4 else x)
+                    dag = nx.relabel_nodes(dag, lambda x: x+1 if x>=4 else x)
                     if minimal_context!=():
                         mcdag_title = "".join(["$X_{}={}$  ".format(minimal_context[i][0],minimal_context[i][1]) for i in range(len(minimal_context))])
                     else:

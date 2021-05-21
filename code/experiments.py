@@ -398,8 +398,8 @@ for objective in ["minstages", "maxbic"]:
 #for remove_var in [1,2,3,5]:
 #coronary_experiment("pc1", 5e-5, "maxbic", visualize=True, plot_mcdags=True, remove_vars=[4])
 #micecortex_experiment(7, "pc1", "epps", "minstages", visualize=True)
-vitd_experiment("pc1", 5e-3, "minstages", visualize=True, plot_mcdags=True)
-#micecortex_experiment(4, "pc1", 5e-5, "minstages", visualize=True, plot_mcdags=True)
+#vitd_experiment("pc1", 5e-3, "minstages", visualize=True, plot_mcdags=True)
+micecortex_experiment(4, "pc1", 5e-6, "minstages", visualize=True, plot_mcdags=True)
 #dag_to_cstree_experiment(5,0.5, mc_dag=True)
 
 #dag = generate_dag(6, 0.5)
