@@ -282,12 +282,13 @@ def vitd_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_
     orderings = [list(o)+[4,5] for o in orderings]
     o1 = [3,2,1,4,5]
     o2 = [5,3,4,2,1]
+    o3 = [2,1,3,4,5]
 
     # to visualize mcdags which is somehow tractable here
     if not visualize:
         cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
     else:
-        cstree_object.visualize(orderings=[o2],plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
+        cstree_object.visualize(orderings=[o1],plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
 
     
 def coronary_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None, visualize=False, plot_mcdags=False):
@@ -398,8 +399,8 @@ for objective in ["minstages", "maxbic"]:
 #for remove_var in [1,2,3,5]:
 #coronary_experiment("pc1", 5e-5, "maxbic", visualize=True, plot_mcdags=True, remove_vars=[4])
 #micecortex_experiment(7, "pc1", "epps", "minstages", visualize=True)
-#vitd_experiment("pc1", 5e-3, "minstages", visualize=True, plot_mcdags=True)
-micecortex_experiment(4, "pc1", 5e-6, "minstages", visualize=True, plot_mcdags=True)
+vitd_experiment("pc1", 5e-3, "minstages", visualize=True, plot_mcdags=True)
+#micecortex_experiment(4, "pc1", 5e-6, "minstages", visualize=True, plot_mcdags=True)
 #dag_to_cstree_experiment(5,0.5, mc_dag=True)
 
 #dag = generate_dag(6, 0.5)

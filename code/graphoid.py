@@ -221,5 +221,5 @@ def graphoid_axioms(csi_rels, val_dict, specialize=True):
     #for rel in J:
     #    J+=specialization(rel, val_dict)
     #print("Giving {} relations to get minimal contexts".format(len(J)))
-    print(len(J))
+    #print(len(J))
     return J

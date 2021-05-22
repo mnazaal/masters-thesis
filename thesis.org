@@ -419,13 +419,16 @@ One question that arises is how many CStrees are there for a given system of var
 
 #+NAME:modelcounts
 #+CAPTION: Number of DAGs, CStrees and compatibly labeled staged trees on $p$ binary variables.
-| $p$ |  DAGs |     CStrees | Compatibly labeled staged trees |
-|---+-------+-------------+---------------------------------|
-| 1 |     1 |           1 |                               1 |
-| 2 |     3 |           4 |                               4 |
-| 3 |    25 |          96 |                             180 |
-| 4 |   543 |       59136 |                         2980800 |
-| 5 | 29281 | 26466908160 |              156196038558888000 |
+ |-----+-------+-------------+---------------------------------|
+ |   / |     < |           < |                               < |
+ | $p$ |  DAGs |     CStrees | Compatibly labeled staged trees |
+ |-----+-------+-------------+---------------------------------|
+ |   1 |     1 |           1 |                               1 |
+ |   2 |     3 |           4 |                               4 |
+ |   3 |    25 |          96 |                             180 |
+ |   4 |   543 |       59136 |                         2980800 |
+ |   5 | 29281 | 26466908160 |              156196038558888000 |
+
 
 
 
@@ -659,6 +662,7 @@ Unlike DAGs, as the number of variables increases it gets progessively harder to
 
 
 
+{{{NEWPAGE}}}
 
 ** Understanding high-dimensional CStrees
 From a pragmatic perspective the aim of this section is to introduce the notion of Minimal Context (MC) DAGs which can help visualize CStrees with more variables and the context specific information they encode. On a theoretical note, this work has led to
@@ -1177,8 +1181,8 @@ The following table summarizes the empirical space time complexity of generating
  |        0.2 |        23 |       9.812 |       240 | 
 
 
-Next we generate a random DAG $\mathbb{G}$ using the procedure above, and then generate samples from this DAG, where each variable is binary valued. We then discard the DAG and apply Algorithm \ref{alg:cstreepc2} on the generated samples. For nodes which are adjacent to another node, we sample the data by constructing a conditional probability distribution table by taking the parents of the nodes, and creating one row for each possible outcome of the parents. In this binary case, if a variable $X_i$ has $d$ parents $\{X_m\}_{m \in PA_{\mathbb{G}}(i)}$, the corresponding table has $2^d$ rows. The $2$ columns represent the outcome $0$ and $1$ respectively. The probability values are filled by taking a row corresponding to some outcome of the parents, and assigning the probability of $X_i=0$ under this outcome to be distributed uniformly between $[0.01,0.2]$ or $[0.8,0.99]$ each with a probability $0.5$. The probability for $X_i=1$ under this outcome is then simply computed such that the probabilities sum to $1$. For the variables corresponding to nodes with no edges, we give them a Bernoulli distribution with a parameter chosen uniformly between $[0,1]$ for each such variable.
-gr
+Next we generate a random DAG $\mathbb{G}$ using the procedure above, and then generate samples from this DAG, where each variable is binary valued. We then discard the DAG and apply Algorithm \ref{alg:cstreepc2} on the generated samples. For nodes which are adjacent to another node, we sample the data by constructing a conditional probability distribution table by taking the parents of the nodes, and creating one row for each possible outcome of the parents. In this binary case, if a variable $X_i$ has $d$ parents $X_{PA_{\mathbb{G}}(i)}$, the corresponding table has $2^d$ rows. The $2$ columns represent the outcome $0$ and $1$ respectively. The probability values are filled by taking a row corresponding to some outcome of the parents, and assigning the probability of $X_i=0$ under this outcome to be distributed uniformly between $[0.01,0.2]$ or $[0.8,0.99]$ each with a probability $0.5$. The probability for $X_i=1$ under this outcome is then simply computed such that the probabilities sum to $1$. For the variables corresponding to nodes with no edges, we give them a Bernoulli distribution with a parameter chosen uniformly between $[0,1]$ for each such variable.
+
 
     
     We simulate samples on 4 binary variables using the above procedure by fixing a DAG and a distribution, and sampling 2000 values from it. The random DAG we generate is shown in Figure \ref{fig:syntheticdag} We then learn the CStree using Algorithm \ref{alg:cstreepc} and recover the minimal context DAGs via Algorithm \ref{alg:mcdags} for a random subsample of 500 and all 2000 of these samples. The results of these are shown in Figure  We choose 4 variables due to limitations of applying the context specific conditional independence axioms. We also set the ordering to be 1234.
@@ -1598,7 +1602,9 @@ We show the result of experimental setup 2 on this dataset in Table \ref{table:m
 \end{table*}
    #+end_export
 
-The CStree with the highest BIC score has 133 stages, with a score of -5433.0. This tree has an ordering of 32765148, and we show it in Figure \ref{fig:micemaxbic}
+The CStree with the highest BIC score has 133 stages, with a score of -5433.0. This tree has an ordering of 32765148, and we show it in Figure \ref{fig:micemaxbic}. Notably, this is a better BIC score than the BIC-optimal CStree from experimental setup 1, which suggests that we can get a better fit to our data if we do not impose the minimum stage criterion, indicating that the underlying data generating distribution has some context-specific causal structure of interest.
+
+
       #+begin_export latex
 \begin{figure}[!h]\label{fig:micemaxbic}
    \begin{floatrow}
@@ -1773,12 +1779,12 @@ We show the results of experimental setup 2 on the Vitamin D dataset below in Ta
 
    The results of Table [[table:vitd3]] show that the CStree does better than all staged tree models learnt in terms of the BIC score, and also provides the sparsest model learnt directly from the data, which is a fair comparison if we exclude the number of stages learnt from the hierarchial clustering algorithm where we pre define the number of maximum stages per level. However, it is very important to note that the causal ordering is starting from the variable corresponding to whether the subject passed away or not, which is not consistent with the true causal ordering. This is because the outcome corresponding to this variable is the last to be measured in the data generating process. This suggests errors in the initial DAG, which may have been caused due to instability in the conditional independence tests or being stuck at a local minima. Similarly, it would make sense if the variable corresponding to the follow up time happens second to last, since the only measurement taken during the follow up is whether the subject passed away or not. We thus learn the CStrees for all possible orderings ending with 45, and rerun experimental setup 3 with a more realistic causal ordering.
 
-The result of this is that none of the DAGs in the MEC of the DAG learnt using both the PC algorithm and the Hill climbing search were consistent with any of the orderings ending with 45. Thus, we only rely on context specific information learnt from the staging procedure, without any CI relations. Technically, the highest BIC score was achieved using the Epps test, which gives the CStree with ordering 12345 a BIC score of -8734.5 - however this CStree has 48 stages. This is followed by the CStree obtained using the symmetric KL divergence with a threshold of $5 \times 10^{-2}$, which gives the ordering 21345 with a BIC score of -8771.7. However, this is a DAG model with one edge $4 \rightarrow 5$ in the empty context graph. A balance is achieved when taking the causal ordering 32145, which has a slightly worse BIC score of -8776.5 and 9 stages. As a result, we use this as the basis for the comparison with staged trees. The results are summarized in Table [[table:vitd4]] below.
+The result of this is that none of the DAGs in the MEC of the DAG learnt using both the PC algorithm and the Hill climbing search were consistent with any of the orderings ending with 45. Thus, we only rely on context specific information learnt from the staging procedure, without any CI relations. Technically, the highest BIC score was achieved using the Epps test, which gives the CStree with ordering 12345 a BIC score of -8734.5 - however this CStree has 48 stages. This is followed by the CStree obtained using the symmetric KL divergence with a threshold of $5 \times 10^{-2}$, which gives the ordering 21345 with a BIC score of -8771.7. However, this is a DAG model with one edge $4 \rightarrow 5$ in the empty context graph. A balance is achieved when taking the causal ordering 32145 and the threshold has $5 \times 10^{-3}$, which has a slightly worse BIC score of -8776.5 and 9 stages. As a result, we use this as the basis for the comparison with staged trees. The results are summarized in Table [[table:vitd4]] below.
 
 
    # !!! TODO Cite table number above
    #+NAME: table:vitd4
-   #+CAPTION: Experimental setup 3 on Vitamind D dataset with orrdering 32145
+   #+CAPTION: Experimental setup 3 on Vitamin D dataset with orrdering 32145
   |-------------+---------------------------------------+---------+--------|
   | /           | <                                     |       < |      < |
   | Model       | Algorithm                             |     BIC | Stages |
@@ -1802,7 +1808,7 @@ We see that in terms of the BIC score the CStree is not optimal, however the mod
    #+end_export
 
 
-   We see that the minimal context DAGs contain v-structures, meaning the directed edges are fixed in the Markov Equivalence class. Thus under our assumptions, they represent direct causal relationships learnt from the data.
+   We see that the minimal context DAGs contain v-structures, meaning the directed edges are fixed in the Markov Equivalence class. Thus under our assumptions, they represent direct causal relationships learnt from the data. Under the empty context, variables 4 and 5 which are the follow up time and mortality respectively are causally linked in accordance to our previous comment that the only measurement taken after the follow up is whether the subject passed away or not. The v-structure in this DAG however is unintuitive, that variables 2 and 3, corresponding to filagrin and Vitamin D levels respectively, are independent causes of age. It is possible that based on the data, these arrows represent "causation" in the form of "indication". That is, these arrows make sense when we interpret them as independent indicators of a subject's age. In other words, the data appears to encode the "causal" observation that Vitamin D levels and the presence of filaggrin suggest the age of a patient as opposed to the more intuitive "causal" observation that the subject's age suggests something Vitamin D levels and filaggrin. Under the context that variable 2, corresponding to filaggrin, is 0 i.e. filaggrin is not present, we get an intuitive minimal context DAG, indicating the remaining variables 1,3,4 corresponding to age, Vitamin D and follow up time are mutually independent causes of variable 5, which corresponds to subject mortality. This being said, we note that the causal ordering for this CStree was chosen somewhat arbitrarily to provide a balance between the BIC-score and the number of stages.
 
 
    
