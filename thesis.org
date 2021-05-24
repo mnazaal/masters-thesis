@@ -2036,7 +2036,7 @@ We make use of pytest cite:krekel-2004 to run unit tests. This thesis is written
 \hfill
 \ffigbox{\includegraphics[width=0.45\linewidth]{figures/coronary_hclust.pdf}}%
    \end{floatrow}
-   \caption{BIC Optimal staged trees learnt from the coronary dataset using the ordering 534126.}
+   \caption{BIC-optimal staged trees learnt from the coronary dataset using the ordering 534126.}
 \end{figure*}
  #+end_export
 # -----------------------------------------------------
@@ -2058,7 +2058,7 @@ We make use of pytest cite:krekel-2004 to run unit tests. This thesis is written
 \hfill
 \ffigbox{\includegraphics[width=0.45\linewidth]{figures/mice_hclust.pdf}}%
    \end{floatrow}
-   \caption{BIC Optimal staged trees learnt from the mice protein expression dataset using the ordering 32765148.}
+   \caption{BIC-optimal staged trees learnt from the mice protein expression dataset using the ordering 32765148.}
 \end{figure*}
 #+end_export 
 # ------------------------------------------------------------------
@@ -2080,7 +2080,7 @@ We make use of pytest cite:krekel-2004 to run unit tests. This thesis is written
 \hfill
 \ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hclust.pdf}}%
    \end{floatrow}
-   \caption{BIC Optimal staged trees learnt from the Vitamin D dataset using the ordering 53421.}
+   \caption{BIC-optimal staged trees learnt from the Vitamin D dataset using the ordering 53421.}
 \end{figure*}
 #+end_export 
 # ----------------------------------------------------
@@ -2102,7 +2102,7 @@ We make use of pytest cite:krekel-2004 to run unit tests. This thesis is written
 \hfill
 \ffigbox{\includegraphics[width=0.45\linewidth]{figures/vitd_hclust_gordering.pdf}}%
    \end{floatrow}
-   \caption{BIC Optimal staged trees learnt from the Vitamin D dataset using the ordering 32145.}
+   \caption{BIC-optimal staged trees learnt from the Vitamin D dataset using the ordering 32145.}
 \end{figure*}
 #+end_export 
 
