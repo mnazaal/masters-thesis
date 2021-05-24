@@ -288,7 +288,7 @@ def vitd_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_
     if not visualize:
         cstree_object.learn(cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None)
     else:
-        cstree_object.visualize(orderings=[o1],plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
+        cstree_object.visualize(orderings=orderings,plot_mcdags=plot_mcdags,cpdag_method=cpdag_method,return_type=return_type,csi_test=csi_test, kl_threshold=kl_threshold,learn_limit=None,plot_limit=None)
 
     
 def coronary_experiment(cpdag_method, csi_test, return_type, remove_vars=None, plot_limit=None, visualize=False, plot_mcdags=False):
