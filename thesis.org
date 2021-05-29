@@ -65,7 +65,7 @@
 #+end_export
 
 $\chapter*{Abstract}$
-Despite having a philosophical grounding from empiricism that spans some centuries, the algorithmization of causal discovery started only a few decades ago. This formalization of studying causal relationships relies on connections between graphs and probability distributions. In this setting, the task of causal discovery is to recover the graph that best describes the causal structure based on the available data. A particular class of causal discovery algorithms, called constraint-based methods rely on Directed Acyclic Graphs (DAGs) as an encoding of Conditional Independence (CI) relations that carry some level of causal information. However, a CI relation such as $X$ and $Y$ being independent conditioned on $Z$ assumes the independence holds for all possible values $Z$ can take, which can tend to be unrealistic in practice where causal relations are often context-specific.  In this thesis we aim to develop constraint-based algorithms to learn causal structure from Context-Specific Independence (CSI) relations within the discrete setting, where the independence relations are of the form $X$ and $Y$ being independent given $Z$ and $C=a$ for some $a$. This is done by using Context-Specific trees, or CStrees for short, which can encode CSI relations. 
+Despite having a philosophical grounding from empiricism that spans some centuries, the algorithmization of causal discovery started only a few decades ago. This formalization of studying causal relationships relies on connections between graphs and probability distributions. In this setting, the task of causal discovery is to recover the graph that best describes the causal structure based on the available data. A particular class of causal discovery algorithms, called constraint-based methods rely on Directed Acyclic Graphs (DAGs) as an encoding of Conditional Independence (CI) relations that carry some level of causal information. However, a CI relation such as $X$ and $Y$ being independent conditioned on $Z$ assumes the independence holds for all possible values $Z$ can take, which can tend to be unrealistic in practice where causal relations are often context-specific.  In this thesis we aim to develop constraint-based algorithms to learn causal structure from Context-Specific Independence (CSI) relations within the discrete setting, where the independence relations are of the form $X$ and $Y$ being independent given $Z$ and $C=a$ for some $a$. This is done by using Context-Specific trees, or CStrees for short, which can encode CSI relations.
 
 
 #+begin_export latex
@@ -1937,7 +1937,10 @@ bibliography:~/Dropbox/org/bibliography/references.bib
 # Things about model selection
 # Intervention data http://www.sciencemag.org/content/suppl/2005/04/21/308.5721.523.DC1/Sachs.SOM.Datasets.zip
 
-* Appendix A : Implementation remarks
+* Appendix A : Implementation remarks 
+  :PROPERTIES:
+  :UNNUMBERED: t
+  :END:
   All of the code used in this work is available at github.com/mnazaal/masters-thesis. We make extensive use of numpy cite:harris-2020-array-progr, scipy cite:virtanen-2020-scipy (for statistical testing), networkx cite:hagberg-2008-explor-networ (for graphs), pgmpy cite:ankan-2015 (for initial DAG learning) in Python for the work on CStrees and the stagedtrees package cite:carli-2020-r-packag in R to learn the staged trees.
 
 
