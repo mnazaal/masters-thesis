@@ -1,5 +1,6 @@
-from itertools import combinations
+from itertools import combinations, permutations
 import time
+from utils.utils import undirected_both, coming_in, v_structure
 
 import networkx as nx
 
@@ -245,3 +246,92 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
         print("Adding mc {} and mcdag nodes {} edges {}".format(minimal_context, minimal_context_dag.nodes,minimal_context_dag.edges))
         minimal_context_dags.append((minimal_context, minimal_context_dag))
     return minimal_context_dags
+
+
+def minimal_context_dags_1(min_contexts, csi_rels, data):
+    
+    minimal_context_dags = []
+    m = len(min_contexts)
+    # For the case when we know the minimal context
+    # and the ordering
+    n,p = dataset.shape
+    for mc in min_contexts:
+        CI = []
+        C = vars_of_context(mc)                         #C
+        vars = [i+1 for i in range(p) if i+1 not in C]  #[p]\C
+        dag  = nx.DiGraph(nx.complete_graph(vars))
+        for k,l in combinations(vars, 2):
+            neighbours = list(set(list(dag.neighbors(k))).union(list(dag.neighbors(l))))
+            S_sizes = range(len(neighbours))
+            for subset_size in S_sizes:
+                subsets = [set(i) for i in combinations(neighbours, subset_size)]
+                for subset in subsets:
+                    if ({k},{l}, subset, mc) in csi_rels:
+                        dag.remove_edges_from([(k,l),(l,k)])
+                        CI.append(({k},{l}, subset))
+        minimal_context_dags.append((mc, dag, CI))
+
+    P = []
+    for i in range(m):
+        mc  = minimal_context_dags[i][0]
+        dag = minimal_context_dags[i][1]
+        CI  = minimal_context_dags[i][2]
+        for edges in combinations(list(dag.edges), 3):
+            for s in dag.nodes:
+                s_neighbours = dag.neighbors(s)
+                for k,l in combinations(s_neighbours, 2):
+                    for (K,L,S) in CI:
+                        if {k}==K and {l}==L and s not in S:
+                            dag.remove_edges_from([(k,s),(s,k),(s,l),(l,s)])
+                            dag.add_edges_from([(k,s),(l,s)])
+                            P.append((k,s))
+                            P.append((l,s))
+    dag_P = nx.DiGraph()
+    dag_P.add_edges_from(P)
+    possible_orderings = nx.all_topological_sorts(dag_P)
+
+    for order in possible_orderings:
+        minimal_context_dags_ordered = []
+        new_v_struct=False
+        for i in range(m):
+            mc  = minimal_context_dags[i][0]
+            dag = minimal_context_dags[i][1]
+            CI  = minimal_context_dags[i][2] 
+
+            # edges in the fully connected DAG with this order
+            es = [(i,j) for i,j in combinations(order, 2) if i<j]
+
+            for (u,v) in es:
+                if (u,v) in dag.edges and (v,u) in dag.edges:
+                    # direct the edge u<->v as u->v by deleting u<-v
+                    dag.remove_edge(v,u)
+
+                    # check if this introduces a v-structure
+                    edges_in = coming_in((u,v), dag)
+
+                    # even if we get 1 new v-structure we move on to the next ordering
+                    new_v_struct = any(list(map(lambda e: v_structure((u,v),e,dag), edges_in)))
+                    if new_v_struct:
+                        break
+            
+            if new_v_struct:
+                break
+            # if no new vstruct, we choose third ordering
+            minimal_context_dags_ordered.append(mc, dag)
+
+
+
+
+
+                    
+
+
+
+
+
+
+
+            
+
+
+

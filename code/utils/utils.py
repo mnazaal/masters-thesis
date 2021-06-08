@@ -109,6 +109,17 @@ def undirected(es):
                 u_es.append(es[i])
     return u_es
 
+def undirected_both(es):
+    es=list(es)
+    n = len(es)
+    u_es = []
+    for i in range(n):
+        for j in range(i,n):
+            if es[i][0] == es[j][1] and es[i][1] == es[j][0]:
+                u_es.append(es[i])
+                u_es.append((es[i][1], es[i][0]))
+    return u_es
+
 def directed(es):
     u_es = undirected(es)
     all_u_es = u_es+[(y,x) for (x,y) in u_es]
@@ -308,6 +319,10 @@ dag_topo_sort = lambda dag: list(nx.topological_sort(dag))
 
 def shared_contexts(cs1,cs2):
     return [c for c in cs1 if (c in cs1 and c in cs2)]
+
+
+def vars_of_context(context):
+    return [var for (var,val) in context]
 
 
 
