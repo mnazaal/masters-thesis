@@ -1,6 +1,10 @@
 from itertools import combinations, permutations
 import time
-from utils.utils import undirected_both, coming_in, v_structure
+
+from networkx.readwrite.graph6 import data_to_n
+from utils.utils import undirected_both, coming_in, v_structure, data_to_contexts
+from gsq.ci_tests import ci_test_bin, ci_test_dis
+
 
 import networkx as nx
 
@@ -247,9 +251,13 @@ def minimal_context_dags(order, csi_rels, val_dict, mec_dag=None, closure=None):
         minimal_context_dags.append((minimal_context, minimal_context_dag))
     return minimal_context_dags
 
+vars_of_context = lambda context: [var for (var,val) in context]
 
-def minimal_context_dags_1(min_contexts, csi_rels, data):
-    
+def minimal_context_dags_1(min_contexts, dataset, alpha=0.01):
+    # TODO check if binary data, set CI test accordingly    
+    indep_test = ci_test_dis
+
+
     minimal_context_dags = []
     m = len(min_contexts)
     # For the case when we know the minimal context
@@ -266,9 +274,11 @@ def minimal_context_dags_1(min_contexts, csi_rels, data):
             for subset_size in S_sizes:
                 subsets = [set(i) for i in combinations(neighbours, subset_size)]
                 for subset in subsets:
-                    if ({k},{l}, subset, mc) in csi_rels:
+                    p_val = indep_test(data_to_contexts(dataset, mc), k, l, subset)
+                    if p_val > alpha:
                         dag.remove_edges_from([(k,l),(l,k)])
                         CI.append(({k},{l}, subset))
+                        CI.append(({l},{k}, subset))
         minimal_context_dags.append((mc, dag, CI))
 
     P = []
@@ -318,20 +328,3 @@ def minimal_context_dags_1(min_contexts, csi_rels, data):
                 break
             # if no new vstruct, we choose third ordering
             minimal_context_dags_ordered.append(mc, dag)
-
-
-
-
-
-                    
-
-
-
-
-
-
-
-            
-
-
-

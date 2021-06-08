@@ -335,7 +335,7 @@ def context_per_stage(ls):
 
 def data_to_contexts(data : np.ndarray, 
                      cs   : list[tuple[int,int]], 
-                     var  : int) -> np.ndarray:
+                     var  = None) -> np.ndarray:
     # returns the data where the contexts are of the relevant form
     # confirm if same contexts havent been put
     # TODO consider moving to dask later on
@@ -346,11 +346,17 @@ def data_to_contexts(data : np.ndarray,
     
     p = data.shape[1]
     #c=cs[0]
+
+
     for c in cs:
-        if var == c[0]:
-            raise ValueError("The variable you want is being fixed in the context")
+        if var:
+            if var == c[0]:
+                raise ValueError("The variable you want is being fixed in the context")
         data = data[np.where(data[:,c[0]-1]==c[1])]
-    return data[:,var-1] #-1 because indices are labelled from 0
+    if var:
+        return data[:,var-1] #-1 because indices are labelled from 0
+    else:
+        return data
 
 
 def context_is_contained(c, cs, possible_mc):
